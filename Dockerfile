@@ -1,19 +1,21 @@
-FROM ubuntu:latest
-LABEL authors="pablo"
-# Usa una imagen oficial de Java 17
-FROM eclipse-temurin:17-jdk
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Establece el directorio de trabajo
 WORKDIR /app
 
-# Copia y compila el código
-COPY . /app
-RUN ./mvnw clean package -DskipTests
+# Copia el pom y las fuentes
+COPY pom.xml .
+COPY src ./src
 
-# Expone el puerto que tu app usa
+# Compila el JAR
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+# Copia solo el JAR desde la etapa anterior
+COPY --from=build /app/target/gastos-app.jar /app/gastos-app.jar
+
 EXPOSE 8080
 
-# Ejecuta la app
-CMD ["java", "-jar", "target/gastos-app.jar"]
-
-ENTRYPOINT ["top", "-b"]
+ENTRYPOINT ["java", "-jar", "/app/gastos-app.jar"]
