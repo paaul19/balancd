@@ -4,12 +4,5 @@
   "cantidad" : 300.0,
   "ingreso" : true,
   "asuntoId" : 2,
-  "fecha" : [ 2025, 7, 3 ]
-}, {
-  "id" : 2,
-  "userId" : 1,
-  "cantidad" : 10.0,
-  "ingreso" : false,
-  "asuntoId" : 4,
-  "fecha" : [ 2025, 7, 3 ]
+  "fecha" : [ 2025, 7, 4 ]
 } ]
