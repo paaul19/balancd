@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso protegido</title>
+    <style>
+        body {
+            background: #fff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .acceso-box {
+            background: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+            padding: 2.5rem 2rem 2rem 2rem;
+            min-width: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .acceso-box h2 {
+            margin-bottom: 1.5rem;
+            color: #222;
+        }
+        .acceso-box input[type="password"] {
+            padding: 0.7rem 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 1.2rem;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .acceso-box button {
+            background: #222;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.7rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .acceso-box button:hover {
+            background: #444;
+        }
+        .error {
+            color: #c00;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="acceso-box">
+    <h2>Introduce la contraseña</h2>
+    <form th:action="@{/acceso}" method="post">
+        <input type="password" name="password" placeholder="Contraseña" required autofocus />
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        <button type="submit">Entrar</button>
+    </form>
+</div>
+</body>
+</html> 

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mis Movimientos</title>
+    <style>
+        body { background: #f5f5f5; font-family: sans-serif; }
+        .container { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 2rem; }
+        h2 { text-align: center; margin-bottom: 1.5rem; }
+        ul { list-style: none; padding: 0; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        .cantidad-gasto { color: #c00; font-weight: bold; }
+        .cantidad-ingreso { color: #090; font-weight: bold; }
+        form { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
+        input[type="number"] { flex: 1; padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
+        select { padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
+        button { background: #222; color: #fff; border: none; border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #444; }
+    </style>
+</head>
+<body>
+<!-- Barra de navegación de meses arriba del todo -->
+<div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin:2rem 0 1.5rem 0;">
+    <span th:if="${mesesDisponibles.size()} > 1">
+        <a th:each="m,iter : ${mesesDisponibles}" th:if="${m != mesSeleccionado}" th:href="@{/movimientos(mes=${m.monthValue},anio=${m.year})}" style="text-decoration:none; color:#222; padding:0.2em 0.7em; border-radius:5px; border:1px solid #ddd; margin:0 0.2em;">
+            <span th:text="${#temporals.format(m, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
+        </a>
+    </span>
+    <span style="font-size:2rem; font-weight:600; color:#222; text-transform:capitalize; letter-spacing:0.5px;">
+        <span th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
+    </span>
+</div>
+<div class="container">
+    <h2>Mis Movimientos</h2>
+    <div style="margin-bottom: 1.5rem;">
+        <div><b>Ingresos:</b> <span style="color:#090;" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span></div>
+        <div><b>Gastos:</b> <span style="color:#c00;" th:text="${#numbers.formatDecimal(totalGastos, 1, 2)} + ' €'"></span></div>
+        <div><b>Balance:</b> <span th:style="${balance} >= 0 ? 'color:#090;' : 'color:#c00;'" th:text="${#numbers.formatDecimal(balance, 1, 2)} + ' €'"></span></div>
+    </div>
+    <ul>
+        <li th:each="mov : ${movimientos}">
+            <span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'">
+                <span th:text="${#numbers.formatDecimal(mov.cantidad, 1, 2)} + ' €'"></span>
+            </span>
+            <span th:if="${mov.asuntoId != null}" style="margin-left:0.5rem; color:#555; font-size:0.95em;">
+                (<span th:text="${asuntosMap[mov.asuntoId]}"></span>)
+            </span>
+            <form th:action="@{'/movimientos/delete/' + ${mov.id}}" method="post" style="margin:0;">
+                <button type="submit">Eliminar</button>
+            </form>
+        </li>
+        <li th:if="${movimientos.size()} == 0">No tienes movimientos registrados.</li>
+    </ul>
+    <!-- Botones de acción abajo -->
+    <div style="display:flex; justify-content:center; gap:1rem; margin-top:2rem;">
+        <button type="button" id="btnIngreso">Añadir ingreso</button>
+        <button type="button" id="btnGasto">Añadir gasto</button>
+        <button type="button" id="btnAsunto">Crear asunto</button>
+    </div>
+    <!-- Formularios dinámicos -->
+    <div id="formularioDinamico" style="margin-top:1.5rem;"></div>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var asuntosData = /*[[${asuntos}]]*/ [];
+        /*]]>*/
+    </script>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Botones
+        const btnIngreso = document.getElementById('btnIngreso');
+        const btnGasto = document.getElementById('btnGasto');
+        const btnAsunto = document.getElementById('btnAsunto');
+        const contenedor = document.getElementById('formularioDinamico');
+        // Formularios HTML
+        const formIngreso = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
+            <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
+            <select name="asuntoId" style="width:100%;">
+                <option value="" selected>(Sin asunto)</option>
+                <!--ASUNTOS-->
+            </select>
+            <input type="hidden" name="ingreso" value="true" />
+            <button type="submit">Añadir ingreso</button>
+        </form>`;
+        const formGasto = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
+            <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
+            <select name="asuntoId" style="width:100%;">
+                <option value="" selected>(Sin asunto)</option>
+                <!--ASUNTOS-->
+            </select>
+            <input type="hidden" name="ingreso" value="false" />
+            <button type="submit">Añadir gasto</button>
+        </form>`;
+        const formAsunto = `<form action="/movimientos/asunto" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
+            <input type="text" name="nombre" placeholder="Nuevo asunto" style="width:100%;" />
+            <button type="submit">Guardar asunto</button>
+        </form>`;
+        // Generar options desde asuntosData
+        function getAsuntosOptions() {
+            if (!window.asuntosData) return '';
+            return window.asuntosData.map(function(a) {
+                return `<option value="${a.id}">${a.nombre}</option>`;
+            }).join('');
+        }
+        // Mostrar el formulario correspondiente
+        btnIngreso.onclick = function() {
+            contenedor.innerHTML = formIngreso.replace('<!--ASUNTOS-->', getAsuntosOptions());
+        };
+        btnGasto.onclick = function() {
+            contenedor.innerHTML = formGasto.replace('<!--ASUNTOS-->', getAsuntosOptions());
+        };
+        btnAsunto.onclick = function() {
+            contenedor.innerHTML = formAsunto;
+        };
+    });
+</script>
+</body>
+</html> 
