@@ -2,10 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso protegido</title>
+    <!-- Incluir estilos del tema -->
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <style>
         body {
-            background: #fff;
             margin: 0;
             padding: 0;
             min-height: 100vh;
@@ -14,9 +16,7 @@
             justify-content: center;
         }
         .acceso-box {
-            background: #f8f8f8;
             border-radius: 10px;
-            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
             padding: 2.5rem 2rem 2rem 2rem;
             min-width: 320px;
             display: flex;
@@ -25,32 +25,67 @@
         }
         .acceso-box h2 {
             margin-bottom: 1.5rem;
-            color: #222;
         }
         .acceso-box input[type="password"] {
             padding: 0.7rem 1rem;
             border-radius: 5px;
-            border: 1px solid #ccc;
             margin-bottom: 1.2rem;
             width: 100%;
             font-size: 1rem;
         }
         .acceso-box button {
-            background: #222;
-            color: #fff;
-            border: none;
             border-radius: 5px;
             padding: 0.7rem 1.5rem;
             font-size: 1rem;
             cursor: pointer;
             transition: background 0.2s;
         }
-        .acceso-box button:hover {
-            background: #444;
-        }
         .error {
             color: #c00;
             margin-bottom: 1rem;
+        }
+
+        /* Estilos responsive para acceso */
+        @media (max-width: 768px) {
+            .acceso-box {
+                min-width: 280px;
+                padding: 2rem 1.5rem 1.5rem 1.5rem;
+            }
+
+            .acceso-box h2 {
+                font-size: 1.5rem;
+            }
+
+            .acceso-box input[type="password"] {
+                padding: 0.8rem;
+                font-size: 16px;
+            }
+
+            .acceso-box button {
+                padding: 0.8rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .acceso-box {
+                min-width: 260px;
+                padding: 1.5rem 1rem 1rem 1rem;
+            }
+
+            .acceso-box h2 {
+                font-size: 1.3rem;
+            }
+
+            .acceso-box input[type="password"] {
+                padding: 0.7rem;
+                font-size: 16px;
+            }
+
+            .acceso-box button {
+                padding: 0.7rem 1rem;
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
@@ -63,5 +98,10 @@
         <button type="submit">Entrar</button>
     </form>
 </div>
+
+<!-- Incluir botón de cambio de tema y script -->
+<div th:replace="~{fragments/theme-switcher :: body}"></div>
+<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+
 </body>
 </html> 

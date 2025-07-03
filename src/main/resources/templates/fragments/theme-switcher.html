@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style th:fragment="theme-styles">
+        /* Variables CSS para temas */
+        :root {
+            /* Tema claro (por defecto) */
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --text-primary: #222222;
+            --text-secondary: #555555;
+            --border-color: #eeeeee;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --button-bg: #222222;
+            --button-hover: #444444;
+            --button-text: #ffffff;
+            --input-border: #cccccc;
+            --link-color: #222222;
+        }
+
+        /* Tema oscuro */
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --border-color: #404040;
+            --shadow: 0 2px 12px rgba(0,0,0,0.3);
+            --button-bg: #4a4a4a;
+            --button-hover: #666666;
+            --button-text: #ffffff;
+            --input-border: #555555;
+            --link-color: #ffffff;
+        }
+
+        /* Aplicar variables CSS */
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary);
+        }
+
+        button {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: 1px solid var(--border-color);
+        }
+
+        button:hover {
+            background: var(--button-hover);
+        }
+
+        input, select, textarea {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--input-border);
+        }
+
+        a {
+            color: var(--link-color);
+        }
+
+        li {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Botón de cambio de tema */
+        .theme-switcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-switcher:hover {
+            background: var(--button-hover);
+            transform: scale(1.1);
+        }
+
+        /* Iconos para el botón */
+        .theme-switcher .sun-icon {
+            display: none;
+        }
+
+        .theme-switcher .moon-icon {
+            display: block;
+        }
+
+        [data-theme="dark"] .theme-switcher .sun-icon {
+            display: block;
+        }
+
+        [data-theme="dark"] .theme-switcher .moon-icon {
+            display: none;
+        }
+
+        /* Estilos responsive */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95% !important;
+                margin: 20px auto !important;
+                padding: 1.5rem !important;
+            }
+
+            .theme-switcher {
+                width: 45px;
+                height: 45px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 18px;
+            }
+
+            h1, h2, h3 {
+                font-size: 1.5rem !important;
+            }
+
+            button {
+                padding: 0.8rem 1rem !important;
+                font-size: 0.9rem !important;
+            }
+
+            input, select {
+                padding: 0.8rem !important;
+                font-size: 16px !important; /* Evita zoom en iOS */
+            }
+
+            .month-nav {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+
+            .month-nav .current-month {
+                font-size: 1.5rem !important;
+            }
+
+            .month-nav a {
+                font-size: 0.9rem !important;
+                padding: 0.3em 0.5em !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                max-width: 98% !important;
+                margin: 10px auto !important;
+                padding: 1rem !important;
+            }
+
+            .theme-switcher {
+                width: 40px;
+                height: 40px;
+                bottom: 10px;
+                right: 10px;
+                font-size: 16px;
+            }
+
+            h1, h2, h3 {
+                font-size: 1.3rem !important;
+            }
+
+            button {
+                padding: 0.7rem 0.8rem !important;
+                font-size: 0.85rem !important;
+            }
+
+            .month-nav .current-month {
+                font-size: 1.3rem !important;
+            }
+
+            .month-nav a {
+                font-size: 0.8rem !important;
+                padding: 0.2em 0.4em !important;
+            }
+
+            /* Ajustes para formularios en móvil */
+            form {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+
+            input[type="number"], select {
+                width: 100% !important;
+            }
+
+            /* Ajustes para listas en móvil */
+            li {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.5rem !important;
+                padding: 0.8rem 0 !important;
+            }
+
+            li form {
+                width: 100% !important;
+                margin-top: 0.5rem !important;
+            }
+
+            li form button {
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón de cambio de tema -->
+    <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
+        <span class="sun-icon">☀️</span>
+        <span class="moon-icon">🌙</span>
+    </button>
+
+    <script th:fragment="theme-script">
+        // Función para cambiar tema
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Cargar tema guardado al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        });
+    </script>
+</body>
+</html> 

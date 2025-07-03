@@ -1,8 +1,1 @@
-[ {
-  "id" : 1,
-  "userId" : 1,
-  "cantidad" : 300.0,
-  "ingreso" : true,
-  "asuntoId" : 2,
-  "fecha" : [ 2025, 7, 4 ]
-} ]
+[ ]

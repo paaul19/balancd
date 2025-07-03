@@ -10,8 +10,8 @@ public class PasswordInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
         HttpSession session = request.getSession();
-        // Permitir acceso a la pantalla de contraseña y recursos estáticos
-        if (uri.startsWith("/acceso") || uri.startsWith("/css") || uri.startsWith("/js") || uri.startsWith("/images") || uri.startsWith("/resources") || uri.startsWith("/snippets") || uri.startsWith("/favicon")) {
+        // Permitir acceso a la pantalla de contraseña, login y recursos estáticos
+        if (uri.startsWith("/acceso") || uri.startsWith("/login") || uri.startsWith("/css") || uri.startsWith("/js") || uri.startsWith("/images") || uri.startsWith("/resources") || uri.startsWith("/snippets") || uri.startsWith("/favicon")) {
             return true;
         }
         Boolean accesoPermitido = (Boolean) session.getAttribute("accesoPermitido");

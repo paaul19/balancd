@@ -2,57 +2,200 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Movimientos</title>
+    <!-- Incluir estilos del tema -->
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <style>
-        body { background: #f5f5f5; font-family: sans-serif; }
-        .container { max-width: 400px; margin: 40px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 2rem; }
+        /* Estilos específicos para esta página */
+        .container { 
+            max-width: 400px; 
+            margin: 40px auto; 
+            border-radius: 10px; 
+            padding: 2rem; 
+        }
         h2 { text-align: center; margin-bottom: 1.5rem; }
         ul { list-style: none; padding: 0; }
-        li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; }
         .cantidad-gasto { color: #c00; font-weight: bold; }
         .cantidad-ingreso { color: #090; font-weight: bold; }
         form { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
-        input[type="number"] { flex: 1; padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
-        select { padding: 0.5rem; border-radius: 5px; border: 1px solid #ccc; }
-        button { background: #222; color: #fff; border: none; border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s; }
-        button:hover { background: #444; }
+        input[type="number"] { flex: 1; padding: 0.5rem; border-radius: 5px; }
+        select { padding: 0.5rem; border-radius: 5px; }
+        button { border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s; }
+        
+        /* Estilos para la navegación de meses */
+        .month-nav a {
+            text-decoration: none;
+            padding: 0.2em 0.7em;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            margin: 0 0.2em;
+            color: var(--link-color);
+        }
+        
+        .month-nav .current-month {
+            font-size: 2rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+        }
+
+        /* Estilos para el botón de logout */
+        .logout-btn button:hover {
+            background: var(--button-hover) !important;
+        }
+
+        .header-section {
+            padding: 0 1rem;
+        }
+
+        /* Estilos específicos para móvil */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95%;
+                margin: 20px auto;
+                padding: 1.5rem;
+            }
+
+            /* Botones de acción en columna en móvil */
+            .action-buttons {
+                flex-direction: column !important;
+                gap: 0.8rem !important;
+            }
+
+            .action-buttons button {
+                width: 100%;
+            }
+
+            /* Ajustes para los totales */
+            .totals {
+                font-size: 0.9rem;
+            }
+
+            /* Ajustes para los movimientos */
+            .movimiento-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                padding: 1rem 0;
+            }
+
+            .movimiento-info {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .movimiento-actions {
+                width: 100%;
+            }
+
+            .movimiento-actions form {
+                width: 100%;
+            }
+
+            .movimiento-actions button {
+                width: 100%;
+            }
+
+            /* Header responsive para móvil grande */
+            .header-section h1 {
+                font-size: 1.4rem !important;
+            }
+
+            .logout-btn button {
+                padding: 0.6rem 1rem !important;
+                font-size: 0.85rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                max-width: 98%;
+                margin: 10px auto;
+                padding: 1rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            .totals {
+                font-size: 0.8rem;
+            }
+
+            .month-nav {
+                margin: 1rem 0 1rem 0;
+            }
+
+            /* Header responsive */
+            .header-section h1 {
+                font-size: 1.2rem !important;
+            }
+
+            .logout-btn button {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.8rem !important;
+            }
+
+            .logout-btn button span {
+                margin-right: 0.2rem !important;
+            }
+        }
     </style>
 </head>
 <body>
+<!-- Header con botón de logout -->
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0 1rem 0;">
+    <div></div> <!-- Espacio vacío para centrar el título -->
+    <a href="/logout" class="logout-btn" title="Cerrar sesión">
+        <button type="button" style="background:var(--button-bg); color:var(--button-text); border:none; border-radius:5px; padding:0.5rem 1rem; cursor:pointer; font-size:0.9rem; transition:background 0.2s;">
+            <span style="margin-right:0.3rem;">👤</span>Cerrar
+        </button>
+    </a>
+</div>
+
 <!-- Barra de navegación de meses arriba del todo -->
-<div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin:2rem 0 1.5rem 0;">
+<div class="month-nav" style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin:1rem 0 1.5rem 0;">
     <span th:if="${mesesDisponibles.size()} > 1">
-        <a th:each="m,iter : ${mesesDisponibles}" th:if="${m != mesSeleccionado}" th:href="@{/movimientos(mes=${m.monthValue},anio=${m.year})}" style="text-decoration:none; color:#222; padding:0.2em 0.7em; border-radius:5px; border:1px solid #ddd; margin:0 0.2em;">
+        <a th:each="m,iter : ${mesesDisponibles}" th:if="${m != mesSeleccionado}" th:href="@{/movimientos(mes=${m.monthValue},anio=${m.year})}">
             <span th:text="${#temporals.format(m, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
         </a>
     </span>
-    <span style="font-size:2rem; font-weight:600; color:#222; text-transform:capitalize; letter-spacing:0.5px;">
+    <span class="current-month">
         <span th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
     </span>
 </div>
 <div class="container">
     <h2>Mis Movimientos</h2>
-    <div style="margin-bottom: 1.5rem;">
+    <div class="totals" style="margin-bottom: 1.5rem;">
         <div><b>Ingresos:</b> <span style="color:#090;" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span></div>
         <div><b>Gastos:</b> <span style="color:#c00;" th:text="${#numbers.formatDecimal(totalGastos, 1, 2)} + ' €'"></span></div>
         <div><b>Balance:</b> <span th:style="${balance} >= 0 ? 'color:#090;' : 'color:#c00;'" th:text="${#numbers.formatDecimal(balance, 1, 2)} + ' €'"></span></div>
     </div>
     <ul>
-        <li th:each="mov : ${movimientos}">
-            <span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'">
-                <span th:text="${#numbers.formatDecimal(mov.cantidad, 1, 2)} + ' €'"></span>
-            </span>
-            <span th:if="${mov.asuntoId != null}" style="margin-left:0.5rem; color:#555; font-size:0.95em;">
-                (<span th:text="${asuntosMap[mov.asuntoId]}"></span>)
-            </span>
-            <form th:action="@{'/movimientos/delete/' + ${mov.id}}" method="post" style="margin:0;">
-                <button type="submit">Eliminar</button>
-            </form>
+        <li class="movimiento-item" th:each="mov : ${movimientos}">
+            <div class="movimiento-info">
+                <span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'">
+                    <span th:text="${#numbers.formatDecimal(mov.cantidad, 1, 2)} + ' €'"></span>
+                </span>
+                <span th:if="${mov.asuntoId != null}" style="margin-left:0.5rem; color:#555; font-size:0.95em;">
+                    (<span th:text="${asuntosMap[mov.asuntoId]}"></span>)
+                </span>
+            </div>
+            <div class="movimiento-actions">
+                <form th:action="@{'/movimientos/delete/' + ${mov.id}}" method="post" style="margin:0;">
+                    <button type="submit">Eliminar</button>
+                </form>
+            </div>
         </li>
         <li th:if="${movimientos.size()} == 0">No tienes movimientos registrados.</li>
     </ul>
     <!-- Botones de acción abajo -->
-    <div style="display:flex; justify-content:center; gap:1rem; margin-top:2rem;">
+    <div class="action-buttons" style="display:flex; justify-content:center; gap:1rem; margin-top:2rem;">
         <button type="button" id="btnIngreso">Añadir ingreso</button>
         <button type="button" id="btnGasto">Añadir gasto</button>
         <button type="button" id="btnAsunto">Crear asunto</button>
@@ -114,5 +257,10 @@
         };
     });
 </script>
+
+<!-- Incluir botón de cambio de tema y script -->
+<div th:replace="~{fragments/theme-switcher :: body}"></div>
+<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+
 </body>
 </html> 

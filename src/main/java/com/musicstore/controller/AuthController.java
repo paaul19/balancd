@@ -17,6 +17,16 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/")
+    public String home(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user != null) {
+            return "redirect:/movimientos";
+        } else {
+            return "redirect:/login";
+        }
+    }
+
     @GetMapping("/login")
     public String loginForm(Model model) {
         model.addAttribute("user", new User());
@@ -28,7 +38,7 @@ public class AuthController {
         return userService.authenticateUser(user.getUsername(), user.getPassword())
                 .map(authenticatedUser -> {
                     session.setAttribute("user", authenticatedUser);
-                    return "redirect:/";
+                    return "redirect:/movimientos";
                 })
                 .orElseGet(() -> {
                     redirectAttributes.addFlashAttribute("error", "Invalid username or password");
@@ -57,7 +67,7 @@ public class AuthController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
-        return "redirect:/login";
+        return "redirect:/acceso";
     }
 
     @GetMapping("/acceso")
@@ -71,7 +81,7 @@ public class AuthController {
         String passwordCorrecta = "1234"; // Cambia esto por la contraseña que quieras
         if (passwordCorrecta.equals(password)) {
             session.setAttribute("accesoPermitido", true);
-            return "redirect:/";
+            return "redirect:/login";
         } else {
             model.addAttribute("error", "Contraseña incorrecta");
             return "auth/acceso";
