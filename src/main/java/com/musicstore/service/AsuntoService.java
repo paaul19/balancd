@@ -25,6 +25,8 @@ public class AsuntoService {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try {
+                // Asegurar que el directorio padre existe
+                file.getParentFile().mkdirs();
                 objectMapper.writeValue(file, new ArrayList<Asunto>());
             } catch (IOException e) {
                 throw new RuntimeException("No se pudo inicializar el archivo de asuntos", e);
@@ -39,6 +41,7 @@ public class AsuntoService {
     }
 
     public List<Asunto> getAllAsuntos() {
+        createFileIfNotExists();
         try {
             return objectMapper.readValue(new File(FILE_PATH), new TypeReference<List<Asunto>>() {});
         } catch (IOException e) {

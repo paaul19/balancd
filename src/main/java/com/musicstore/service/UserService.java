@@ -21,13 +21,14 @@ public class UserService {
 
     public UserService() {
         this.objectMapper = new ObjectMapper();
-        createFileIfNotExists();
     }
 
     private void createFileIfNotExists() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try {
+                // Asegurar que el directorio padre existe
+                file.getParentFile().mkdirs();
                 objectMapper.writeValue(file, new ArrayList<User>());
             } catch (IOException e) {
                 throw new RuntimeException("Could not initialize storage file", e);
@@ -36,6 +37,7 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
+        createFileIfNotExists();
         try {
             return objectMapper.readValue(new File(FILE_PATH), new TypeReference<List<User>>() {});
         } catch (IOException e) {

@@ -20,13 +20,14 @@ public class MovimientoService {
     public MovimientoService() {
         this.objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
-        createFileIfNotExists();
     }
 
     private void createFileIfNotExists() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try {
+                // Asegurar que el directorio padre existe
+                file.getParentFile().mkdirs();
                 objectMapper.writeValue(file, new ArrayList<Movimiento>());
             } catch (IOException e) {
                 throw new RuntimeException("No se pudo inicializar el archivo de movimientos", e);
@@ -41,6 +42,7 @@ public class MovimientoService {
     }
 
     public List<Movimiento> getAllMovimientos() {
+        createFileIfNotExists();
         try {
             return objectMapper.readValue(new File(FILE_PATH), new TypeReference<List<Movimiento>>() {});
         } catch (IOException e) {
