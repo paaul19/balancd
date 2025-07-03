@@ -18,7 +18,7 @@ public class AsuntoService {
 
     public AsuntoService() {
         this.objectMapper = new ObjectMapper();
-        createFileIfNotExists();
+        //createFileIfNotExists();
     }
 
     private void createFileIfNotExists() {
