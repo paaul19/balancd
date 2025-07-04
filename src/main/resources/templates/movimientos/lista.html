@@ -6,6 +6,8 @@
     <title>Mis Movimientos</title>
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <!-- Script para aplicar tema inmediatamente -->
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <style>
         /* Estilos específicos para esta página */
         .container { 
@@ -145,6 +147,186 @@
                 margin-right: 0.2rem !important;
             }
         }
+
+        .movimiento-item {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Estilos para el menú de 3 puntitos */
+        .movimiento-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .menu-trigger {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.3rem;
+            color: var(--text-secondary);
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .menu-trigger:hover {
+            background: var(--border-color);
+        }
+
+        .menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
+            z-index: 1000;
+            min-width: 120px;
+            display: none;
+            padding: 0;
+        }
+
+        .menu-dropdown.show {
+            display: block;
+        }
+
+        .menu-item {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.5rem 1rem;
+            border: none;
+            background: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.9rem;
+            border-radius: 8px;
+        }
+
+        .menu-item:hover {
+            background: var(--border-color);
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.13);
+            border-radius: 8px;
+        }
+
+        .menu-item.delete {
+            color: #c00;
+        }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 0;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.8rem;
+            border-radius: 5px;
+            border: 1px solid var(--input-border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-cancel {
+            background: var(--border-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-save {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: 1px solid var(--button-bg);
+        }
+
+        /* Ocultar flechitas de inputs number */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
     </style>
 </head>
 <body>
@@ -159,104 +341,318 @@
 </div>
 
 <!-- Barra de navegación de meses arriba del todo -->
-<div class="month-nav" style="display:flex; justify-content:center; align-items:center; gap:0.5rem; margin:1rem 0 1.5rem 0;">
-    <span th:if="${mesesDisponibles.size()} > 1">
-        <a th:each="m,iter : ${mesesDisponibles}" th:if="${m != mesSeleccionado}" th:href="@{/movimientos(mes=${m.monthValue},anio=${m.year})}">
-            <span th:text="${#temporals.format(m, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
-        </a>
-    </span>
-    <span class="current-month">
-        <span th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
-    </span>
+<div class="month-nav" style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin: 1rem 0 1.5rem 0;">
+    <!-- Columna izquierda: mes anterior (más antiguo) -->
+    <div style="flex:1; display:flex; justify-content:flex-end;">
+        <span th:if="${mesesDisponibles.size() > 1 && mesesDisponibles.indexOf(mesSeleccionado) < mesesDisponibles.size() - 1}">
+            <a th:href="@{/movimientos(mes=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1].monthValue},anio=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1].year})}"
+               style="font-size:1.1rem; color:#888; text-decoration:none; opacity:0.7; text-transform:capitalize; border:none; background:none; box-shadow:none;">
+                <span th:text="${#temporals.format(mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1], 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
+            </a>
+        </span>
+    </div>
+    <!-- Columna centro: mes seleccionado -->
+    <div style="flex:0 0 auto; min-width:180px; text-align:center;">
+        <span class="current-month" style="font-size:2rem; font-weight:700; color:var(--text-primary); letter-spacing:0.5px; text-transform:capitalize;">
+            <span th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
+        </span>
+    </div>
+    <!-- Columna derecha: mes siguiente (más reciente) -->
+    <div style="flex:1; display:flex; justify-content:flex-start;">
+        <span th:if="${mesesDisponibles.size() > 1 && mesesDisponibles.indexOf(mesSeleccionado) > 0}">
+            <a th:href="@{/movimientos(mes=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1].monthValue},anio=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1].year})}"
+               style="font-size:1.1rem; color:#888; text-decoration:none; opacity:0.7; text-transform:capitalize; border:none; background:none; box-shadow:none;">
+                <span th:text="${#temporals.format(mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1], 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
+            </a>
+        </span>
+    </div>
 </div>
 <div class="container">
     <h2>Mis Movimientos</h2>
     <div class="totals" style="margin-bottom: 1.5rem;">
         <div><b>Ingresos:</b> <span style="color:#090;" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span></div>
         <div><b>Gastos:</b> <span style="color:#c00;" th:text="${#numbers.formatDecimal(totalGastos, 1, 2)} + ' €'"></span></div>
-        <div><b>Balance:</b> <span th:style="${balance} >= 0 ? 'color:#090;' : 'color:#c00;'" th:text="${#numbers.formatDecimal(balance, 1, 2)} + ' €'"></span></div>
+        <div><b>Balance:</b> <span th:style="${balance >= 0 ? 'color:#090;' : 'color:#c00;'}" th:text="${#numbers.formatDecimal(balance, 1, 2)} + ' €'"></span></div>
     </div>
-    <ul>
-        <li class="movimiento-item" th:each="mov : ${movimientos}">
-            <div class="movimiento-info">
-                <span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'">
-                    <span th:text="${#numbers.formatDecimal(mov.cantidad, 1, 2)} + ' €'"></span>
-                </span>
-                <span th:if="${mov.asuntoId != null}" style="margin-left:0.5rem; color:#555; font-size:0.95em;">
-                    (<span th:text="${asuntosMap[mov.asuntoId]}"></span>)
-                </span>
+    <ul id="movimientos-list">
+        <li class="movimiento-item" th:each="mov,iter : ${movimientos}" th:data-index="${iter.index}" th:data-id="${mov.id}">
+            <div class="movimiento-info" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'">
+                        <span th:text="${#numbers.formatDecimal(mov.cantidad, 1, 2)} + ' €'"></span>
+                    </span>
+                    <span th:if="${mov.asunto != null and mov.asunto != ''}" style="margin-left:0.5rem; color:#888; font-size:0.95em;">
+                        (<span th:text="${mov.asunto}"></span>)
+                    </span>
+                </div>
+                <span style="color:#888; font-size:0.92em; min-width:80px; text-align:right; margin-left:1.2rem; margin-right:0.8rem; white-space:nowrap;" th:text="${#temporals.format(mov.fecha, 'dd/MM/yyyy')}"></span>
             </div>
             <div class="movimiento-actions">
-                <form th:action="@{'/movimientos/delete/' + ${mov.id}}" method="post" style="margin:0;">
-                    <button type="submit">Eliminar</button>
-                </form>
+                <div class="movimiento-menu">
+                    <button class="menu-trigger">•••</button>
+                    <div class="menu-dropdown">
+                        <a href="#" class="menu-item">Modificar</a>
+                        <a href="#" class="menu-item delete">Eliminar</a>
+                    </div>
+                </div>
             </div>
         </li>
         <li th:if="${movimientos.size()} == 0">No tienes movimientos registrados.</li>
     </ul>
+    <div id="carousel-controls" style="display:flex; justify-content:center; align-items:center; gap:1.5rem; margin-top:1.5rem;"></div>
+    
+    <!-- Modal para editar movimiento -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Movimiento</h3>
+            </div>
+            <form id="editForm" class="modal-form" method="post">
+                <div class="form-group">
+                    <label for="editCantidad">Cantidad (€)</label>
+                    <input type="number" id="editCantidad" name="cantidad" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAsunto">Asunto (opcional)</label>
+                    <input type="text" id="editAsunto" name="asunto" maxlength="50">
+                </div>
+                <div class="form-group">
+                    <label for="editTipo">Tipo</label>
+                    <select id="editTipo" name="ingreso" required>
+                        <option value="true">Ingreso</option>
+                        <option value="false">Gasto</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="btnCancelar">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <!-- Botones de acción abajo -->
     <div class="action-buttons" style="display:flex; justify-content:center; gap:1rem; margin-top:2rem;">
         <button type="button" id="btnIngreso">Añadir ingreso</button>
         <button type="button" id="btnGasto">Añadir gasto</button>
-        <button type="button" id="btnAsunto">Crear asunto</button>
     </div>
     <!-- Formularios dinámicos -->
     <div id="formularioDinamico" style="margin-top:1.5rem;"></div>
-    <script th:inline="javascript">
-        /*<![CDATA[*/
-        var asuntosData = /*[[${asuntos}]]*/ [];
-        /*]]>*/
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Botones
+            const btnIngreso = document.getElementById('btnIngreso');
+            const btnGasto = document.getElementById('btnGasto');
+            const contenedor = document.getElementById('formularioDinamico');
+            // Formularios HTML
+            const formIngreso = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
+                <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
+                <input type="text" name="asunto" placeholder="Asunto (opcional)" style="width:100%;" maxlength="50" />
+                <input type="hidden" name="ingreso" value="true" />
+                <button type="submit">Añadir ingreso</button>
+            </form>`;
+            const formGasto = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
+                <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
+                <input type="text" name="asunto" placeholder="Asunto (opcional)" style="width:100%;" maxlength="50" />
+                <input type="hidden" name="ingreso" value="false" />
+                <button type="submit">Añadir gasto</button>
+            </form>`;
+            // Mostrar el formulario correspondiente
+            btnIngreso.onclick = function() {
+                contenedor.innerHTML = formIngreso;
+            };
+            btnGasto.onclick = function() {
+                contenedor.innerHTML = formGasto;
+            };
+
+            // Carrusel de movimientos
+            const PAGE_SIZE = 5;
+            const movimientos = Array.from(document.querySelectorAll('#movimientos-list .movimiento-item'));
+            let pagina = 0;
+            function renderPage(useFade = false) {
+                if (useFade) {
+                    // Ocultar todos primero
+                    movimientos.forEach((item) => {
+                        item.style.opacity = '0';
+                    });
+                    
+                    // Después de un pequeño delay, mostrar los de la página actual
+                    setTimeout(() => {
+                        movimientos.forEach((item, idx) => {
+                            if (idx >= pagina * PAGE_SIZE && idx < (pagina + 1) * PAGE_SIZE) {
+                                item.style.display = '';
+                                item.style.opacity = '1';
+                            } else {
+                                item.style.display = 'none';
+                            }
+                        });
+                    }, 150);
+                } else {
+                    // Sin fade, cambio directo
+                    movimientos.forEach((item, idx) => {
+                        if (idx >= pagina * PAGE_SIZE && idx < (pagina + 1) * PAGE_SIZE) {
+                            item.style.display = '';
+                            item.style.opacity = '1';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                }
+                // Controles
+                const controls = document.getElementById('carousel-controls');
+                controls.innerHTML = '';
+                if (pagina > 0) {
+                    const left = document.createElement('button');
+                    left.innerHTML = '⟵';
+                    left.style = 'padding:0.5rem 1rem; border-radius:5px; background:var(--button-bg); color:var(--button-text); border:1px solid var(--border-color); cursor:pointer; font-size:1.2rem;';
+                    left.onclick = function() { pagina--; renderPage(true); };
+                    controls.appendChild(left);
+                }
+                if ((pagina + 1) * PAGE_SIZE < movimientos.length) {
+                    const right = document.createElement('button');
+                    right.innerHTML = '⟶';
+                    right.style = 'padding:0.5rem 1rem; border-radius:5px; background:var(--button-bg); color:var(--button-text); border:1px solid var(--border-color); cursor:pointer; font-size:1.2rem;';
+                    right.onclick = function() { pagina++; renderPage(true); };
+                    controls.appendChild(right);
+                }
+            }
+            renderPage(false);
+            
+
+            
+            // Funcionalidad del menú de 3 puntitos
+            document.addEventListener('click', function(e) {
+                // Cerrar todos los menús si se hace click fuera
+                if (!e.target.closest('.movimiento-menu')) {
+                    document.querySelectorAll('.menu-dropdown').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                }
+                
+                // Toggle del menú
+                if (e.target.classList.contains('menu-trigger')) {
+                    e.stopPropagation();
+                    const dropdown = e.target.nextElementSibling;
+                    const isOpen = dropdown.classList.contains('show');
+                    
+                    // Cerrar todos los otros menús
+                    document.querySelectorAll('.menu-dropdown').forEach(menu => {
+                        menu.classList.remove('show');
+                    });
+                    
+                    // Toggle del menú actual
+                    if (!isOpen) {
+                        dropdown.classList.add('show');
+                    }
+                }
+                
+                // Manejar clicks en elementos del menú
+                if (e.target.classList.contains('menu-item')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const menuItem = e.target;
+                    const movimientoItem = menuItem.closest('.movimiento-item');
+                    const movimientoId = movimientoItem.getAttribute('data-id');
+                    
+                    if (menuItem.classList.contains('delete')) {
+                        // Eliminar movimiento
+                        if (confirm('¿Estás seguro de que quieres eliminar este movimiento?')) {
+                            const form = document.createElement('form');
+                            form.method = 'POST';
+                            form.action = `/movimientos/delete/${movimientoId}`;
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                    } else {
+                        // Modificar movimiento
+                        openEditModal(movimientoItem);
+                    }
+                    
+                    // Cerrar el menú
+                    menuItem.closest('.menu-dropdown').classList.remove('show');
+                }
+            });
+            
+            // Funciones del modal
+            function openEditModal(movimientoItem) {
+                // Extraer cantidad directamente del texto del span
+                const cantidadSpan = movimientoItem.querySelector('.cantidad-ingreso, .cantidad-gasto');
+                let cantidad = '';
+                if (cantidadSpan) {
+                    // Tomar todo el texto y quitar el " €"
+                    cantidad = cantidadSpan.textContent.trim().replace(' €', '');
+                    // Convertir a número para el input type="number"
+                    cantidad = parseFloat(cantidad);
+                }
+                
+                // Buscar el span del asunto (el que tiene color:#555)
+                const asuntoSpan = movimientoItem.querySelector('span[style*="color:#555"]');
+                let asunto = '';
+                if (asuntoSpan) {
+                    // El asunto está dentro de un span hijo, sin los paréntesis
+                    const asuntoInnerSpan = asuntoSpan.querySelector('span');
+                    if (asuntoInnerSpan) {
+                        asunto = asuntoInnerSpan.textContent;
+                    }
+                }
+                
+                const isIngreso = movimientoItem.querySelector('.cantidad-ingreso') !== null;
+                
+                console.log('Cantidad extraída:', cantidad);
+                console.log('Asunto extraído:', asunto);
+                console.log('Es ingreso:', isIngreso);
+                
+                document.getElementById('editCantidad').value = cantidad;
+                document.getElementById('editAsunto').value = asunto;
+                document.getElementById('editTipo').value = isIngreso ? 'true' : 'false';
+                
+                const form = document.getElementById('editForm');
+                form.action = `/movimientos/edit/${movimientoItem.getAttribute('data-id')}`;
+                
+                document.getElementById('editModal').classList.add('show');
+            }
+            
+            function closeModal() {
+                document.getElementById('editModal').classList.remove('show');
+                // Limpiar el formulario al cerrar
+                document.getElementById('editForm').reset();
+            }
+            
+            // Cerrar modal al hacer click fuera
+            document.getElementById('editModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+            
+            // Botón cancelar
+            document.getElementById('btnCancelar').addEventListener('click', function() {
+                closeModal();
+            });
+            
+            // Manejar envío del formulario de edición
+            document.getElementById('editForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Error al modificar el movimiento');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al modificar el movimiento');
+                });
+            });
+        });
     </script>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Botones
-        const btnIngreso = document.getElementById('btnIngreso');
-        const btnGasto = document.getElementById('btnGasto');
-        const btnAsunto = document.getElementById('btnAsunto');
-        const contenedor = document.getElementById('formularioDinamico');
-        // Formularios HTML
-        const formIngreso = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
-            <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
-            <select name="asuntoId" style="width:100%;">
-                <option value="" selected>(Sin asunto)</option>
-                <!--ASUNTOS-->
-            </select>
-            <input type="hidden" name="ingreso" value="true" />
-            <button type="submit">Añadir ingreso</button>
-        </form>`;
-        const formGasto = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
-            <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
-            <select name="asuntoId" style="width:100%;">
-                <option value="" selected>(Sin asunto)</option>
-                <!--ASUNTOS-->
-            </select>
-            <input type="hidden" name="ingreso" value="false" />
-            <button type="submit">Añadir gasto</button>
-        </form>`;
-        const formAsunto = `<form action="/movimientos/asunto" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
-            <input type="text" name="nombre" placeholder="Nuevo asunto" style="width:100%;" />
-            <button type="submit">Guardar asunto</button>
-        </form>`;
-        // Generar options desde asuntosData
-        function getAsuntosOptions() {
-            if (!window.asuntosData) return '';
-            return window.asuntosData.map(function(a) {
-                return `<option value="${a.id}">${a.nombre}</option>`;
-            }).join('');
-        }
-        // Mostrar el formulario correspondiente
-        btnIngreso.onclick = function() {
-            contenedor.innerHTML = formIngreso.replace('<!--ASUNTOS-->', getAsuntosOptions());
-        };
-        btnGasto.onclick = function() {
-            contenedor.innerHTML = formGasto.replace('<!--ASUNTOS-->', getAsuntosOptions());
-        };
-        btnAsunto.onclick = function() {
-            contenedor.innerHTML = formAsunto;
-        };
-    });
-</script>
 
 <!-- Incluir botón de cambio de tema y script -->
 <div th:replace="~{fragments/theme-switcher :: body}"></div>

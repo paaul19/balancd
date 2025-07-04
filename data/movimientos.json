@@ -1,1 +1,36 @@
-[ ]
+[ {
+  "id" : 1,
+  "userId" : 1,
+  "cantidad" : 12.35,
+  "ingreso" : true,
+  "asunto" : "Shishas",
+  "fecha" : [ 2025, 7, 4 ]
+}, {
+  "id" : 2,
+  "userId" : 1,
+  "cantidad" : 12.0,
+  "ingreso" : false,
+  "asunto" : "wqdqw",
+  "fecha" : [ 2025, 7, 4 ]
+}, {
+  "id" : 4,
+  "userId" : 1,
+  "cantidad" : 300.0,
+  "ingreso" : true,
+  "asunto" : "",
+  "fecha" : [ 2025, 9, 4 ]
+}, {
+  "id" : 5,
+  "userId" : 1,
+  "cantidad" : 300.0,
+  "ingreso" : true,
+  "asunto" : "",
+  "fecha" : [ 2025, 6, 4 ]
+}, {
+  "id" : 6,
+  "userId" : 1,
+  "cantidad" : 45.0,
+  "ingreso" : false,
+  "asunto" : "",
+  "fecha" : [ 2025, 6, 4 ]
+} ]

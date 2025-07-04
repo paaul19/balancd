@@ -64,6 +64,24 @@ public class MovimientoService {
         saveAllMovimientos(movimientos);
     }
 
+    public Movimiento getMovimientoById(Long id) {
+        return getAllMovimientos().stream()
+                .filter(m -> m.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void updateMovimiento(Movimiento movimientoActualizado) {
+        List<Movimiento> movimientos = getAllMovimientos();
+        for (int i = 0; i < movimientos.size(); i++) {
+            if (movimientos.get(i).getId().equals(movimientoActualizado.getId())) {
+                movimientos.set(i, movimientoActualizado);
+                break;
+            }
+        }
+        saveAllMovimientos(movimientos);
+    }
+
     private Long generateId(List<Movimiento> movimientos) {
         return movimientos.stream().mapToLong(Movimiento::getId).max().orElse(0L) + 1;
     }

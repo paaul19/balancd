@@ -7,15 +7,16 @@ public class Movimiento {
     private Long userId;
     private double cantidad;
     private boolean ingreso; // true = ingreso, false = gasto
-    private Long asuntoId;
+    private String asunto; // Texto libre
     private LocalDate fecha;
 
     public Movimiento() {}
-    public Movimiento(Long id, Long userId, double cantidad, boolean ingreso) {
+    public Movimiento(Long id, Long userId, double cantidad, boolean ingreso, String asunto) {
         this.id = id;
         this.userId = userId;
         this.cantidad = cantidad;
         this.ingreso = ingreso;
+        this.asunto = asunto;
     }
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -25,8 +26,8 @@ public class Movimiento {
     public void setCantidad(double cantidad) { this.cantidad = cantidad; }
     public boolean isIngreso() { return ingreso; }
     public void setIngreso(boolean ingreso) { this.ingreso = ingreso; }
-    public Long getAsuntoId() { return asuntoId; }
-    public void setAsuntoId(Long asuntoId) { this.asuntoId = asuntoId; }
+    public String getAsunto() { return asunto; }
+    public void setAsunto(String asunto) { this.asunto = asunto; }
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
 }
