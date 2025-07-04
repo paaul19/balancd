@@ -204,38 +204,93 @@
             overflow-x: auto;
         }
         @media (max-width: 600px) {
-            .movimiento-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.3rem;
-                padding: 0.7rem 0;
+            .container {
+                max-width: 99vw;
+                margin: 8px auto;
+                padding: 0.7rem 0.5rem 1.2rem 0.5rem;
+                border-radius: 8px;
+            }
+            .totals {
+                font-size: 0.95rem;
+            }
+            .action-buttons {
+                flex-direction: column !important;
+                gap: 0.6rem !important;
+                margin-top: 0.5rem !important;
+            }
+            .action-buttons button {
+                width: 100%;
+                font-size: 1rem;
+                padding: 0.7rem 0.5rem;
+            }
+            #formularioDinamico input[type="number"],
+            #formularioDinamico input[type="text"] {
                 font-size: 0.98rem;
+                padding: 0.38rem 0.6rem;
+            }
+            #formularioDinamico button {
+                font-size: 1rem;
+                padding: 0.6rem 0.5rem;
+            }
+            .modal-content {
+                max-width: 98vw !important;
+                min-width: unset !important;
+                padding: 1.2rem 0.7rem 1rem 0.7rem !important;
+            }
+            .modal {
+                align-items: flex-end;
+                padding-bottom: 1.5rem;
+            }
+            /* Mantener barra de meses horizontal en móvil */
+            .month-nav {
+                flex-direction: row !important;
+                gap: 0.7rem !important;
+                margin: 0.7rem 0 0.7rem 0 !important;
+            }
+            .month-nav a, .btn-mes-plus {
+                font-size: 1rem !important;
+                padding: 0.2em 0.4em !important;
+            }
+            /* Mantener movimientos en fila en móvil */
+            .movimiento-item {
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
+                padding: 0.7rem 0 !important;
+                font-size: 0.98rem !important;
             }
             .movimiento-info {
                 width: 100%;
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.2rem;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
             }
             .movimiento-actions {
-                width: 100%;
-                justify-content: flex-end;
-                margin-top: 0.2rem;
+                width: auto !important;
+                justify-content: flex-end !important;
+                margin-top: 0 !important;
             }
+            /* Menú tres puntitos tipo popover en móvil */
             .menu-dropdown {
-                position: absolute;
-                left: 0;
-                right: 0;
-                min-width: unset;
-                max-width: unset;
-                width: 100vw;
-                margin-left: -16px;
-                border-radius: 0 0 12px 12px;
-                top: 110%;
+                min-width: 120px !important;
+                max-width: 80vw !important;
+                width: auto !important;
+                left: auto !important;
+                right: 0 !important;
+                border-radius: 10px !important;
+                margin-left: 0 !important;
+                top: 110% !important;
+                box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18) !important;
             }
             .menu-item {
-                font-size: 1.2rem;
-                padding: 1.1rem 1.5rem;
+                font-size: 1.1rem !important;
+                padding: 0.7rem 1.1rem !important;
+            }
+            .btn-trash {
+                top: 0.3rem !important;
+                right: 0.3rem !important;
+                width: 32px !important;
+                height: 32px !important;
             }
         }
 
