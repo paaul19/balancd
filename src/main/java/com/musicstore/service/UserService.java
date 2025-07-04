@@ -3,16 +3,10 @@ package com.musicstore.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.musicstore.model.User;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.*;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -120,93 +114,6 @@ public class UserService {
             throw new RuntimeException("Could not save users", e);
         }
     }
-
-    public void addFavoriteAlbum(Long userId, Long albumId, HttpSession session) {
-        List<User> users = getAllUsers();
-
-        Optional<User> optionalUser = users.stream()
-                .filter(user -> user.getId().equals(userId))
-                .findFirst();
-
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-
-            if (!user.getFavoriteAlbumIds().contains(albumId)) {
-                user.getFavoriteAlbumIds().add(albumId);
-
-                saveAllUsers(users);
-
-                session.setAttribute("user", user);
-            }
-        } else {
-            throw new IllegalArgumentException("Usuario no encontrado: " + userId);
-        }
-    }
-
-    public List<Long> getFavoriteAlbums(String username) {
-        Optional<User> userOpt = getUserByUsername(username);
-        if (userOpt.isPresent()) {
-            return userOpt.get().getFavoriteAlbumIds();
-        }
-        return new ArrayList<>();
-    }
-
-    public void deleteFavoriteAlbum(Long userId, Long albumId, HttpSession session) {
-        List<User> users = getAllUsers();
-
-        Optional<User> optionalUser = users.stream()
-                .filter(user -> user.getId().equals(userId))
-                .findFirst();
-
-        if (optionalUser.isPresent()) {
-            User user = optionalUser.get();
-
-            if (user.getFavoriteAlbumIds().contains(albumId)) {
-                user.getFavoriteAlbumIds().remove(albumId);
-
-                saveAllUsers(users);
-
-                session.setAttribute("user", user);
-            } else {
-                throw new IllegalArgumentException("El álbum no está en los favoritos de este usuario.");
-            }
-        } else {
-            throw new IllegalArgumentException("Usuario no encontrado: " + userId);
-        }
-    }
-
-    public void saveUserWithProfileImage(User user, MultipartFile profileImage) throws IOException {
-        if (profileImage == null || profileImage.isEmpty()) {
-            throw new RuntimeException("Profile image cannot be null or empty");
-        }
-
-        // Validate file type
-        String contentType = profileImage.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new RuntimeException("Only image files are allowed");
-        }
-
-        // Generate a unique filename
-        String originalFilename = profileImage.getOriginalFilename();
-        String fileExtension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
-        String filename = "user_" + user.getId() + "_" + System.currentTimeMillis() + fileExtension;
-
-        // Create images directory if it doesn't exist
-        String projectDir = System.getProperty("user.dir");
-        File uploadDir = new File(projectDir + "/src/main/resources/static/images");
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-
-        // Save the file
-        File destFile = new File(uploadDir.getAbsolutePath() + File.separator + filename);
-        profileImage.transferTo(destFile);
-
-        // Update user with image URL
-        user.setImageUrl("/images/" + filename);
-        updateUser(user);
-    }
-
     public User updateUser(User updatedUser) {
         if (updatedUser == null || updatedUser.getId() == null) {
             throw new RuntimeException("User or user ID cannot be null");
@@ -241,55 +148,5 @@ public class UserService {
         saveAllUsers(users);
 
         return updatedUser;
-    }
-
-    public void followUser(Long followerId, Long targetUserId, HttpSession session) {
-        if (followerId.equals(targetUserId)) {
-            throw new RuntimeException("Users cannot follow themselves");
-        }
-
-        List<User> users = getAllUsers();
-        User follower = getUserById(followerId)
-                .orElseThrow(() -> new RuntimeException("Follower user not found"));
-        User target = getUserById(targetUserId)
-                .orElseThrow(() -> new RuntimeException("Target user not found"));
-
-        if (!follower.getFollowing().contains(targetUserId)) {
-            follower.getFollowing().add(targetUserId);
-            target.getFollowers().add(followerId);
-
-            // Update both users
-            updateUser(follower);
-            updateUser(target);
-
-            // Update session with the updated follower user
-            session.setAttribute("user", follower);
-        }
-    }
-
-    public void unfollowUser(Long followerId, Long targetUserId, HttpSession session) {
-        List<User> users = getAllUsers();
-        User follower = getUserById(followerId)
-                .orElseThrow(() -> new RuntimeException("Follower user not found"));
-        User target = getUserById(targetUserId)
-                .orElseThrow(() -> new RuntimeException("Target user not found"));
-
-        if (follower.getFollowing().contains(targetUserId)) {
-            follower.getFollowing().remove(targetUserId);
-            target.getFollowers().remove(followerId);
-
-            // Update both users
-            updateUser(follower);
-            updateUser(target);
-
-            // Update session with the updated follower user
-            session.setAttribute("user", follower);
-        }
-    }
-
-    public boolean isFollowing(Long followerId, Long targetUserId) {
-        return getUserById(followerId)
-                .map(user -> user.getFollowing().contains(targetUserId))
-                .orElse(false);
     }
 }

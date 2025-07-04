@@ -26,15 +26,6 @@
   "mesAsignado" : 7,
   "anioAsignado" : 2025
 }, {
-  "id" : 7,
-  "userId" : 1,
-  "cantidad" : 15.0,
-  "ingreso" : false,
-  "asunto" : "",
-  "fecha" : [ 2025, 7, 4 ],
-  "mesAsignado" : 7,
-  "anioAsignado" : 2025
-}, {
   "id" : 9,
   "userId" : 1,
   "cantidad" : 300.0,

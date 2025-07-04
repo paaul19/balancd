@@ -217,20 +217,35 @@
             border: none;
             font-size: 1.2rem;
             cursor: pointer;
-            padding: 0.3rem;
+            padding: 0.3rem 1rem;
             color: var(--text-secondary);
             border-radius: 3px;
             transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-
         .menu-trigger:hover {
             background: var(--border-color);
         }
-
+        .menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
+            z-index: 1000;
+            min-width: 120px;
+            max-width: 90vw;
+            display: none;
+            padding: 0;
+            overflow-x: auto;
+        }
         .menu-dropdown.show {
             display: block;
         }
-
         .menu-item {
             display: block;
             width: 100%;
@@ -244,15 +259,44 @@
             font-size: 0.9rem;
             border-radius: 8px;
         }
-
         .menu-item:hover {
             background: var(--border-color);
             box-shadow: 0 2px 8px 0 rgba(0,0,0,0.13);
             border-radius: 8px;
         }
-
         .menu-item.delete {
             color: #c00;
+        }
+        @media (max-width: 600px) {
+            .movimiento-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .movimiento-menu {
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+                position: relative;
+            }
+            .menu-trigger {
+                font-size: 2rem;
+                padding: 0.8rem 1.2rem;
+            }
+            .menu-dropdown {
+                position: absolute;
+                left: 0;
+                right: 0;
+                min-width: unset;
+                max-width: unset;
+                width: 100vw;
+                margin-left: -16px;
+                border-radius: 0 0 12px 12px;
+                top: 110%;
+            }
+            .menu-item {
+                font-size: 1.2rem;
+                padding: 1.1rem 1.5rem;
+            }
         }
 
         /* Estilos para el modal */
