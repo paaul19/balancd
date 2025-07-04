@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Movimientos</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <!-- Script para aplicar tema inmediatamente -->
@@ -42,6 +44,23 @@
             text-transform: capitalize;
             letter-spacing: 0.5px;
             color: var(--text-primary);
+        }
+
+        /* Hover en modo claro: texto negro */
+        html:not([data-theme="dark"]) .month-nav a:hover,
+        html:not([data-theme="dark"]) .btn-mes-plus:hover {
+            color: #222 !important;
+            background: none !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+        /* Hover en modo oscuro: texto blanco (ya estaba) */
+        html[data-theme="dark"] .month-nav a:hover,
+        html[data-theme="dark"] .btn-mes-plus:hover {
+            color: #fff !important;
+            background: none !important;
+            box-shadow: none !important;
+            border: none !important;
         }
 
         /* Estilos para el botón de logout */
@@ -186,28 +205,37 @@
         }
         @media (max-width: 600px) {
             .movimiento-item {
-                flex-direction: row;
+                flex-direction: column;
                 align-items: flex-start;
-                gap: 0.5rem;
-                padding: 1rem 0;
+                gap: 0.3rem;
+                padding: 0.7rem 0;
+                font-size: 0.98rem;
             }
             .movimiento-info {
-                min-width: 0;
-                flex: 1 1 auto;
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
             }
             .movimiento-actions {
-                flex: 0 0 auto;
-                display: flex;
-                align-items: center;
+                width: 100%;
                 justify-content: flex-end;
-                min-width: 40px;
+                margin-top: 0.2rem;
             }
             .menu-dropdown {
-                left: auto;
+                position: absolute;
+                left: 0;
                 right: 0;
-                min-width: 120px;
-                max-width: 90vw;
-                word-break: break-word;
+                min-width: unset;
+                max-width: unset;
+                width: 100vw;
+                margin-left: -16px;
+                border-radius: 0 0 12px 12px;
+                top: 110%;
+            }
+            .menu-item {
+                font-size: 1.2rem;
+                padding: 1.1rem 1.5rem;
             }
         }
 
@@ -411,6 +439,99 @@
         input[type="number"] {
             -moz-appearance: textfield; /* Firefox */
         }
+
+        .btn-trash {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0.35em;
+            border: 0px solid transparent;
+            background-color: rgba(229,57,53,0.08);
+            border-radius: 1.25em;
+            transition: all 0.2s linear;
+            box-shadow: none;
+            margin: 0;
+            min-width: 0;
+            min-height: 0;
+        }
+        .btn-trash:hover {
+            background-color: rgba(229,57,53,0.18);
+            box-shadow: 0 2px 8px rgba(229,57,53,0.10);
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 6em;
+            background-color: rgba(0, 0, 0, 0.253);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 10;
+            top: 50%;
+            left: 110%;
+            transform: translateY(-50%);
+            font-size: 0.95em;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 100%;
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent rgba(0, 0, 0, 0.253) transparent transparent;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
+        .btn-mes-plus {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.1rem;
+            font-weight: 400;
+            display: inline;
+            transition: color 0.18s;
+            margin: 0;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1.1;
+            vertical-align: baseline;
+        }
+        .btn-mes-plus:hover {
+            color: #fff;
+            background: none;
+            box-shadow: none;
+            border: none;
+        }
+
+        /* Inputs minimalistas y modernos para cantidad y asunto */
+        #formularioDinamico input[type="number"],
+        #formularioDinamico input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.32rem 0.7rem;
+            border-radius: 6px;
+            border: 1.5px solid var(--input-border);
+            background: rgba(0,0,0,0.10);
+            color: var(--text-primary);
+            font-size: 0.89rem;
+            margin-bottom: 0.25rem;
+            outline: none;
+            transition: border 0.18s, background 0.18s;
+        }
+        #formularioDinamico input[type="number"]:focus,
+        #formularioDinamico input[type="text"]:focus {
+            border: 1.5px solid var(--button-bg);
+            background: rgba(0,0,0,0.13);
+        }
     </style>
 </head>
 <body>
@@ -419,7 +540,7 @@
     <div></div> <!-- Espacio vacío para centrar el título -->
     <a href="/logout" class="logout-btn" title="Cerrar sesión">
         <button type="button" style="background:var(--button-bg); color:var(--button-text); border:none; border-radius:5px; padding:0.5rem 1rem; cursor:pointer; font-size:0.9rem; transition:background 0.2s;">
-            <span style="margin-right:0.3rem;">👤</span>Cerrar
+            <span style="margin-right:0.3rem;">👤</span>Cerrar Sesión
         </button>
     </a>
 </div>
@@ -427,31 +548,54 @@
 <!-- Barra de navegación de meses arriba del todo -->
 <div class="month-nav" style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin: 1rem 0 1.5rem 0;">
     <!-- Columna izquierda: mes anterior (más antiguo) -->
-    <div style="flex:1; display:flex; justify-content:flex-end;">
-        <span th:if="${mesesDisponibles.size() > 1 && mesesDisponibles.indexOf(mesSeleccionado) < mesesDisponibles.size() - 1}">
-            <a th:href="@{/movimientos(mes=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1].monthValue},anio=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1].year})}"
+    <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.1rem; color:#888; opacity:0.7; text-transform:capitalize; display:flex; align-items:baseline;">
+            <a th:if="${mesesDisponibles.size() > 1 && mesesDisponibles.indexOf(mesSeleccionado) < mesesDisponibles.size() - 1}" th:href="@{/movimientos(mes=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1].monthValue},anio=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1].year})}"
                style="font-size:1.1rem; color:#888; text-decoration:none; opacity:0.7; text-transform:capitalize; border:none; background:none; box-shadow:none;">
                 <span th:text="${#temporals.format(mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)+1], 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
             </a>
+            <form th:if="${mesesDisponibles.size() == 1 || mesesDisponibles.indexOf(mesSeleccionado) == mesesDisponibles.size() - 1}" th:action="@{/movimientos/crear-mes}" method="post" style="display:inline; margin:0; padding:0;">
+                <input type="hidden" name="referenciaMes" th:value="${mesSeleccionado.monthValue}" />
+                <input type="hidden" name="referenciaAnio" th:value="${mesSeleccionado.year}" />
+                <input type="hidden" name="direccion" value="anterior" />
+                <button type="submit" class="btn-mes-plus" title="Crear mes anterior">+</button>
+            </form>
         </span>
     </div>
     <!-- Columna centro: mes seleccionado -->
-    <div style="flex:0 0 auto; min-width:180px; text-align:center;">
+    <div style="flex:0 0 auto; min-width:180px; text-align:center; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
         <span class="current-month" style="font-size:2rem; font-weight:700; color:var(--text-primary); letter-spacing:0.5px; text-transform:capitalize;">
             <span th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
         </span>
     </div>
     <!-- Columna derecha: mes siguiente (más reciente) -->
-    <div style="flex:1; display:flex; justify-content:flex-start;">
-        <span th:if="${mesesDisponibles.size() > 1 && mesesDisponibles.indexOf(mesSeleccionado) > 0}">
-            <a th:href="@{/movimientos(mes=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1].monthValue},anio=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1].year})}"
+    <div style="flex:1; display:flex; justify-content:flex-start; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.1rem; color:#888; opacity:0.7; text-transform:capitalize; display:flex; align-items:baseline;">
+            <a th:if="${mesesDisponibles.size() > 1 && mesesDisponibles.indexOf(mesSeleccionado) > 0}" th:href="@{/movimientos(mes=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1].monthValue},anio=${mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1].year})}"
                style="font-size:1.1rem; color:#888; text-decoration:none; opacity:0.7; text-transform:capitalize; border:none; background:none; box-shadow:none;">
                 <span th:text="${#temporals.format(mesesDisponibles[mesesDisponibles.indexOf(mesSeleccionado)-1], 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
             </a>
+            <form th:if="${mesesDisponibles.size() == 1 || mesesDisponibles.indexOf(mesSeleccionado) == 0}" th:action="@{/movimientos/crear-mes}" method="post" style="display:inline; margin:0; padding:0;">
+                <input type="hidden" name="referenciaMes" th:value="${mesSeleccionado.monthValue}" />
+                <input type="hidden" name="referenciaAnio" th:value="${mesSeleccionado.year}" />
+                <input type="hidden" name="direccion" value="siguiente" />
+                <button type="submit" class="btn-mes-plus" title="Crear mes siguiente">+</button>
+            </form>
         </span>
     </div>
 </div>
-<div class="container">
+<div class="container" style="position:relative; padding-top:1.2rem;">
+    <!-- Botón papelera eliminar mes dentro del recuadro, esquina superior derecha -->
+    <form th:action="@{/movimientos/eliminar-mes}" method="post" style="position:absolute; top:0.7rem; right:0.7rem; z-index:3;">
+        <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
+        <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
+        <button type="submit" class="btn-trash tooltip" style="background:none;" onclick="return confirm('¿Seguro que quieres eliminar este mes y todos sus movimientos?');">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" height="22" width="22">
+                <path fill="#e53935" d="M8.78842 5.03866C8.86656 4.96052 8.97254 4.91663 9.08305 4.91663H11.4164C11.5269 4.91663 11.6329 4.96052 11.711 5.03866C11.7892 5.11681 11.833 5.22279 11.833 5.33329V5.74939H8.66638V5.33329C8.66638 5.22279 8.71028 5.11681 8.78842 5.03866ZM7.16638 5.74939V5.33329C7.16638 4.82496 7.36832 4.33745 7.72776 3.978C8.08721 3.61856 8.57472 3.41663 9.08305 3.41663H11.4164C11.9247 3.41663 12.4122 3.61856 12.7717 3.978C13.1311 4.33745 13.333 4.82496 13.333 5.33329V5.74939H15.5C15.9142 5.74939 16.25 6.08518 16.25 6.49939C16.25 6.9136 15.9142 7.24939 15.5 7.24939H15.0105L14.2492 14.7095C14.2382 15.2023 14.0377 15.6726 13.6883 16.0219C13.3289 16.3814 12.8414 16.5833 12.333 16.5833H8.16638C7.65805 16.5833 7.17054 16.3814 6.81109 16.0219C6.46176 15.6726 6.2612 15.2023 6.25019 14.7095L5.48896 7.24939H5C4.58579 7.24939 4.25 6.9136 4.25 6.49939C4.25 6.08518 4.58579 5.74939 5 5.74939H6.16667H7.16638ZM7.91638 7.24996H12.583H13.5026L12.7536 14.5905C12.751 14.6158 12.7497 14.6412 12.7497 14.6666C12.7497 14.7771 12.7058 14.8831 12.6277 14.9613C12.5495 15.0394 12.4436 15.0833 12.333 15.0833H8.16638C8.05588 15.0833 7.94989 15.0394 7.87175 14.9613C7.79361 14.8831 7.74972 14.7771 7.74972 14.6666C7.74972 14.6412 7.74842 14.6158 7.74584 14.5905L6.99681 7.24996H7.91638Z" clip-rule="evenodd" fill-rule="evenodd"></path>
+            </svg>
+            <span class="tooltiptext">Eliminar mes</span>
+        </button>
+    </form>
     <h2>Mis Movimientos</h2>
     <div class="totals" style="margin-bottom: 1.5rem;">
         <div><b>Ingresos:</b> <span style="color:#090;" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span></div>
@@ -516,12 +660,22 @@
     </div>
     
     <!-- Botones de acción abajo -->
-    <div class="action-buttons" style="display:flex; justify-content:center; gap:1rem; margin-top:2rem;">
+    <div class="action-buttons" style="display:flex; justify-content:center; gap:1rem; margin-top:0.7rem;">
         <button type="button" id="btnIngreso">Añadir ingreso</button>
         <button type="button" id="btnGasto">Añadir gasto</button>
     </div>
     <!-- Formularios dinámicos -->
     <div id="formularioDinamico" style="margin-top:1.5rem;"></div>
+    <!-- Modal de confirmación de eliminación de movimiento -->
+    <div id="modalConfirmarEliminar" class="modal">
+        <div class="modal-content" style="max-width:340px;">
+            <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres eliminar este movimiento?</div>
+            <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                <button id="cancelarEliminarMov" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
+                <button id="confirmarEliminarMov" style="background:#e53935; color:#fff;">Eliminar</button>
+            </div>
+        </div>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Botones
@@ -535,7 +689,10 @@
                 <input type="hidden" name="ingreso" value="true" />
                 <input type="hidden" name="mes" value="[[${mesSeleccionado.monthValue}]]" />
                 <input type="hidden" name="anio" value="[[${mesSeleccionado.year}]]" />
-                <button type="submit">Añadir ingreso</button>
+                <div style='display:flex; gap:0.7rem; margin-top:0.3rem;'>
+                  <button type="submit">Confirmar ingreso</button>
+                  <button type="button" id="cancelarFormIngreso" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
+                </div>
             </form>`;
             const formGasto = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
                 <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
@@ -543,218 +700,110 @@
                 <input type="hidden" name="ingreso" value="false" />
                 <input type="hidden" name="mes" value="[[${mesSeleccionado.monthValue}]]" />
                 <input type="hidden" name="anio" value="[[${mesSeleccionado.year}]]" />
-                <button type="submit">Añadir gasto</button>
+                <div style='display:flex; gap:0.7rem; margin-top:0.3rem;'>
+                  <button type="submit">Confirmar gasto</button>
+                  <button type="button" id="cancelarFormGasto" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
+                </div>
             </form>`;
-            // Mostrar el formulario correspondiente
-            btnIngreso.onclick = function() {
+            // Inicializar formularios (contenedor vacío al inicio)
+            contenedor.innerHTML = '';
+            // Eventos para mostrar el formulario correspondiente
+            btnIngreso.addEventListener('click', function() {
                 contenedor.innerHTML = formIngreso;
-            };
-            btnGasto.onclick = function() {
+                document.getElementById('cancelarFormIngreso').onclick = function() { contenedor.innerHTML = ''; };
+            });
+            btnGasto.addEventListener('click', function() {
                 contenedor.innerHTML = formGasto;
-            };
+                document.getElementById('cancelarFormGasto').onclick = function() { contenedor.innerHTML = ''; };
+            });
 
-            // Carrusel de movimientos
-            const PAGE_SIZE = 5;
-            const movimientos = Array.from(document.querySelectorAll('#movimientos-list .movimiento-item'));
-            let pagina = 0;
-            function renderPage(useFade = false) {
-                if (useFade) {
-                    // Ocultar todos primero
-                    movimientos.forEach((item) => {
-                        item.style.opacity = '0';
-                    });
-                    
-                    // Después de un pequeño delay, mostrar los de la página actual
-                    setTimeout(() => {
-                        movimientos.forEach((item, idx) => {
-                            if (idx >= pagina * PAGE_SIZE && idx < (pagina + 1) * PAGE_SIZE) {
-                                item.style.display = '';
-                                item.style.opacity = '1';
-                            } else {
-                                item.style.display = 'none';
-                            }
-                        });
-                    }, 150);
-                } else {
-                    // Sin fade, cambio directo
-                    movimientos.forEach((item, idx) => {
-                        if (idx >= pagina * PAGE_SIZE && idx < (pagina + 1) * PAGE_SIZE) {
-                            item.style.display = '';
-                            item.style.opacity = '1';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                }
-                // Controles
-                const controls = document.getElementById('carousel-controls');
-                controls.innerHTML = '';
-                if (pagina > 0) {
-                    const left = document.createElement('button');
-                    left.innerHTML = '⟵';
-                    left.style = 'padding:0.5rem 1rem; border-radius:5px; background:var(--button-bg); color:var(--button-text); border:1px solid var(--border-color); cursor:pointer; font-size:1.2rem;';
-                    left.onclick = function() { pagina--; renderPage(true); };
-                    controls.appendChild(left);
-                }
-                if ((pagina + 1) * PAGE_SIZE < movimientos.length) {
-                    const right = document.createElement('button');
-                    right.innerHTML = '⟶';
-                    right.style = 'padding:0.5rem 1rem; border-radius:5px; background:var(--button-bg); color:var(--button-text); border:1px solid var(--border-color); cursor:pointer; font-size:1.2rem;';
-                    right.onclick = function() { pagina++; renderPage(true); };
-                    controls.appendChild(right);
-                }
-            }
-            renderPage(false);
-            
-
-            
-            // Funcionalidad del menú de 3 puntitos
-            document.addEventListener('click', function(e) {
-                // Cerrar todos los menús si se hace click fuera
-                if (!e.target.closest('.movimiento-menu')) {
-                    document.querySelectorAll('.menu-dropdown').forEach(menu => {
-                        menu.classList.remove('show');
-                    });
-                }
-                
-                // Toggle del menú
-                if (e.target.classList.contains('menu-trigger')) {
+            // --- Menú tres puntitos: abrir/cerrar ---
+            document.querySelectorAll('.menu-trigger').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    const dropdown = e.target.nextElementSibling;
-                    const isOpen = dropdown.classList.contains('show');
-                    
-                    // Cerrar todos los otros menús
-                    document.querySelectorAll('.menu-dropdown').forEach(menu => {
-                        menu.classList.remove('show');
+                    // Cierra otros menús abiertos
+                    document.querySelectorAll('.menu-dropdown').forEach(function(menu) {
+                        if (menu !== btn.nextElementSibling) menu.classList.remove('show');
                     });
-                    
-                    // Toggle del menú actual
-                    if (!isOpen) {
-                        dropdown.classList.add('show');
-                    }
-                }
-                
-                // Manejar clicks en elementos del menú
-                if (e.target.classList.contains('menu-item')) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const menuItem = e.target;
-                    const movimientoItem = menuItem.closest('.movimiento-item');
-                    const movimientoId = movimientoItem.getAttribute('data-id');
-                    
-                    if (menuItem.classList.contains('delete')) {
-                        // Eliminar movimiento
-                        if (confirm('¿Estás seguro de que quieres eliminar este movimiento?')) {
-                            const form = document.createElement('form');
-                            form.method = 'POST';
-                            form.action = `/movimientos/delete/${movimientoId}`;
-                            const hiddenMes = document.createElement('input');
-                            hiddenMes.type = 'hidden';
-                            hiddenMes.name = 'mes';
-                            hiddenMes.value = '[[${mesSeleccionado.monthValue}]]';
-                            const hiddenAnio = document.createElement('input');
-                            hiddenAnio.type = 'hidden';
-                            hiddenAnio.name = 'anio';
-                            hiddenAnio.value = '[[${mesSeleccionado.year}]]';
-                            form.appendChild(hiddenMes);
-                            form.appendChild(hiddenAnio);
-                            document.body.appendChild(form);
-                            form.submit();
-                        }
-                    } else {
-                        // Modificar movimiento
-                        openEditModal(movimientoItem);
-                    }
-                    
-                    // Cerrar el menú
-                    menuItem.closest('.menu-dropdown').classList.remove('show');
-                }
-            });
-            
-            // Funciones del modal
-            function openEditModal(movimientoItem) {
-                // Extraer cantidad directamente del texto del span
-                const cantidadSpan = movimientoItem.querySelector('.cantidad-ingreso, .cantidad-gasto');
-                let cantidad = '';
-                if (cantidadSpan) {
-                    // Tomar todo el texto y quitar el " €"
-                    cantidad = cantidadSpan.textContent.trim().replace(' €', '');
-                    // Convertir a número para el input type="number"
-                    cantidad = parseFloat(cantidad);
-                }
-                
-                // Buscar el span del asunto (el que tiene color:#555)
-                const asuntoSpan = movimientoItem.querySelector('span[style*="color:#555"]');
-                let asunto = '';
-                if (asuntoSpan) {
-                    // El asunto está dentro de un span hijo, sin los paréntesis
-                    const asuntoInnerSpan = asuntoSpan.querySelector('span');
-                    if (asuntoInnerSpan) {
-                        asunto = asuntoInnerSpan.textContent;
-                    }
-                }
-                
-                const isIngreso = movimientoItem.querySelector('.cantidad-ingreso') !== null;
-                
-                console.log('Cantidad extraída:', cantidad);
-                console.log('Asunto extraído:', asunto);
-                console.log('Es ingreso:', isIngreso);
-                
-                document.getElementById('editCantidad').value = cantidad;
-                document.getElementById('editAsunto').value = asunto;
-                document.getElementById('editTipo').value = isIngreso ? 'true' : 'false';
-                
-                const form = document.getElementById('editForm');
-                form.action = `/movimientos/edit/${movimientoItem.getAttribute('data-id')}`;
-                
-                document.getElementById('editModal').classList.add('show');
-            }
-            
-            function closeModal() {
-                document.getElementById('editModal').classList.remove('show');
-                // Limpiar el formulario al cerrar
-                document.getElementById('editForm').reset();
-            }
-            
-            // Cerrar modal al hacer click fuera
-            document.getElementById('editModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal();
-                }
-            });
-            
-            // Botón cancelar
-            document.getElementById('btnCancelar').addEventListener('click', function() {
-                closeModal();
-            });
-            
-            // Manejar envío del formulario de edición
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData
-                }).then(response => {
-                    if (response.ok) {
-                        window.location.reload();
-                    } else {
-                        alert('Error al modificar el movimiento');
-                    }
-                }).catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al modificar el movimiento');
+                    // Toggle menú actual
+                    btn.nextElementSibling.classList.toggle('show');
                 });
             });
+            // Cerrar menú al hacer clic fuera
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.menu-dropdown').forEach(function(menu) {
+                    menu.classList.remove('show');
+                });
+            });
+
+            // --- Delegación de eventos para opciones del menú (modificar/eliminar) ---
+            let movimientoAEliminar = null;
+            document.getElementById('movimientos-list').addEventListener('click', function(e) {
+                // Eliminar movimiento
+                if (e.target.classList.contains('delete')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const li = e.target.closest('li');
+                    movimientoAEliminar = li.getAttribute('data-id');
+                    document.getElementById('modalConfirmarEliminar').classList.add('show');
+                    return;
+                }
+                // Modificar movimiento
+                if (e.target.classList.contains('menu-item') && !e.target.classList.contains('delete')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const li = e.target.closest('li');
+                    const id = li.getAttribute('data-id');
+                    // Obtener cantidad
+                    const cantidadSpan = li.querySelector('.cantidad-ingreso, .cantidad-gasto span');
+                    let cantidad = '';
+                    if (cantidadSpan) {
+                        cantidad = cantidadSpan.innerText.replace(' €','').replace(',','.');
+                    }
+                    // Obtener asunto
+                    let asunto = '';
+                    const asuntoElem = li.querySelector('span[style*="margin-left:0.5rem"] span');
+                    if (asuntoElem) {
+                        asunto = asuntoElem.innerText;
+                    }
+                    // Saber si es ingreso
+                    const ingreso = li.querySelector('.cantidad-ingreso') !== null;
+                    // Rellenar modal
+                    document.getElementById('editCantidad').value = cantidad;
+                    document.getElementById('editAsunto').value = asunto;
+                    document.getElementById('editTipo').value = ingreso ? 'true' : 'false';
+                    // Guardar id en el form
+                    document.getElementById('editForm').action = '/movimientos/edit/' + id;
+                    // Mostrar modal
+                    document.getElementById('editModal').classList.add('show');
+                }
+            });
+            // Botón cancelar del modal
+            document.getElementById('btnCancelar').addEventListener('click', function() {
+                document.getElementById('editModal').classList.remove('show');
+            });
+            document.getElementById('cancelarEliminarMov').onclick = function() {
+                document.getElementById('modalConfirmarEliminar').classList.remove('show');
+                movimientoAEliminar = null;
+            };
+            document.getElementById('confirmarEliminarMov').onclick = function() {
+                if (movimientoAEliminar) {
+                    // Crear y enviar formulario oculto
+                    const form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = '/movimientos/delete/' + movimientoAEliminar;
+                    form.style.display = 'none';
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            };
         });
     </script>
-</div>
-
-<!-- Incluir botón de cambio de tema y script -->
-<div th:replace="~{fragments/theme-switcher :: body}"></div>
-<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
-
+    <!-- Botón de cambio de tema -->
+    <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
+        <span class="sun-icon">☀️</span>
+        <span class="moon-icon">🌙</span>
+    </button>
+    <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
 </body>
-</html> 
+</html>

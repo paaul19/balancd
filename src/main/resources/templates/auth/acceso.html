@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso protegido</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <style>
         body {
             margin: 0;
@@ -21,7 +24,8 @@
             min-width: 320px;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start;
+            text-align: left;
         }
         .acceso-box h2 {
             margin-bottom: 1.5rem;
@@ -39,6 +43,7 @@
             font-size: 1rem;
             cursor: pointer;
             transition: background 0.2s;
+            align-self: flex-start;
         }
         .error {
             color: #c00;

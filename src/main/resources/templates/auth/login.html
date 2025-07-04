@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login/Register • Finanzas App</title>
-    <link rel="icon" type="image/x-icon" href="/images/logo3.png">
+    <title>Login/Register • balanc*d</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
 
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <style>
         body {
             margin: 0;
@@ -16,7 +17,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bg-primary);
+            background: var(--bg-primary) !important;
             color: var(--text-primary);
             transition: background 0.3s, color 0.3s;
         }
@@ -28,6 +29,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
         }
 
         .login-container h2 {
@@ -341,8 +345,8 @@
             background: var(--bg-secondary);
             gap: 20px;
             border-radius: 5px;
-            border: 2px solid var(--main-color);
-            box-shadow: 4px 4px var(--main-color);
+            border: 2px solid var(--border-color);
+            box-shadow: var(--shadow);
         }
 
         .flip-card__back {
@@ -624,13 +628,19 @@
             }
         }
 
-
-
+        /* Mostrar logo según tema, compatible con <html> o <body> y con !important */
+        .logo-claro { display: block !important; }
+        .logo-oscuro { display: none !important; }
+        html[data-theme="dark"] .logo-claro, body[data-theme="dark"] .logo-claro { display: none !important; }
+        html[data-theme="dark"] .logo-oscuro, body[data-theme="dark"] .logo-oscuro { display: block !important; }
     </style>
 </head>
 <body>
 <div class="login-container">
-    <h2>Finanzas App</h2>
+    <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem;">
+        <img src="/images/logo-negro.png" alt="Finanzas App" class="logo-claro" style="max-width: 120px; display: block;">
+        <img src="/images/logo-blanco.png" alt="Finanzas App" class="logo-oscuro" style="max-width: 120px; display: none;">
+    </div>
     
     <!-- Mensajes de error/éxito -->
     <div th:if="${error}" class="error" th:text="${error}"></div>

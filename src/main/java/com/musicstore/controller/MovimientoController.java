@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.Set;
+import java.util.ArrayList;
 
 @Controller
 public class MovimientoController {
@@ -28,17 +30,21 @@ public class MovimientoController {
         }
         List<Movimiento> todos = movimientoService.getMovimientosByUserId(user.getId());
         // Obtener todos los meses/años únicos con movimientos
-        List<YearMonth> mesesDisponibles = todos.stream()
+        List<YearMonth> mesesDisponibles = new ArrayList<>(todos.stream()
             .map(m -> YearMonth.of(m.getAnioAsignado(), m.getMesAsignado()))
             .distinct()
-            .sorted((a, b) -> b.compareTo(a)) // Descendente: el más reciente primero
-            .collect(java.util.stream.Collectors.toList());
+            .collect(java.util.stream.Collectors.toList()));
+        // Añadir meses manuales
+        Set<YearMonth> mesesManuales = movimientoService.getMesesManuales(user.getId());
+        mesesDisponibles.addAll(mesesManuales);
+        // Ordenar y quitar duplicados
+        mesesDisponibles = new ArrayList<>(mesesDisponibles.stream().distinct().sorted((a, b) -> b.compareTo(a)).toList());
         // Añadir el mes actual si no está
         YearMonth mesActual = YearMonth.now();
         if (!mesesDisponibles.contains(mesActual)) {
             mesesDisponibles.add(0, mesActual);
         }
-        mesesDisponibles = mesesDisponibles.stream().distinct().sorted((a, b) -> b.compareTo(a)).toList();
+        mesesDisponibles = new ArrayList<>(mesesDisponibles.stream().distinct().sorted((a, b) -> b.compareTo(a)).toList());
         // Si no se especifica mes/año, usar el actual
         YearMonth actual = YearMonth.now();
         YearMonth seleccionado = (mes != null && anio != null) ? YearMonth.of(anio, mes) : (mesesDisponibles.isEmpty() ? actual : mesesDisponibles.get(0));
@@ -57,6 +63,7 @@ public class MovimientoController {
         model.addAttribute("nuevoMovimiento", new Movimiento());
         model.addAttribute("mesesDisponibles", mesesDisponibles);
         model.addAttribute("mesSeleccionado", seleccionado);
+        model.addAttribute("mesesManuales", mesesManuales);
         return "movimientos/lista";
     }
 
@@ -115,6 +122,54 @@ public class MovimientoController {
         movimiento.setIngreso(ingreso);
         
         movimientoService.updateMovimiento(movimiento);
+        return "redirect:/movimientos";
+    }
+
+    @PostMapping("/movimientos/crear-mes")
+    public String crearMesManual(@RequestParam int referenciaMes,
+                                 @RequestParam int referenciaAnio,
+                                 @RequestParam String direccion,
+                                 HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        int nuevoMes, nuevoAnio;
+        if ("anterior".equals(direccion)) {
+            if (referenciaMes == 1) {
+                nuevoMes = 12;
+                nuevoAnio = referenciaAnio - 1;
+            } else {
+                nuevoMes = referenciaMes - 1;
+                nuevoAnio = referenciaAnio;
+            }
+        } else {
+            if (referenciaMes == 12) {
+                nuevoMes = 1;
+                nuevoAnio = referenciaAnio + 1;
+            } else {
+                nuevoMes = referenciaMes + 1;
+                nuevoAnio = referenciaAnio;
+            }
+        }
+        // Guardar el mes manualmente
+        movimientoService.crearMesManual(user.getId(), nuevoMes, nuevoAnio);
+        return "redirect:/movimientos?mes=" + nuevoMes + "&anio=" + nuevoAnio;
+    }
+
+    @PostMapping("/movimientos/eliminar-mes")
+    public String eliminarMesManual(@RequestParam int mes, @RequestParam int anio, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        // Eliminar todos los movimientos de ese mes
+        List<Movimiento> movimientos = movimientoService.getMovimientosByUserId(user.getId());
+        movimientos.stream()
+            .filter(m -> m.getMesAsignado() == mes && m.getAnioAsignado() == anio)
+            .forEach(m -> movimientoService.deleteMovimiento(m.getId(), user.getId()));
+        // Borra el mes manual si existe
+        movimientoService.eliminarMesManual(user.getId(), mes, anio);
         return "redirect:/movimientos";
     }
 }
