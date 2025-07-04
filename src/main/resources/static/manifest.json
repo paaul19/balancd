@@ -7,7 +7,7 @@
   "theme_color": "#1db954",
   "icons": [
     {
-      "src": "/images/asterisco.png",
+      "src": "/images/logo-app.png",
       "sizes": "192x192",
       "type": "image/png"
     },

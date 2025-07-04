@@ -6,10 +6,11 @@
     <title>Login/Register • balanc*d</title>
     <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Finanzas">
     <link rel="apple-touch-icon" href="/images/asterisco.png">
     <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1e1e1e">
 
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
@@ -709,7 +710,7 @@
 
     // Cargar tema guardado al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
-        const savedTheme = localStorage.getItem('theme') || 'light';
+        const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
         
         const loginForm = document.querySelector('.login-form');
