@@ -9,6 +9,8 @@ public class Movimiento {
     private boolean ingreso; // true = ingreso, false = gasto
     private String asunto; // Texto libre
     private LocalDate fecha;
+    private int mesAsignado; // mes lógico asignado (1-12)
+    private int anioAsignado; // año lógico asignado
 
     public Movimiento() {}
     public Movimiento(Long id, Long userId, double cantidad, boolean ingreso, String asunto) {
@@ -30,4 +32,16 @@ public class Movimiento {
     public void setAsunto(String asunto) { this.asunto = asunto; }
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
+    public int getMesAsignado() {
+        return mesAsignado;
+    }
+    public void setMesAsignado(int mesAsignado) {
+        this.mesAsignado = mesAsignado;
+    }
+    public int getAnioAsignado() {
+        return anioAsignado;
+    }
+    public void setAnioAsignado(int anioAsignado) {
+        this.anioAsignado = anioAsignado;
+    }
 }

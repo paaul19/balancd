@@ -149,15 +149,69 @@
         }
 
         .movimiento-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             transition: opacity 0.3s ease-in-out;
+            opacity: 1;
         }
-
-        /* Estilos para el menú de 3 puntitos */
+        .movimiento-info {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+        .movimiento-actions {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
         .movimiento-menu {
             position: relative;
             display: inline-block;
         }
+        .menu-dropdown {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
+            z-index: 1000;
+            min-width: 120px;
+            max-width: 90vw;
+            display: none;
+            padding: 0;
+            overflow-x: auto;
+        }
+        @media (max-width: 600px) {
+            .movimiento-item {
+                flex-direction: row;
+                align-items: flex-start;
+                gap: 0.5rem;
+                padding: 1rem 0;
+            }
+            .movimiento-info {
+                min-width: 0;
+                flex: 1 1 auto;
+            }
+            .movimiento-actions {
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                min-width: 40px;
+            }
+            .menu-dropdown {
+                left: auto;
+                right: 0;
+                min-width: 120px;
+                max-width: 90vw;
+                word-break: break-word;
+            }
+        }
 
+        /* Estilos para el menú de 3 puntitos */
         .menu-trigger {
             background: none;
             border: none;
@@ -171,20 +225,6 @@
 
         .menu-trigger:hover {
             background: var(--border-color);
-        }
-
-        .menu-dropdown {
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
-            z-index: 1000;
-            min-width: 120px;
-            display: none;
-            padding: 0;
         }
 
         .menu-dropdown.show {
@@ -449,12 +489,16 @@
                 <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
                 <input type="text" name="asunto" placeholder="Asunto (opcional)" style="width:100%;" maxlength="50" />
                 <input type="hidden" name="ingreso" value="true" />
+                <input type="hidden" name="mes" value="[[${mesSeleccionado.monthValue}]]" />
+                <input type="hidden" name="anio" value="[[${mesSeleccionado.year}]]" />
                 <button type="submit">Añadir ingreso</button>
             </form>`;
             const formGasto = `<form action="/movimientos/add" method="post" style="display:flex; flex-direction:column; gap:0.7rem; align-items:flex-start;">
                 <input type="number" name="cantidad" step="0.01" min="0" placeholder="Cantidad (€)" required style="width:100%;" />
                 <input type="text" name="asunto" placeholder="Asunto (opcional)" style="width:100%;" maxlength="50" />
                 <input type="hidden" name="ingreso" value="false" />
+                <input type="hidden" name="mes" value="[[${mesSeleccionado.monthValue}]]" />
+                <input type="hidden" name="anio" value="[[${mesSeleccionado.year}]]" />
                 <button type="submit">Añadir gasto</button>
             </form>`;
             // Mostrar el formulario correspondiente
@@ -561,6 +605,16 @@
                             const form = document.createElement('form');
                             form.method = 'POST';
                             form.action = `/movimientos/delete/${movimientoId}`;
+                            const hiddenMes = document.createElement('input');
+                            hiddenMes.type = 'hidden';
+                            hiddenMes.name = 'mes';
+                            hiddenMes.value = '[[${mesSeleccionado.monthValue}]]';
+                            const hiddenAnio = document.createElement('input');
+                            hiddenAnio.type = 'hidden';
+                            hiddenAnio.name = 'anio';
+                            hiddenAnio.value = '[[${mesSeleccionado.year}]]';
+                            form.appendChild(hiddenMes);
+                            form.appendChild(hiddenAnio);
                             document.body.appendChild(form);
                             form.submit();
                         }

@@ -1,36 +1,55 @@
 [ {
   "id" : 1,
   "userId" : 1,
-  "cantidad" : 12.35,
+  "cantidad" : 300.0,
   "ingreso" : true,
-  "asunto" : "Shishas",
-  "fecha" : [ 2025, 7, 4 ]
+  "asunto" : "Julio",
+  "fecha" : [ 2025, 7, 4 ],
+  "mesAsignado" : 7,
+  "anioAsignado" : 2025
 }, {
   "id" : 2,
   "userId" : 1,
+  "cantidad" : 24.0,
+  "ingreso" : false,
+  "asunto" : "Shishas",
+  "fecha" : [ 2025, 7, 4 ],
+  "mesAsignado" : 7,
+  "anioAsignado" : 2025
+}, {
+  "id" : 3,
+  "userId" : 1,
   "cantidad" : 12.0,
   "ingreso" : false,
-  "asunto" : "wqdqw",
-  "fecha" : [ 2025, 7, 4 ]
+  "asunto" : "Uber Eats",
+  "fecha" : [ 2025, 7, 4 ],
+  "mesAsignado" : 7,
+  "anioAsignado" : 2025
 }, {
-  "id" : 4,
+  "id" : 7,
   "userId" : 1,
-  "cantidad" : 300.0,
-  "ingreso" : true,
-  "asunto" : "",
-  "fecha" : [ 2025, 9, 4 ]
-}, {
-  "id" : 5,
-  "userId" : 1,
-  "cantidad" : 300.0,
-  "ingreso" : true,
-  "asunto" : "",
-  "fecha" : [ 2025, 6, 4 ]
-}, {
-  "id" : 6,
-  "userId" : 1,
-  "cantidad" : 45.0,
+  "cantidad" : 15.0,
   "ingreso" : false,
   "asunto" : "",
-  "fecha" : [ 2025, 6, 4 ]
+  "fecha" : [ 2025, 7, 4 ],
+  "mesAsignado" : 7,
+  "anioAsignado" : 2025
+}, {
+  "id" : 9,
+  "userId" : 1,
+  "cantidad" : 300.0,
+  "ingreso" : true,
+  "asunto" : "",
+  "fecha" : [ 2025, 6, 4 ],
+  "mesAsignado" : 6,
+  "anioAsignado" : 2025
+}, {
+  "id" : 12,
+  "userId" : 1,
+  "cantidad" : 15.0,
+  "ingreso" : true,
+  "asunto" : "",
+  "fecha" : [ 2025, 7, 4 ],
+  "mesAsignado" : 6,
+  "anioAsignado" : 2025
 } ]
