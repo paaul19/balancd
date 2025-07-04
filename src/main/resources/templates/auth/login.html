@@ -96,6 +96,8 @@
         .login-form, .register-form {
             width: 100%;
             display: none;
+            opacity: 0;
+            transition: opacity 0.35s ease;
         }
 
         .login-form.active, .register-form.active {
@@ -103,6 +105,7 @@
             flex-direction: column;
             align-items: center;
             gap: 0.7rem;
+            opacity: 1;
         }
 
         /* Indicador de formulario activo */
@@ -633,6 +636,15 @@
         .logo-oscuro { display: none !important; }
         html[data-theme="dark"] .logo-claro, body[data-theme="dark"] .logo-claro { display: none !important; }
         html[data-theme="dark"] .logo-oscuro, body[data-theme="dark"] .logo-oscuro { display: block !important; }
+
+        .fade-in {
+            opacity: 1 !important;
+            transition: opacity 0.35s ease;
+        }
+        .fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.25s ease;
+        }
     </style>
 </head>
 <body>
@@ -704,22 +716,30 @@
         
         // Mostrar formulario de registro
         showRegisterBtn.addEventListener('click', function() {
-            loginForm.classList.remove('active');
-            registerForm.classList.add('active');
-            loginIndicator.style.display = 'none';
-            registerIndicator.style.display = 'block';
-            showRegisterBtn.style.display = 'none';
-            showLoginBtn.style.display = 'block';
+            loginForm.classList.remove('fade-in');
+            loginForm.classList.add('fade-out');
+            setTimeout(function() {
+                loginForm.classList.remove('active', 'fade-out');
+                registerForm.classList.add('active', 'fade-in');
+                loginIndicator.style.display = 'none';
+                registerIndicator.style.display = 'block';
+                showRegisterBtn.style.display = 'none';
+                showLoginBtn.style.display = 'block';
+            }, 250);
         });
         
         // Mostrar formulario de login
         showLoginBtn.addEventListener('click', function() {
-            registerForm.classList.remove('active');
-            loginForm.classList.add('active');
-            registerIndicator.style.display = 'none';
-            loginIndicator.style.display = 'block';
-            showLoginBtn.style.display = 'none';
-            showRegisterBtn.style.display = 'block';
+            registerForm.classList.remove('fade-in');
+            registerForm.classList.add('fade-out');
+            setTimeout(function() {
+                registerForm.classList.remove('active', 'fade-out');
+                loginForm.classList.add('active', 'fade-in');
+                registerIndicator.style.display = 'none';
+                loginIndicator.style.display = 'block';
+                showLoginBtn.style.display = 'none';
+                showRegisterBtn.style.display = 'block';
+            }, 250);
         });
     });
 </script>
