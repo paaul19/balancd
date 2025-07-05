@@ -1,81 +1,113 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Debug - Fecha</title>
+    <title>Debug Fecha</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+    <link rel="apple-touch-icon" href="/images/logo-app.png">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        .debug-info {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 70px;
+            padding-bottom: 20px;
         }
-        .debug-info h2 {
-            color: #333;
-            margin-top: 0;
+        .debug-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            border-radius: 10px;
+            padding: 2.5rem 2rem 2rem 2rem;
+            min-width: 320px;
+            max-width: 500px;
+            width: 100%;
         }
-        .debug-info p {
-            margin: 10px 0;
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 4px;
+        .debug-box h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin: 5px;
+        .debug-box form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
-        .btn:hover {
-            background: #0056b3;
+        .debug-box input, .debug-box button {
+            padding: 0.7rem 1rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
         }
-        .mensaje {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
+        .debug-box button {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .debug-box table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .debug-box th, .debug-box td {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+        @media (max-width: 600px) {
+            .main-content {
+                padding-top: 60px;
+                padding-bottom: 10px;
+            }
+            .debug-box {
+                min-width: 0;
+                max-width: 98vw;
+                padding: 1.5rem 0.7rem 1.2rem 0.7rem;
+            }
+            .debug-box input, .debug-box button {
+                font-size: 0.98rem;
+                padding: 0.8rem 0.7rem;
+            }
+            .debug-box table, .debug-box th, .debug-box td {
+                font-size: 0.95rem;
+            }
         }
     </style>
 </head>
-<body>
-    <div th:if="${mensaje}" class="mensaje" th:text="${mensaje}"></div>
-    
-    <div class="debug-info">
-        <h2>Información de Debug</h2>
-        <p><strong>Fecha actual:</strong> <span th:text="${fecha}"></span></p>
-        <p><strong>Zona horaria:</strong> <span th:text="${zonaHoraria}"></span></p>
-        <p><strong>Timestamp:</strong> <span th:text="${timestamp}"></span></p>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+    <div th:replace="~{fragments/header :: header}"></div>
+    <div class="main-content">
+        <div class="debug-box">
+            <h2>Debug Fecha</h2>
+            <form th:action="@{/debug/fecha}" method="post">
+                <input type="date" name="fecha" required />
+                <button type="submit">Cambiar fecha</button>
+            </form>
+            <table>
+                <tr><th>Variable</th><th>Valor</th></tr>
+                <tr><td>Fecha actual</td><td th:text="${fechaActual}"></td></tr>
+                <tr><td>Fecha sistema</td><td th:text="${fechaSistema}"></td></tr>
+            </table>
+        </div>
     </div>
-    
-    <div class="debug-info">
-        <h2>Acciones de Debug</h2>
-        <a href="/debug/procesar-recurrentes" class="btn">Ejecutar Scheduler Manualmente</a>
-        <a href="/movimientos" class="btn">Volver a Movimientos</a>
-    </div>
-    
-    <div class="debug-info">
-        <h2>Información sobre Movimientos Recurrentes</h2>
-        <p><strong>Frecuencias disponibles:</strong></p>
-        <ul>
-            <li><strong>semana:</strong> Cada 7 días desde la fecha de inicio</li>
-            <li><strong>dos_semanas:</strong> Cada 14 días desde la fecha de inicio</li>
-            <li><strong>mes:</strong> El mismo día de cada mes</li>
-            <li><strong>dos_meses:</strong> El mismo día cada dos meses</li>
-        </ul>
-        <p><strong>Nota:</strong> El scheduler se ejecuta automáticamente cada día a las 00:00 AM</p>
-    </div>
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:replace="~{fragments/header :: header-script}"></script>
+    <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
 </body>
 </html> 

@@ -4,78 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Error</title>
+  <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+  <link rel="apple-touch-icon" href="/images/logo-app.png">
+  <meta name="theme-color" content="#1e1e1e">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <!-- Incluir estilos del tema -->
   <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+  <style th:replace="~{fragments/header :: header-styles}"></style>
+  <style th:replace="~{fragments/footer :: footer-styles}"></style>
   <!-- Script para aplicar tema inmediatamente -->
   <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
   <style>
     body {
+      margin: 0;
+      padding: 0;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+    }
+    .main-content {
+      flex: 1;
+      display: flex;
       align-items: center;
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      margin: 0;
+      justify-content: center;
+      padding-top: 70px;
+      padding-bottom: 20px;
     }
-    .error-container {
-      max-width: 400px;
-      margin: 0 auto;
+    .error-box {
       background: var(--bg-secondary);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      padding: 2.5rem 2rem 2rem 2rem;
-      text-align: center;
       border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+      border-radius: 10px;
+      padding: 2.5rem 2rem 2rem 2rem;
+      min-width: 320px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
     }
-    .error-code {
-      font-size: 3.5rem;
-      font-weight: bold;
+    .error-box h1 {
       color: #c00;
-      margin-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
     }
-    .error-message {
-      font-size: 1.2rem;
-      color: var(--text-secondary);
-      margin-bottom: 2rem;
-    }
-    .btn-home {
-      display: inline-block;
-      padding: 0.8rem 2rem;
-      background: var(--button-bg);
-      color: var(--button-text);
-      border: none;
-      border-radius: 6px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-    .btn-home:hover {
-      background: var(--button-hover);
-    }
-    .error-icon {
-      font-size: 3.5rem;
+    .error-box p {
+      color: var(--text-primary);
       margin-bottom: 1rem;
-      color: #c00;
+    }
+    @media (max-width: 600px) {
+      .main-content {
+        padding-top: 60px;
+        padding-bottom: 10px;
+      }
+      .error-box {
+        min-width: 0;
+        max-width: 98vw;
+        padding: 1.5rem 0.7rem 1.2rem 0.7rem;
+      }
     }
   </style>
 </head>
-<body>
-  <!-- Botón de cambio de tema -->
-  <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
-    <span class="sun-icon">☀️</span>
-    <span class="moon-icon">🌙</span>
-  </button>
-  <div class="error-container">
-    <div class="error-icon">⚠️</div>
-    <div class="error-code" id="error-code" th:text="${status}">404</div>
-    <div class="error-message" th:text="${error}">La página no existe o ha sido movida.</div>
-    <a href="/" class="btn-home">Volver al inicio</a>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+  <div th:replace="~{fragments/header :: header}"></div>
+  <div class="main-content">
+    <div class="error-box">
+      <h1 th:text="${status}">Error</h1>
+      <p th:text="${error}">Ha ocurrido un error inesperado.</p>
+      <p th:if="${message}" th:text="${message}"></p>
+      <a href="/" style="color:var(--link-color);text-decoration:underline;">Volver al inicio</a>
+    </div>
   </div>
-  <!-- Footer (si es relevante, descomentar la siguiente línea) -->
-  <!-- <div th:replace="~{fragments/footer :: footer}"></div> -->
+  <div th:replace="~{fragments/footer :: footer}"></div>
+  <script th:replace="~{fragments/header :: header-script}"></script>
   <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
 </body>
 </html>

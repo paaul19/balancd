@@ -1,10 +1,10 @@
-package com.musicstore.service;
+package com.balancdapp.service;
 
-import com.musicstore.model.Movimiento;
-import com.musicstore.model.User;
-import com.musicstore.repository.MovimientoRepository;
-import com.musicstore.repository.UserRepository;
-import com.musicstore.repository.MovimientoRecurrenteRepository;
+import com.balancdapp.model.Movimiento;
+import com.balancdapp.model.User;
+import com.balancdapp.repository.MovimientoRepository;
+import com.balancdapp.repository.UserRepository;
+import com.balancdapp.repository.MovimientoRecurrenteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -19,21 +19,24 @@ import jakarta.annotation.PostConstruct;
 @Service
 @Transactional
 public class EncryptedMovimientoService {
-    
+
     @Autowired
     private MovimientoRepository movimientoRepository;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private DataEncryptionService encryptionService;
-    
+
     @Autowired
     private MovimientoRecurrenteRepository movimientoRecurrenteRepository;
-    
+
+    @Autowired
+    private EncryptedMovimientoRecurrenteService encryptedRecurrenteService;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    
+
     /**
      * Crea un movimiento con datos cifrados
      */
@@ -43,15 +46,15 @@ public class EncryptedMovimientoService {
         movimiento.setIngreso(ingreso);
         movimiento.setMesAsignado(mesAsignado);
         movimiento.setAnioAsignado(anioAsignado);
-        
+
         // Cifrar datos sensibles
         movimiento.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         movimiento.setAsuntoCifrado(encryptionService.encrypt(asunto));
         movimiento.setFechaCifrada(encryptionService.encrypt(fecha.format(DATE_FORMATTER)));
-        
+
         return movimientoRepository.save(movimiento);
     }
-    
+
     /**
      * Obtiene la cantidad descifrada de un movimiento
      */
@@ -61,7 +64,7 @@ public class EncryptedMovimientoService {
         }
         return encryptionService.decryptNumber(movimiento.getCantidadCifrada());
     }
-    
+
     /**
      * Obtiene el asunto descifrado de un movimiento
      */
@@ -71,7 +74,7 @@ public class EncryptedMovimientoService {
         }
         return encryptionService.decrypt(movimiento.getAsuntoCifrado());
     }
-    
+
     /**
      * Obtiene la fecha descifrada de un movimiento
      */
@@ -83,7 +86,7 @@ public class EncryptedMovimientoService {
         System.out.println("[DEBUG] Fecha cifrada: " + movimiento.getFechaCifrada() + " | Descifrada: '" + fechaDescifrada + "'");
         return LocalDate.parse(fechaDescifrada, DATE_FORMATTER);
     }
-    
+
     /**
      * Actualiza un movimiento con datos cifrados
      */
@@ -93,7 +96,7 @@ public class EncryptedMovimientoService {
         movimiento.setAsuntoCifrado(encryptionService.encrypt(asunto));
         movimientoRepository.save(movimiento);
     }
-    
+
     /**
      * Obtiene movimientos de un usuario con datos descifrados
      */
@@ -102,12 +105,12 @@ public class EncryptedMovimientoService {
         if (userOpt.isPresent()) {
             List<Movimiento> movimientos = movimientoRepository.findByUser(userOpt.get());
             return movimientos.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
         }
         return List.of();
     }
-    
+
     /**
      * Convierte un Movimiento a DTO con datos descifrados
      */
@@ -123,7 +126,7 @@ public class EncryptedMovimientoService {
         dto.setAnioAsignado(movimiento.getAnioAsignado());
         return dto;
     }
-    
+
     /**
      * DTO para movimientos con datos descifrados
      */
@@ -136,33 +139,33 @@ public class EncryptedMovimientoService {
         private LocalDate fecha;
         private int mesAsignado;
         private int anioAsignado;
-        
+
         // Getters y setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
-        
+
         public Long getUserId() { return userId; }
         public void setUserId(Long userId) { this.userId = userId; }
-        
+
         public double getCantidad() { return cantidad; }
         public void setCantidad(double cantidad) { this.cantidad = cantidad; }
-        
+
         public boolean isIngreso() { return ingreso; }
         public void setIngreso(boolean ingreso) { this.ingreso = ingreso; }
-        
+
         public String getAsunto() { return asunto; }
         public void setAsunto(String asunto) { this.asunto = asunto; }
-        
+
         public LocalDate getFecha() { return fecha; }
         public void setFecha(LocalDate fecha) { this.fecha = fecha; }
-        
+
         public int getMesAsignado() { return mesAsignado; }
         public void setMesAsignado(int mesAsignado) { this.mesAsignado = mesAsignado; }
-        
+
         public int getAnioAsignado() { return anioAsignado; }
         public void setAnioAsignado(int anioAsignado) { this.anioAsignado = anioAsignado; }
     }
-    
+
     /**
      * Crea movimientos recurrentes según frecuencia
      */
@@ -183,23 +186,17 @@ public class EncryptedMovimientoService {
                 case "bi-mensual":
                     fecha = fecha.plusMonths(2);
                     break;
+                case "anual":
+                    fecha = fecha.plusYears(1);
+                    break;
                 default:
                     fecha = fecha.plusMonths(1);
             }
         }
     }
-    
+
     public void crearMovimientoRecurrente(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, Integer repeticiones, LocalDate fechaFin) {
-        com.musicstore.model.MovimientoRecurrente rec = new com.musicstore.model.MovimientoRecurrente();
-        rec.setUser(user);
-        rec.setCantidad(cantidad);
-        rec.setIngreso(ingreso);
-        rec.setAsunto(asunto);
-        rec.setFechaInicio(fechaInicio);
-        rec.setFrecuencia(frecuencia);
-        rec.setActivo(true);
-        if (fechaFin != null) rec.setFechaFin(fechaFin);
-        movimientoRecurrenteRepository.save(rec);
+        com.balancdapp.model.MovimientoRecurrente rec = encryptedRecurrenteService.createMovimientoRecurrente(user, cantidad, ingreso, asunto, fechaInicio, frecuencia, fechaFin);
         // Si la fecha de inicio es hoy, crear el movimiento real ya
         LocalDate hoy = LocalDate.now(java.time.ZoneId.of("Europe/Madrid"));
         if (fechaInicio.equals(hoy)) {
@@ -208,7 +205,7 @@ public class EncryptedMovimientoService {
             movimientoRecurrenteRepository.save(rec);
         }
     }
-    
+
     @PostConstruct
     public void logZonaHoraria() {
         System.out.println("[DEBUG] Zona horaria del sistema: " + java.time.ZoneId.systemDefault());
@@ -217,87 +214,94 @@ public class EncryptedMovimientoService {
     @Scheduled(cron = "0 0 0 * * *") // Cada día a las 00:00 AM
     public void procesarMovimientosRecurrentes() {
         System.out.println("[DEBUG] Ejecutando scheduler de recurrentes: " + java.time.LocalDateTime.now());
-        List<com.musicstore.model.MovimientoRecurrente> recurrentes = movimientoRecurrenteRepository.findByActivoTrue();
+        List<com.balancdapp.model.MovimientoRecurrente> recurrentes = encryptedRecurrenteService.getRecurrentesActivos();
         LocalDate hoy = LocalDate.now(java.time.ZoneId.of("Europe/Madrid"));
-        
-        for (com.musicstore.model.MovimientoRecurrente rec : recurrentes) {
+
+        for (com.balancdapp.model.MovimientoRecurrente rec : recurrentes) {
             if (rec.getFechaInicio().isAfter(hoy)) continue;
             if (rec.getFechaFin() != null && hoy.isAfter(rec.getFechaFin())) continue;
-            
+
             // Verificar si debe ejecutarse hoy según la frecuencia
             if (debeEjecutarseHoy(rec, hoy)) {
-                String cantidadCifrada = encryptionService.encryptNumber(rec.getCantidad());
-                String asuntoCifrado = encryptionService.encrypt(rec.getAsunto());
+                double cantidad = encryptedRecurrenteService.getCantidad(rec);
+                String asunto = encryptedRecurrenteService.getAsunto(rec);
+                String cantidadCifrada = encryptionService.encryptNumber(cantidad);
+                String asuntoCifrado = encryptionService.encrypt(asunto);
                 String fechaCifrada = encryptionService.encrypt(hoy.format(DATE_FORMATTER));
-                
+
                 boolean existe = movimientoRepository.existsByUserAndMesAsignadoAndAnioAsignadoAndCantidadCifradaAndIngresoAndAsuntoCifradoAndFechaCifrada(
-                    rec.getUser(), hoy.getMonthValue(), hoy.getYear(), cantidadCifrada, rec.isIngreso(), asuntoCifrado, fechaCifrada);
-                
+                        rec.getUser(), hoy.getMonthValue(), hoy.getYear(), cantidadCifrada, rec.isIngreso(), asuntoCifrado, fechaCifrada);
+
                 if (!existe) {
-                    System.out.println("[DEBUG] Creando movimiento recurrente: " + rec.getAsunto() + " - " + rec.getFrecuencia() + " - " + hoy);
-                    createMovimiento(rec.getUser(), rec.getCantidad(), rec.isIngreso(), rec.getAsunto(), hoy, hoy.getMonthValue(), hoy.getYear());
+                    System.out.println("[DEBUG] Creando movimiento recurrente: " + asunto + " - " + rec.getFrecuencia() + " - " + hoy);
+                    createMovimiento(rec.getUser(), cantidad, rec.isIngreso(), asunto, hoy, hoy.getMonthValue(), hoy.getYear());
                     rec.setUltimaFechaEjecutada(hoy);
                     movimientoRecurrenteRepository.save(rec);
                 } else {
-                    System.out.println("[DEBUG] Movimiento recurrente ya existe para hoy: " + rec.getAsunto());
+                    System.out.println("[DEBUG] Movimiento recurrente ya existe para hoy: " + asunto);
                 }
             }
         }
     }
-    
-    private boolean debeEjecutarseHoy(com.musicstore.model.MovimientoRecurrente rec, LocalDate hoy) {
+
+    private boolean debeEjecutarseHoy(com.balancdapp.model.MovimientoRecurrente rec, LocalDate hoy) {
         LocalDate inicio = rec.getFechaInicio();
         String frecuencia = rec.getFrecuencia();
-        
+
         switch (frecuencia) {
             case "semana":
                 // Cada semana: verificar si han pasado exactamente 7 días desde el inicio
                 return !hoy.isBefore(inicio) && (diasEntre(inicio, hoy) % 7 == 0);
-                
+
             case "dos_semanas":
                 // Cada dos semanas: verificar si han pasado exactamente 14 días desde el inicio
                 return !hoy.isBefore(inicio) && (diasEntre(inicio, hoy) % 14 == 0);
-                
+
             case "mes":
                 // Cada mes: mismo día del mes
                 return hoy.getDayOfMonth() == inicio.getDayOfMonth();
-                
+
             case "dos_meses":
                 // Cada dos meses: mismo día, pero cada dos meses
                 if (hoy.getDayOfMonth() != inicio.getDayOfMonth()) return false;
-                
+
                 // Calcular meses transcurridos desde el inicio
                 long mesesTranscurridos = java.time.temporal.ChronoUnit.MONTHS.between(
-                    inicio.withDayOfMonth(1), hoy.withDayOfMonth(1));
-                
+                        inicio.withDayOfMonth(1), hoy.withDayOfMonth(1));
+
                 // Debe ser un múltiplo de 2 (cada dos meses)
                 return mesesTranscurridos % 2 == 0;
-                
+
+            case "anio":
+                // Cada año: mismo día y mes
+                return hoy.getDayOfMonth() == inicio.getDayOfMonth() &&
+                        hoy.getMonthValue() == inicio.getMonthValue();
+
             default:
                 return false;
         }
     }
-    
+
     private long diasEntre(LocalDate inicio, LocalDate fin) {
         return java.time.temporal.ChronoUnit.DAYS.between(inicio, fin);
     }
-    
-    public List<com.musicstore.model.MovimientoRecurrente> obtenerRecurrentesDeUsuario(User user) {
+
+    public List<com.balancdapp.model.MovimientoRecurrente> obtenerRecurrentesDeUsuario(User user) {
         return movimientoRecurrenteRepository.findByUser(user);
     }
-    
+
     public void terminarMovimientoRecurrente(Long id, User user) {
-        com.musicstore.model.MovimientoRecurrente rec = movimientoRecurrenteRepository.findById(id).orElse(null);
-        if (rec != null && rec.getUser().getId().equals(user.getId())) {
-            rec.setActivo(false);
-            movimientoRecurrenteRepository.save(rec);
-        }
+        encryptedRecurrenteService.terminarMovimientoRecurrente(id, user);
     }
-    
+
     public void borrarMovimientoRecurrente(Long id, User user) {
-        com.musicstore.model.MovimientoRecurrente rec = movimientoRecurrenteRepository.findById(id).orElse(null);
-        if (rec != null && rec.getUser().getId().equals(user.getId())) {
-            movimientoRecurrenteRepository.delete(rec);
-        }
+        encryptedRecurrenteService.borrarMovimientoRecurrente(id, user);
+    }
+
+    /**
+     * Modifica un movimiento recurrente
+     */
+    public void modificarMovimientoRecurrente(Long id, User user, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia) {
+        encryptedRecurrenteService.modificarMovimientoRecurrente(id, user, cantidad, asunto, ingreso, fechaInicio, frecuencia);
     }
 } 

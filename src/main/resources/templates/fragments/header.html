@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style th:fragment="header-styles">
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            width: 100vw;
+            min-height: 64px;
+            height: 64px;
+            margin: 0;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header-inner {
+            position: relative;
+            width: 100vw;
+            height: 100%;
+        }
+        .header-logo {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-logo img {
+            height: 40px;
+            width: auto;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        .header-logo img:hover {
+            transform: scale(1.05);
+        }
+        .header-actions {
+            position: absolute;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .logout-btn {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logout-btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-1px);
+        }
+        @media (max-width: 768px) {
+            .header {
+                min-height: 54px;
+                height: 54px;
+            }
+            .header-logo img {
+                height: 32px;
+            }
+            .header-actions {
+                right: 1rem;
+            }
+            .logout-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .header {
+                min-height: 44px;
+                height: 44px;
+            }
+            .header-logo img {
+                height: 26px;
+            }
+            .header-actions {
+                right: 0.5rem;
+            }
+            .logout-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header" th:fragment="header">
+        <div class="header-inner">
+            <div class="header-logo">
+                <img src="/images/logo-negro.png" alt="Logo" class="logo-negro">
+                <img src="/images/logo-blanco.png" alt="Logo" class="logo-blanco" style="display: none;">
+            </div>
+            <div class="header-actions">
+                <a href="/logout" class="logout-btn" title="Cerrar sesión">
+                    <span>👤</span>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+        </div>
+        <script th:fragment="header-script">
+            function updateLogo() {
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const logoNegro = document.querySelector('.logo-negro');
+                const logoBlanco = document.querySelector('.logo-blanco');
+                if (isDark) {
+                    logoNegro.style.display = 'none';
+                    logoBlanco.style.display = 'block';
+                } else {
+                    logoNegro.style.display = 'block';
+                    logoBlanco.style.display = 'none';
+                }
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                updateLogo();
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+                            updateLogo();
+                        }
+                    });
+                });
+                observer.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['data-theme']
+                });
+            });
+        </script>
+    </header>
+</body>
+</html> 

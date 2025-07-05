@@ -14,12 +14,19 @@
 
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -654,40 +661,44 @@
     </style>
 </head>
 <body>
+<div class="main-content">
 <div class="login-container">
     <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem;">
         <img src="/images/logo-negro.png" alt="Finanzas App" class="logo-claro" style="max-width: 120px; display: block;">
         <img src="/images/logo-blanco.png" alt="Finanzas App" class="logo-oscuro" style="max-width: 120px; display: none;">
     </div>
-    
+
     <!-- Mensajes de error/éxito -->
     <div th:if="${error}" class="error" th:text="${error}"></div>
     <div th:if="${success}" class="success" th:text="${success}"></div>
-    
+
     <!-- Indicador de formulario activo -->
     <div class="form-indicator login-indicator" id="loginIndicator">🔐 Estás Iniciando Sesión</div>
     <div class="form-indicator register-indicator" id="registerIndicator" style="display:none;">📝 Estás Registrándote</div>
-    
+
     <!-- Formulario de Login -->
     <form class="login-form active" th:action="@{/login}" method="post">
         <input type="text" name="username" placeholder="Usuario" required>
         <input type="password" name="password" placeholder="Contraseña" required>
         <button type="submit" style="width:auto; align-self:center;">Iniciar sesión</button>
     </form>
-    
+
     <!-- Formulario de Registro -->
     <form class="register-form" th:action="@{/auth/register}" method="post">
         <input type="text" name="username" placeholder="Usuario" required>
         <input type="password" name="password" placeholder="Contraseña" required>
         <button type="submit" style="width:auto; align-self:center;">Registrarse</button>
     </form>
-    
+
     <!-- Botones para cambiar entre formularios -->
     <div class="form-switch">
         <button type="button" id="showRegister">¿No tienes cuenta? Regístrate</button>
         <button type="button" id="showLogin" style="display:none;">¿Ya tienes cuenta? Inicia sesión</button>
     </div>
 </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 <!-- Botón de cambio de tema -->
 <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
@@ -703,7 +714,7 @@
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-theme');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        
+
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
     }
@@ -712,14 +723,14 @@
     document.addEventListener('DOMContentLoaded', function() {
         const savedTheme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', savedTheme);
-        
+
         const loginForm = document.querySelector('.login-form');
         const registerForm = document.querySelector('.register-form');
         const showRegisterBtn = document.getElementById('showRegister');
         const showLoginBtn = document.getElementById('showLogin');
         const loginIndicator = document.getElementById('loginIndicator');
         const registerIndicator = document.getElementById('registerIndicator');
-        
+
         // Mostrar formulario de registro
         showRegisterBtn.addEventListener('click', function() {
             loginForm.classList.remove('fade-in');
@@ -727,13 +738,13 @@
             setTimeout(function() {
                 loginForm.classList.remove('active', 'fade-out');
                 registerForm.classList.add('active', 'fade-in');
-            loginIndicator.style.display = 'none';
-            registerIndicator.style.display = 'block';
-            showRegisterBtn.style.display = 'none';
-            showLoginBtn.style.display = 'block';
+                loginIndicator.style.display = 'none';
+                registerIndicator.style.display = 'block';
+                showRegisterBtn.style.display = 'none';
+                showLoginBtn.style.display = 'block';
             }, 250);
         });
-        
+
         // Mostrar formulario de login
         showLoginBtn.addEventListener('click', function() {
             registerForm.classList.remove('fade-in');
@@ -741,10 +752,10 @@
             setTimeout(function() {
                 registerForm.classList.remove('active', 'fade-out');
                 loginForm.classList.add('active', 'fade-in');
-            registerIndicator.style.display = 'none';
-            loginIndicator.style.display = 'block';
-            showLoginBtn.style.display = 'none';
-            showRegisterBtn.style.display = 'block';
+                registerIndicator.style.display = 'none';
+                loginIndicator.style.display = 'block';
+                showLoginBtn.style.display = 'none';
+                showRegisterBtn.style.display = 'block';
             }, 250);
         });
     });

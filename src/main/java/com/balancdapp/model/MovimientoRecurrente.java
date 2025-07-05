@@ -1,4 +1,4 @@
-package com.musicstore.model;
+package com.balancdapp.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -14,14 +14,14 @@ public class MovimientoRecurrente {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
-    private double cantidad;
+    @Column(name = "cantidad_cifrada", nullable = false)
+    private String cantidadCifrada; // Cantidad cifrada como string
 
     @Column(nullable = false)
     private boolean ingreso;
 
-    @Column(nullable = false)
-    private String asunto;
+    @Column(name = "asunto_cifrado", nullable = false)
+    private String asuntoCifrado; // Asunto cifrado
 
     @Column(nullable = false)
     private LocalDate fechaInicio;
@@ -41,12 +41,34 @@ public class MovimientoRecurrente {
     public void setId(Long id) { this.id = id; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-    public double getCantidad() { return cantidad; }
-    public void setCantidad(double cantidad) { this.cantidad = cantidad; }
+
+    // Métodos para cantidad (cifrada)
+    public String getCantidadCifrada() { return cantidadCifrada; }
+    public void setCantidadCifrada(String cantidadCifrada) { this.cantidadCifrada = cantidadCifrada; }
+
+    // Métodos para asunto (cifrado)
+    public String getAsuntoCifrado() { return asuntoCifrado; }
+    public void setAsuntoCifrado(String asuntoCifrado) { this.asuntoCifrado = asuntoCifrado; }
+
+    // Métodos de compatibilidad (para uso interno del servicio)
+    public double getCantidad() {
+        // Este método se mantiene para compatibilidad pero no se usa directamente
+        return 0.0;
+    }
+    public void setCantidad(double cantidad) {
+        // Este método se mantiene para compatibilidad pero no se usa directamente
+    }
+
+    public String getAsunto() {
+        // Este método se mantiene para compatibilidad pero no se usa directamente
+        return "";
+    }
+    public void setAsunto(String asunto) {
+        // Este método se mantiene para compatibilidad pero no se usa directamente
+    }
+
     public boolean isIngreso() { return ingreso; }
     public void setIngreso(boolean ingreso) { this.ingreso = ingreso; }
-    public String getAsunto() { return asunto; }
-    public void setAsunto(String asunto) { this.asunto = asunto; }
     public LocalDate getFechaInicio() { return fechaInicio; }
     public void setFechaInicio(LocalDate fechaInicio) { this.fechaInicio = fechaInicio; }
     public String getFrecuencia() { return frecuencia; }

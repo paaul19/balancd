@@ -1,4 +1,4 @@
-package com.musicstore.model;
+package com.balancdapp.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

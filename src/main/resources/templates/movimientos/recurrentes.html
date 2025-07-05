@@ -12,10 +12,24 @@
 
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <!-- Incluir estilos del header y footer -->
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <!-- Script para aplicar tema inmediatamente -->
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex: 1;
+            padding-top: 70px; /* altura del header fijo + margen */
+        }
         .container { 
             max-width: 800px; 
             margin: 40px auto; 
@@ -80,8 +94,8 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
+            padding: 0.7rem;
+            margin-bottom: 0.6rem;
             transition: all 0.3s ease;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
@@ -95,7 +109,7 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 1rem;
+            margin-bottom: 0.6rem;
         }
         
         .recurrente-info {
@@ -103,16 +117,16 @@
         }
         
         .recurrente-asunto {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
         }
         
         .recurrente-cantidad {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
         }
         
         .cantidad-ingreso {
@@ -126,8 +140,8 @@
         .recurrente-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.6rem;
+            margin-bottom: 0.6rem;
         }
         
         .detail-item {
@@ -136,22 +150,22 @@
         }
         
         .detail-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.15rem;
             text-transform: uppercase;
             font-weight: 500;
         }
         
         .detail-value {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-primary);
             font-weight: 500;
         }
         
         .recurrente-actions {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             flex-wrap: wrap;
         }
         
@@ -200,11 +214,182 @@
             font-size: 1.1rem;
         }
         
+        /* Estilos para el botón de logout */
+        .logout-btn button:hover {
+            background: var(--button-hover) !important;
+        }
+
+        /* Botón de cambio de tema */
+        .theme-switcher {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .theme-switcher:hover {
+            background: var(--button-hover);
+            transform: scale(1.1);
+        }
+
+        /* Iconos para el botón */
+        .theme-switcher .sun-icon {
+            display: none;
+        }
+
+        .theme-switcher .moon-icon {
+            display: block;
+        }
+
+        [data-theme="dark"] .theme-switcher .sun-icon {
+            display: block;
+        }
+
+        [data-theme="dark"] .theme-switcher .moon-icon {
+            display: none;
+        }
+
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .modal-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.7rem;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--button-bg);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        .modal-actions button {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-save {
+            background: var(--button-bg);
+            color: var(--button-text);
+        }
+
+        .btn-cancel:hover {
+            background: var(--text-secondary);
+        }
+
+        .btn-save:hover {
+            background: var(--button-hover);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .container {
                 max-width: 95%;
                 margin: 20px auto;
+                padding: 1.5rem;
+            }
+            
+            .theme-switcher {
+                width: 45px;
+                height: 45px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 18px;
+            }
+            
+            .modal-content {
+                max-width: 95vw;
                 padding: 1.5rem;
             }
             
@@ -246,92 +431,253 @@
                 padding: 1rem;
             }
             
+            .theme-switcher {
+                width: 40px;
+                height: 40px;
+                bottom: 10px;
+                right: 10px;
+                font-size: 16px;
+            }
+            
+            .modal-content {
+                max-width: 98vw;
+                padding: 1rem;
+            }
+            
             .header-section h1 {
                 font-size: 1.3rem;
             }
             
             .recurrente-item {
-                padding: 1rem;
+                padding: 0.6rem;
             }
             
             .recurrente-asunto {
-                font-size: 1.1rem;
+                font-size: 0.9rem;
             }
             
             .recurrente-cantidad {
-                font-size: 1.2rem;
+                font-size: 1rem;
             }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header-section">
-            <h1>Movimientos Recurrentes</h1>
-            <a th:href="@{/movimientos}" class="btn">← Volver a Movimientos</a>
-        </div>
-        
-        <div th:if="${#lists.isEmpty(recurrentes)}" class="empty-state">
-            <h3>No hay movimientos recurrentes</h3>
-            <p>Aún no has creado ningún movimiento recurrente. Los movimientos recurrentes te permiten automatizar gastos e ingresos que se repiten regularmente.</p>
-            <a th:href="@{/movimientos}" class="btn">Crear mi primer recurrente</a>
-        </div>
-        
-        <ul class="recurrentes-list" th:if="${!#lists.isEmpty(recurrentes)}">
-            <li th:each="rec : ${recurrentes}" class="recurrente-item">
-                <div class="recurrente-header">
-                    <div class="recurrente-info">
-                        <div class="recurrente-asunto" th:text="${rec.asunto}">Asunto</div>
-                        <div class="recurrente-cantidad" th:class="${rec.ingreso ? 'cantidad-ingreso' : 'cantidad-gasto'}">
-                            <span th:text="${rec.ingreso ? '+' : '-'}"></span>
-                            <span th:text="${#numbers.formatDecimal(rec.cantidad, 1, 2)} + ' €'"></span>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+    <div class="main-content">
+        <div class="container">
+            <div class="header-section">
+                <h1>Movimientos Recurrentes</h1>
+                <a th:href="@{/movimientos}" class="btn">← Volver a Movimientos</a>
+            </div>
+            
+            <div th:if="${#lists.isEmpty(recurrentes)}" class="empty-state">
+                <h3>No hay movimientos recurrentes</h3>
+                <p>Aún no has creado ningún movimiento recurrente. Los movimientos recurrentes te permiten automatizar gastos e ingresos que se repiten regularmente.</p>
+                <a th:href="@{/movimientos}" class="btn">Crear mi primer recurrente</a>
+            </div>
+            
+            <ul class="recurrentes-list" th:if="${!#lists.isEmpty(recurrentes)}">
+                <li th:each="rec : ${recurrentes}" class="recurrente-item">
+                    <div class="recurrente-header">
+                        <div class="recurrente-info">
+                            <div class="recurrente-asunto" th:text="${rec.asunto}">Asunto</div>
+                            <div class="recurrente-cantidad" th:class="${rec.ingreso ? 'cantidad-ingreso' : 'cantidad-gasto'}">
+                                <span th:text="${rec.ingreso ? '+' : '-'}"></span>
+                                <span th:text="${#numbers.formatDecimal(rec.cantidad, 1, 2)} + ' €'"></span>
+                            </div>
+                        </div>
+                        <div class="estado-activo" th:class="${rec.activo ? 'estado-activo activo' : 'estado-activo inactivo'}" 
+                             th:text="${rec.activo ? 'Activo' : 'Inactivo'}">Estado</div>
+                    </div>
+                    
+                    <div class="recurrente-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Tipo</span>
+                            <span class="detail-value" th:text="${rec.ingreso ? 'Ingreso' : 'Gasto'}">Tipo</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Fecha de inicio</span>
+                            <span class="detail-value" th:text="${#temporals.format(rec.fechaInicio, 'dd/MM/yyyy')}">Fecha</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Frecuencia</span>
+                            <span class="frecuencia-badge" th:text="${rec.frecuencia == 'semana' ? 'Cada semana' : 
+                                                                       rec.frecuencia == 'dos_semanas' ? 'Cada 2 semanas' :
+                                                                       rec.frecuencia == 'mes' ? 'Cada mes' :
+                                                                       rec.frecuencia == 'dos_meses' ? 'Cada 2 meses' :
+                                                                       rec.frecuencia == 'anio' ? 'Cada año' : rec.frecuencia}">Frecuencia</span>
+                        </div>
+                        <div class="detail-item" th:if="${rec.fechaFin != null}">
+                            <span class="detail-label">Fecha fin</span>
+                            <span class="detail-value" th:text="${#temporals.format(rec.fechaFin, 'dd/MM/yyyy')}">Fecha fin</span>
+                        </div>
+                        <div class="detail-item" th:if="${rec.ultimaFechaEjecutada != null}">
+                            <span class="detail-label">Última vez ejecutado</span>
+                            <span class="detail-value" th:text="${#temporals.format(rec.ultimaFechaEjecutada, 'dd/MM/yyyy')}">Última</span>
                         </div>
                     </div>
-                    <div class="estado-activo" th:class="${rec.activo ? 'estado-activo activo' : 'estado-activo inactivo'}" 
-                         th:text="${rec.activo ? 'Activo' : 'Inactivo'}">Estado</div>
+                    
+                    <div class="recurrente-actions">
+                        <button type="button" 
+                                class="btn btn-sm btn-modificar" 
+                                th:data-id="${rec.id}"
+                                th:data-asunto="${rec.asunto}"
+                                th:data-cantidad="${rec.cantidad}"
+                                th:data-ingreso="${rec.ingreso}"
+                                th:data-fecha="${#temporals.format(rec.fechaInicio, 'yyyy-MM-dd')}"
+                                th:data-frecuencia="${rec.frecuencia}">
+                            Modificar
+                        </button>
+                        <a th:href="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('¿Seguro que quieres borrar este movimiento recurrente? Esta acción no se puede deshacer.')">
+                            Borrar
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Modal para editar movimiento recurrente -->
+        <div id="editRecurrenteModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Modificar Movimiento Recurrente</h3>
                 </div>
-                
-                <div class="recurrente-details">
-                    <div class="detail-item">
-                        <span class="detail-label">Tipo</span>
-                        <span class="detail-value" th:text="${rec.ingreso ? 'Ingreso' : 'Gasto'}">Tipo</span>
+                <form id="editRecurrenteForm" class="modal-form" method="post">
+                    <input type="hidden" id="editRecurrenteId" name="id">
+                    <div class="form-group">
+                        <label for="editRecurrenteCantidad">Cantidad (€)</label>
+                        <input type="number" id="editRecurrenteCantidad" name="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Fecha de inicio</span>
-                        <span class="detail-value" th:text="${#temporals.format(rec.fechaInicio, 'dd/MM/yyyy')}">Fecha</span>
+                    <div class="form-group">
+                        <label for="editRecurrenteAsunto">Asunto</label>
+                        <input type="text" id="editRecurrenteAsunto" name="asunto" maxlength="50" required>
                     </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Frecuencia</span>
-                        <span class="frecuencia-badge" th:text="${rec.frecuencia == 'semana' ? 'Cada semana' : 
-                                                                   rec.frecuencia == 'dos_semanas' ? 'Cada 2 semanas' :
-                                                                   rec.frecuencia == 'mes' ? 'Cada mes' :
-                                                                   rec.frecuencia == 'dos_meses' ? 'Cada 2 meses' : rec.frecuencia}">Frecuencia</span>
+                    <div class="form-group">
+                        <label for="editRecurrenteTipo">Tipo</label>
+                        <select id="editRecurrenteTipo" name="ingreso" required>
+                            <option value="true">Ingreso</option>
+                            <option value="false">Gasto</option>
+                        </select>
                     </div>
-                    <div class="detail-item" th:if="${rec.fechaFin != null}">
-                        <span class="detail-label">Fecha fin</span>
-                        <span class="detail-value" th:text="${#temporals.format(rec.fechaFin, 'dd/MM/yyyy')}">Fecha fin</span>
+                    <div class="form-group">
+                        <label for="editRecurrenteFecha">Fecha de inicio</label>
+                        <input type="date" id="editRecurrenteFecha" name="fechaInicio" required>
                     </div>
-                    <div class="detail-item" th:if="${rec.ultimaFechaEjecutada != null}">
-                        <span class="detail-label">Última ejecución</span>
-                        <span class="detail-value" th:text="${#temporals.format(rec.ultimaFechaEjecutada, 'dd/MM/yyyy')}">Última</span>
+                    <div class="form-group">
+                        <label for="editRecurrenteFrecuencia">Frecuencia</label>
+                        <select id="editRecurrenteFrecuencia" name="frecuencia" required>
+                            <option value="semana">Cada semana</option>
+                            <option value="dos_semanas">Cada dos semanas</option>
+                            <option value="mes">Cada mes</option>
+                            <option value="dos_meses">Cada dos meses</option>
+                            <option value="anio">Cada año</option>
+                        </select>
                     </div>
-                </div>
-                
-                <div class="recurrente-actions">
-                    <a th:href="@{'/movimientos/recurrentes/terminar/' + ${rec.id}}" 
-                       class="btn btn-sm" 
-                       th:if="${rec.activo}"
-                       onclick="return confirm('¿Seguro que quieres terminar este movimiento recurrente?')">
-                        Terminar
-                    </a>
-                    <a th:href="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" 
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirm('¿Seguro que quieres borrar este movimiento recurrente? Esta acción no se puede deshacer.')">
-                        Borrar
-                    </a>
-                </div>
-            </li>
-        </ul>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="btnCancelarRecurrente">Cancelar</button>
+                        <button type="submit" class="btn-save">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+
+    <!-- Botón de cambio de tema -->
+    <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
+        <span class="sun-icon">☀️</span>
+        <span class="moon-icon">🌙</span>
+    </button>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    
+    <!-- Script del header -->
+    <script th:replace="~{fragments/header :: header-script}"></script>
+    
+    <script>
+        // Función para cambiar tema
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        
+        // Función para abrir el modal de edición
+        function openEditModal(button) {
+            const id = button.getAttribute('data-id');
+            const asunto = button.getAttribute('data-asunto');
+            const cantidad = button.getAttribute('data-cantidad');
+            const ingreso = button.getAttribute('data-ingreso');
+            const fechaInicio = button.getAttribute('data-fecha');
+            const frecuencia = button.getAttribute('data-frecuencia');
+            
+            document.getElementById('editRecurrenteId').value = id;
+            document.getElementById('editRecurrenteCantidad').value = cantidad;
+            document.getElementById('editRecurrenteAsunto').value = asunto;
+            document.getElementById('editRecurrenteTipo').value = ingreso;
+            document.getElementById('editRecurrenteFecha').value = fechaInicio;
+            document.getElementById('editRecurrenteFrecuencia').value = frecuencia;
+            
+            document.getElementById('editRecurrenteModal').classList.add('show');
+        }
+        
+        // Función para cerrar el modal
+        function closeEditModal() {
+            document.getElementById('editRecurrenteModal').classList.remove('show');
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Event listeners para botones de modificar
+            document.querySelectorAll('.btn-modificar').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    openEditModal(this);
+                });
+            });
+            
+            // Cerrar modal con el botón cancelar
+            document.getElementById('btnCancelarRecurrente').addEventListener('click', closeEditModal);
+            
+            // Cerrar modal haciendo clic fuera
+            document.getElementById('editRecurrenteModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeEditModal();
+                }
+            });
+            
+            // Manejar envío del formulario
+            document.getElementById('editRecurrenteForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const id = formData.get('id');
+                
+                fetch(`/movimientos/recurrentes/modificar/${id}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Error al modificar el movimiento recurrente');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al modificar el movimiento recurrente');
+                });
+            });
+        });
+    </script>
 </body>
 </html> 

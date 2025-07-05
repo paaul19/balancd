@@ -1,11 +1,11 @@
-package com.musicstore.service;
+package com.balancdapp.service;
 
-import com.musicstore.model.Movimiento;
-import com.musicstore.model.User;
-import com.musicstore.model.MesManual;
-import com.musicstore.repository.MovimientoRepository;
-import com.musicstore.repository.MesManualRepository;
-import com.musicstore.repository.UserRepository;
+import com.balancdapp.model.Movimiento;
+import com.balancdapp.model.User;
+import com.balancdapp.model.MesManual;
+import com.balancdapp.repository.MovimientoRepository;
+import com.balancdapp.repository.MesManualRepository;
+import com.balancdapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +19,13 @@ import java.util.HashSet;
 @Service
 @Transactional
 public class MovimientoService {
-    
+
     @Autowired
     private MovimientoRepository movimientoRepository;
-    
+
     @Autowired
     private MesManualRepository mesManualRepository;
-    
+
     @Autowired
     private UserRepository userRepository;
 
@@ -65,19 +65,19 @@ public class MovimientoService {
         if (movimientoActualizado.getId() == null) {
             throw new RuntimeException("Movimiento ID cannot be null for update");
         }
-        
+
         Optional<Movimiento> existingOpt = movimientoRepository.findById(movimientoActualizado.getId());
         if (!existingOpt.isPresent()) {
             throw new RuntimeException("Movimiento not found with ID: " + movimientoActualizado.getId());
         }
-        
+
         Movimiento existing = existingOpt.get();
-        
+
         // Preservar el usuario si no se proporciona
         if (movimientoActualizado.getUser() == null) {
             movimientoActualizado.setUser(existing.getUser());
         }
-        
+
         movimientoRepository.save(movimientoActualizado);
     }
 
@@ -86,10 +86,10 @@ public class MovimientoService {
         if (!userOpt.isPresent()) {
             throw new RuntimeException("User not found with ID: " + userId);
         }
-        
+
         User user = userOpt.get();
         boolean existe = movimientoRepository.existsByUserAndMesAsignadoAndAnioAsignado(user, mes, anio);
-        
+
         if (!existe) {
             Movimiento m = new Movimiento();
             m.setUser(user);
@@ -107,9 +107,9 @@ public class MovimientoService {
         if (!userOpt.isPresent()) {
             throw new RuntimeException("User not found with ID: " + userId);
         }
-        
+
         User user = userOpt.get();
-        
+
         if (!mesManualRepository.existsByUserAndAnioAndMes(user, anio, mes)) {
             MesManual mesManual = new MesManual(user, anio, mes);
             mesManualRepository.save(mesManual);
@@ -122,13 +122,13 @@ public class MovimientoService {
             User user = userOpt.get();
             List<Object[]> anioMesList = mesManualRepository.findAnioMesByUser(user);
             Set<YearMonth> yearMonths = new HashSet<>();
-            
+
             for (Object[] anioMes : anioMesList) {
                 Integer anio = (Integer) anioMes[0];
                 Integer mes = (Integer) anioMes[1];
                 yearMonths.add(YearMonth.of(anio, mes));
             }
-            
+
             return yearMonths;
         }
         return Set.of();

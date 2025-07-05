@@ -1,4 +1,4 @@
-package com.musicstore.service;
+package com.balancdapp.service;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -12,13 +12,13 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class DataEncryptionService {
-    
+
     @Value("${app.encryption.key:defaultSecretKey123456789012345678901234}")
     private String secretKeyString;
-    
+
     private SecretKey secretKey;
     private static final String ALGORITHM = "AES";
-    
+
     @PostConstruct
     public void init() {
         try {
@@ -32,7 +32,7 @@ public class DataEncryptionService {
             throw new RuntimeException("Error inicializando cifrado", e);
         }
     }
-    
+
     /**
      * Cifra un texto usando AES
      * @param plainText El texto a cifrar
@@ -42,7 +42,7 @@ public class DataEncryptionService {
         if (plainText == null || plainText.trim().isEmpty()) {
             return plainText;
         }
-        
+
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
@@ -52,7 +52,7 @@ public class DataEncryptionService {
             throw new RuntimeException("Error cifrando datos", e);
         }
     }
-    
+
     /**
      * Descifra un texto cifrado con AES
      * @param encryptedText El texto cifrado en Base64
@@ -62,7 +62,7 @@ public class DataEncryptionService {
         if (encryptedText == null || encryptedText.trim().isEmpty()) {
             return encryptedText;
         }
-        
+
         try {
             Cipher cipher = Cipher.getInstance(ALGORITHM);
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
@@ -73,7 +73,7 @@ public class DataEncryptionService {
             throw new RuntimeException("Error descifrando datos", e);
         }
     }
-    
+
     /**
      * Verifica si un texto está cifrado
      * @param text El texto a verificar
@@ -83,7 +83,7 @@ public class DataEncryptionService {
         if (text == null || text.trim().isEmpty()) {
             return false;
         }
-        
+
         try {
             // Intentar decodificar Base64
             Base64.getDecoder().decode(text);
@@ -93,7 +93,7 @@ public class DataEncryptionService {
             return false;
         }
     }
-    
+
     /**
      * Cifra un número como string
      * @param number El número a cifrar
@@ -105,7 +105,7 @@ public class DataEncryptionService {
         }
         return encrypt(number.toString());
     }
-    
+
     /**
      * Descifra un número
      * @param encryptedNumber El número cifrado como string
@@ -115,7 +115,7 @@ public class DataEncryptionService {
         if (encryptedNumber == null || encryptedNumber.trim().isEmpty()) {
             return null;
         }
-        
+
         try {
             String decrypted = decrypt(encryptedNumber);
             return Double.parseDouble(decrypted);

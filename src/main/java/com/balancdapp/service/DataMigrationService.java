@@ -1,10 +1,10 @@
-/*package com.musicstore.service;
+/*package com.balancdapp.service;
 
-import com.musicstore.model.Movimiento;
-import com.musicstore.model.User;
-import com.musicstore.repository.MovimientoRepository;
-import com.musicstore.repository.UserRepository;
-import com.musicstore.repository.MesManualRepository;
+import com.balancdapp.model.Movimiento;
+import com.balancdapp.model.User;
+import com.balancdapp.repository.MovimientoRepository;
+import com.balancdapp.repository.UserRepository;
+import com.balancdapp.repository.MesManualRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -25,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 @Order(1)
 public class DataMigrationService implements CommandLineRunner {
-    /*
+    
     @Autowired
     private MovimientoRepository movimientoRepository;
     
@@ -90,65 +90,85 @@ public class DataMigrationService implements CommandLineRunner {
         }
     }
     
-    private void migrateMovimientos() {
-        try {
-            File movimientosFile = new File("data/movimientos.json");
-            List<Map<String, Object>> movimientosData = objectMapper.readValue(movimientosFile, List.class);
-            for (Map<String, Object> movData : movimientosData) {
-                Long userId = Long.valueOf(movData.get("userId").toString());
-                Double cantidad = Double.valueOf(movData.get("cantidad").toString());
-                Boolean ingreso = Boolean.valueOf(movData.get("ingreso").toString());
-                String asunto = (String) movData.get("asunto");
-                String fechaStr = (String) movData.get("fecha");
-                Integer mesAsignado = Integer.valueOf(movData.get("mesAsignado").toString());
-                Integer anioAsignado = Integer.valueOf(movData.get("anioAsignado").toString());
-                
-                User user = userRepository.findById(userId).orElse(null);
-                if (user != null) {
-                    Movimiento movimiento = new Movimiento();
-                    movimiento.setUser(user);
-                    movimiento.setIngreso(ingreso);
-                    movimiento.setAsunto(asunto);
-                    movimiento.setFecha(LocalDate.parse(fechaStr));
-                    movimiento.setMesAsignado(mesAsignado);
-                    movimiento.setAnioAsignado(anioAsignado);
-                    movimientoRepository.save(movimiento);
+    @Transactional
+    public void migrateMovimientos() {
+        List<Movimiento> movimientos = movimientoRepository.findAll();
+        int migratedCount = 0;
+        
+        for (Movimiento movimiento : movimientos) {
+            boolean needsUpdate = false;
+            
+            // Verificar si la cantidad está cifrada
+            if (movimiento.getCantidadCifrada() == null || movimiento.getCantidadCifrada().isEmpty()) {
+                // Migrar cantidad de campo numérico a cifrado
+                if (movimiento.getCantidad() != 0.0) {
+                    String cantidadCifrada = encryptionService.encryptNumber(movimiento.getCantidad());
+                    movimiento.setCantidadCifrada(cantidadCifrada);
+                    needsUpdate = true;
                 }
             }
-            System.out.println("✅ Movimientos migrados desde JSON");
-        } catch (IOException e) {
-            System.err.println("❌ Error migrando movimientos: " + e.getMessage());
+            
+            // Verificar si el asunto está cifrado
+            if (movimiento.getAsuntoCifrado() == null || movimiento.getAsuntoCifrado().isEmpty()) {
+                // Migrar asunto de campo texto a cifrado
+                if (movimiento.getAsunto() != null && !movimiento.getAsunto().isEmpty()) {
+                    String asuntoCifrado = encryptionService.encrypt(movimiento.getAsunto());
+                    movimiento.setAsuntoCifrado(asuntoCifrado);
+                    needsUpdate = true;
+                }
+            }
+            
+            // Verificar si la fecha está cifrada
+            if (movimiento.getFechaCifrada() == null || movimiento.getFechaCifrada().isEmpty()) {
+                // Migrar fecha de campo fecha a cifrado
+                if (movimiento.getFecha() != null) {
+                    String fechaCifrada = encryptionService.encrypt(movimiento.getFecha().toString());
+                    movimiento.setFechaCifrada(fechaCifrada);
+                    needsUpdate = true;
+                }
+            }
+            
+            if (needsUpdate) {
+                movimientoRepository.save(movimiento);
+                migratedCount++;
+                System.out.println("Movimiento migrado: ID " + movimiento.getId());
+            }
+        }
+        
+        if (migratedCount > 0) {
+            System.out.println("Migración de movimientos completada: " + migratedCount + " registros actualizados");
+        } else {
+            System.out.println("No se encontraron movimientos para migrar");
         }
     }
     
-    private void migrateMesesManuales() {
-        try {
-            File mesesFile = new File("data/meses_creados.json");
-            Map<String, List<Map<String, Object>>> mesesData = objectMapper.readValue(mesesFile, Map.class);
-            for (Map.Entry<String, List<Map<String, Object>>> entry : mesesData.entrySet()) {
-                Long userId = Long.valueOf(entry.getKey());
-                List<Map<String, Object>> meses = entry.getValue();
+    @Transactional
+    public void migrateMesesManuales() {
+        List<Movimiento> movimientos = movimientoRepository.findAll();
+        int createdCount = 0;
+        
+        for (Movimiento movimiento : movimientos) {
+            if (movimiento.getUser() != null) {
+                int anio = movimiento.getAnioAsignado();
+                int mes = movimiento.getMesAsignado();
                 
-                User user = userRepository.findById(userId).orElse(null);
-                if (user != null) {
-                    for (Map<String, Object> mesData : meses) {
-                        Integer anio = Integer.valueOf(mesData.get("anio").toString());
-                        Integer mes = Integer.valueOf(mesData.get("mes").toString());
-                        
-                        // Verificar si ya existe usando el método correcto
-                        if (!mesManualRepository.existsByUserAndAnioAndMes(user, anio, mes)) {
-                            com.musicstore.model.MesManual mesManual = new com.musicstore.model.MesManual();
-                            mesManual.setUser(user);
-                            mesManual.setAnio(anio);
-                            mesManual.setMes(mes);
-                            mesManualRepository.save(mesManual);
-                        }
-                    }
+                // Verificar si ya existe el mes manual
+                if (!mesManualRepository.existsByUserAndAnioAndMes(movimiento.getUser(), anio, mes)) {
+                    com.balancdapp.model.MesManual mesManual = new com.balancdapp.model.MesManual();
+                    mesManual.setUser(movimiento.getUser());
+                    mesManual.setAnio(anio);
+                    mesManual.setMes(mes);
+                    mesManualRepository.save(mesManual);
+                    createdCount++;
+                    System.out.println("Mes manual creado: " + anio + "-" + mes + " para usuario " + movimiento.getUser().getUsername());
                 }
             }
-            System.out.println("✅ Meses manuales migrados desde JSON");
-        } catch (IOException e) {
-            System.err.println("❌ Error migrando meses manuales: " + e.getMessage());
+        }
+        
+        if (createdCount > 0) {
+            System.out.println("Migración de meses manuales completada: " + createdCount + " registros creados");
+        } else {
+            System.out.println("No se encontraron meses manuales para crear");
         }
     }
     

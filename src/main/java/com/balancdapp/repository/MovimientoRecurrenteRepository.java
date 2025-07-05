@@ -1,7 +1,7 @@
-package com.musicstore.repository;
+package com.balancdapp.repository;
 
-import com.musicstore.model.MovimientoRecurrente;
-import com.musicstore.model.User;
+import com.balancdapp.model.MovimientoRecurrente;
+import com.balancdapp.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

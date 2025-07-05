@@ -1,7 +1,7 @@
-package com.musicstore.service;
+package com.balancdapp.service;
 
-import com.musicstore.model.User;
-import com.musicstore.repository.UserRepository;
+import com.balancdapp.model.User;
+import com.balancdapp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,10 +11,10 @@ import java.util.Optional;
 @Service
 @Transactional
 public class UserService {
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private PasswordService passwordService;
 
@@ -35,7 +35,7 @@ public class UserService {
         if (user.getPassword() != null && !passwordService.isEncoded(user.getPassword())) {
             user.setPassword(passwordService.encodePassword(user.getPassword()));
         }
-        
+
         if (user.getId() == null) {
             if (userRepository.existsByUsername(user.getUsername())) {
                 throw new RuntimeException("Username already exists");
@@ -45,11 +45,11 @@ public class UserService {
             if (existingUser.isPresent()) {
                 User existing = existingUser.get();
                 // Verificar si el nuevo username ya existe en otro usuario
-                if (!existing.getUsername().equals(user.getUsername()) && 
-                    userRepository.existsByUsername(user.getUsername())) {
+                if (!existing.getUsername().equals(user.getUsername()) &&
+                        userRepository.existsByUsername(user.getUsername())) {
                     throw new RuntimeException("Username already exists");
                 }
-                
+
                 // Preservar la contraseña si no se proporciona en la actualización
                 if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
                     user.setPassword(existing.getPassword());
@@ -90,8 +90,8 @@ public class UserService {
         User existingUser = existingUserOpt.get();
 
         // Verificar si el nuevo username ya existe en otro usuario
-        if (!existingUser.getUsername().equals(updatedUser.getUsername()) && 
-            userRepository.existsByUsername(updatedUser.getUsername())) {
+        if (!existingUser.getUsername().equals(updatedUser.getUsername()) &&
+                userRepository.existsByUsername(updatedUser.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
 

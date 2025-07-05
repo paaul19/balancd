@@ -1,7 +1,7 @@
-package com.musicstore.controller;
+package com.balancdapp.controller;
 
-import com.musicstore.model.User;
-import com.musicstore.service.UserService;
+import com.balancdapp.model.User;
+import com.balancdapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
