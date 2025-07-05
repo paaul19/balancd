@@ -1,183 +1,144 @@
 package com.musicstore.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.musicstore.model.Movimiento;
+import com.musicstore.model.User;
+import com.musicstore.model.MesManual;
+import com.musicstore.repository.MovimientoRepository;
+import com.musicstore.repository.MesManualRepository;
+import com.musicstore.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
 
 @Service
+@Transactional
 public class MovimientoService {
-    private final String FILE_PATH = "data/movimientos.json";
-    private final String FILE_MESES_MANUALES = "data/meses_creados.json";
-    private final ObjectMapper objectMapper;
-
-    public MovimientoService() {
-        this.objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-    }
-
-    private void createFileIfNotExists() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) {
-            try {
-                // Asegurar que el directorio padre existe
-                file.getParentFile().mkdirs();
-                objectMapper.writeValue(file, new ArrayList<Movimiento>());
-            } catch (IOException e) {
-                throw new RuntimeException("No se pudo inicializar el archivo de movimientos", e);
-            }
-        }
-    }
+    
+    @Autowired
+    private MovimientoRepository movimientoRepository;
+    
+    @Autowired
+    private MesManualRepository mesManualRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     public List<Movimiento> getMovimientosByUserId(Long userId) {
-        return getAllMovimientos().stream()
-                .filter(m -> m.getUserId().equals(userId))
-                .collect(Collectors.toList());
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            return movimientoRepository.findByUser(userOpt.get());
+        }
+        return List.of();
     }
 
     public List<Movimiento> getAllMovimientos() {
-        createFileIfNotExists();
-        try {
-            return objectMapper.readValue(new File(FILE_PATH), new TypeReference<List<Movimiento>>() {});
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudieron leer los movimientos", e);
-        }
+        return movimientoRepository.findAll();
     }
 
     public Movimiento addMovimiento(Movimiento movimiento) {
-        List<Movimiento> movimientos = getAllMovimientos();
-        movimiento.setId(generateId(movimientos));
-        movimientos.add(movimiento);
-        saveAllMovimientos(movimientos);
-        return movimiento;
+        // El usuario ya debe estar establecido en el movimiento
+        if (movimiento.getUser() == null) {
+            throw new RuntimeException("User cannot be null for movimiento");
+        }
+        return movimientoRepository.save(movimiento);
     }
 
     public void deleteMovimiento(Long movimientoId, Long userId) {
-        List<Movimiento> movimientos = getAllMovimientos();
-        movimientos.removeIf(m -> m.getId().equals(movimientoId) && m.getUserId().equals(userId));
-        saveAllMovimientos(movimientos);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            movimientoRepository.deleteByUserAndId(user, movimientoId);
+        }
     }
 
     public Movimiento getMovimientoById(Long id) {
-        return getAllMovimientos().stream()
-                .filter(m -> m.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        return movimientoRepository.findById(id).orElse(null);
     }
 
     public void updateMovimiento(Movimiento movimientoActualizado) {
-        List<Movimiento> movimientos = getAllMovimientos();
-        for (int i = 0; i < movimientos.size(); i++) {
-            if (movimientos.get(i).getId().equals(movimientoActualizado.getId())) {
-                movimientos.set(i, movimientoActualizado);
-                break;
-            }
+        if (movimientoActualizado.getId() == null) {
+            throw new RuntimeException("Movimiento ID cannot be null for update");
         }
-        saveAllMovimientos(movimientos);
-    }
-
-    private Long generateId(List<Movimiento> movimientos) {
-        return movimientos.stream().mapToLong(Movimiento::getId).max().orElse(0L) + 1;
-    }
-
-    private void saveAllMovimientos(List<Movimiento> movimientos) {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(FILE_PATH), movimientos);
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudieron guardar los movimientos", e);
+        
+        Optional<Movimiento> existingOpt = movimientoRepository.findById(movimientoActualizado.getId());
+        if (!existingOpt.isPresent()) {
+            throw new RuntimeException("Movimiento not found with ID: " + movimientoActualizado.getId());
         }
+        
+        Movimiento existing = existingOpt.get();
+        
+        // Preservar el usuario si no se proporciona
+        if (movimientoActualizado.getUser() == null) {
+            movimientoActualizado.setUser(existing.getUser());
+        }
+        
+        movimientoRepository.save(movimientoActualizado);
     }
 
     public void crearMesVacioSiNoExiste(Long userId, int mes, int anio) {
-        List<Movimiento> movimientos = getAllMovimientos();
-        boolean existe = movimientos.stream().anyMatch(m -> m.getUserId().equals(userId) && m.getMesAsignado() == mes && m.getAnioAsignado() == anio);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (!userOpt.isPresent()) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+        
+        User user = userOpt.get();
+        boolean existe = movimientoRepository.existsByUserAndMesAsignadoAndAnioAsignado(user, mes, anio);
+        
         if (!existe) {
             Movimiento m = new Movimiento();
-            m.setUserId(userId);
-            m.setCantidad(0.0);
+            m.setUser(user);
             m.setIngreso(true);
             m.setAsunto("Mes creado manualmente");
-            m.setFecha(java.time.LocalDate.of(anio, mes, 1));
+            m.setFecha(LocalDate.of(anio, mes, 1));
             m.setMesAsignado(mes);
             m.setAnioAsignado(anio);
-            addMovimiento(m);
-        }
-    }
-
-    // Estructura auxiliar para guardar meses manuales por usuario
-    private Map<Long, Set<String>> leerMesesManuales() {
-        createFileIfNotExistsMeses();
-        try {
-            return objectMapper.readValue(new File(FILE_MESES_MANUALES), new TypeReference<Map<Long, Set<String>>>() {});
-        } catch (IOException e) {
-            return new HashMap<>();
-        }
-    }
-
-    private void guardarMesesManuales(Map<Long, Set<String>> data) {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(FILE_MESES_MANUALES), data);
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudieron guardar los meses manuales", e);
-        }
-    }
-
-    private void createFileIfNotExistsMeses() {
-        File file = new File(FILE_MESES_MANUALES);
-        if (!file.exists()) {
-            try {
-                file.getParentFile().mkdirs();
-                objectMapper.writeValue(file, new HashMap<Long, Set<String>>());
-            } catch (IOException e) {
-                throw new RuntimeException("No se pudo inicializar el archivo de meses manuales", e);
-            }
+            movimientoRepository.save(m);
         }
     }
 
     public void crearMesManual(Long userId, int mes, int anio) {
-        Map<Long, Set<String>> data = leerMesesManuales();
-        String clave = anio + "-" + (mes < 10 ? ("0"+mes) : mes);
-        data.computeIfAbsent(userId, k -> new HashSet<>()).add(clave);
-        guardarMesesManuales(data);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (!userOpt.isPresent()) {
+            throw new RuntimeException("User not found with ID: " + userId);
+        }
+        
+        User user = userOpt.get();
+        
+        if (!mesManualRepository.existsByUserAndAnioAndMes(user, anio, mes)) {
+            MesManual mesManual = new MesManual(user, anio, mes);
+            mesManualRepository.save(mesManual);
+        }
     }
 
     public Set<YearMonth> getMesesManuales(Long userId) {
-        Map<Long, Set<String>> data = leerMesesManuales();
-        Set<YearMonth> res = new HashSet<>();
-        if (data.containsKey(userId)) {
-            for (String clave : data.get(userId)) {
-                String[] partes = clave.split("-");
-                int anio = Integer.parseInt(partes[0]);
-                int mes = Integer.parseInt(partes[1]);
-                res.add(YearMonth.of(anio, mes));
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            List<Object[]> anioMesList = mesManualRepository.findAnioMesByUser(user);
+            Set<YearMonth> yearMonths = new HashSet<>();
+            
+            for (Object[] anioMes : anioMesList) {
+                Integer anio = (Integer) anioMes[0];
+                Integer mes = (Integer) anioMes[1];
+                yearMonths.add(YearMonth.of(anio, mes));
             }
+            
+            return yearMonths;
         }
-        return res;
+        return Set.of();
     }
 
     public void eliminarMesManual(Long userId, int mes, int anio) {
-        Map<Long, Set<String>> data = leerMesesManuales();
-        String clave = anio + "-" + (mes < 10 ? ("0"+mes) : mes);
-        if (data.containsKey(userId)) {
-            data.get(userId).remove(clave);
-            if (data.get(userId).isEmpty()) {
-                data.remove(userId);
-            }
-            guardarMesesManuales(data);
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            mesManualRepository.deleteByUserAndAnioAndMes(user, anio, mes);
         }
     }
 }

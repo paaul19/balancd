@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Búsqueda avanzada de movimientos</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+    <link rel="apple-touch-icon" href="/images/logo-app.png">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <style>
+        body {
+            background: var(--bg-primary, #222);
+            color: var(--text-primary, #eee);
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            border-radius: 10px;
+            background: var(--bg-secondary, #181818);
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.13);
+            padding: 1.2rem 2rem;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 1.2rem;
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--text-primary, #fff);
+            letter-spacing: 0.5px;
+        }
+        .filtros {
+            display: flex;
+            gap: 0.7rem;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .filtros input[type="text"],
+        .filtros select,
+        .filtros button {
+            border-radius: 7px;
+        }
+        .filtros input[type="text"] {
+            width: 120px;
+            min-width: 0;
+            max-width: 200px;
+            font-size: 1.08rem;
+            padding: 0.6rem 0.8rem;
+        }
+        .filtros select {
+            min-width: 130px;
+            width: 140px;
+            font-size: 1.08rem;
+            padding: 0.6rem 0.8rem;
+        }
+        .filtros button {
+            padding: 0.6rem 1.5rem;
+            font-size: 1.08rem;
+            min-width: 90px;
+        }
+        .filtros a {
+            margin-left: 0.3rem;
+            text-decoration: none;
+            color: #888;
+            font-size: 1.2em;
+            align-self: center;
+        }
+        .totals {
+            margin-bottom: 1.2rem;
+            text-align: center;
+            font-size: 1.08rem;
+        }
+        .totals span {
+            margin-right: 1.5em;
+        }
+        .totals .ingresos { color: #090; }
+        .totals .gastos { color: #c00; }
+        .totals .balance-pos { color: #090; }
+        .totals .balance-neg { color: #c00; }
+        .resumen-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.2rem;
+            background: var(--bg-primary, #222);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 1rem;
+        }
+        .resumen-table th, .resumen-table td {
+            border: 1px solid var(--border-color, #444);
+            padding: 0.6em 0.7em;
+            text-align: center;
+        }
+        .resumen-table th {
+            background: var(--bg-secondary, #181818);
+            color: var(--text-primary, #fff);
+            font-weight: 600;
+        }
+        .resumen-table tr:nth-child(even) {
+            background: var(--bg-secondary, #181818);
+        }
+        .resumen-table tr:nth-child(odd) {
+            background: var(--bg-primary, #222);
+        }
+        .resumen-table tr:hover {
+            background: var(--border-color, #333);
+        }
+        .volver {
+            margin-top: 1.5rem;
+            display: inline-block;
+            color: var(--link-color, #90caf9);
+            text-decoration: none;
+            font-size: 1.05em;
+        }
+        .volver:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 800px) {
+            .filtros {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .filtros input[type="text"], .filtros select, .filtros button, .filtros a {
+                min-width: 0;
+                width: 100%;
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header con botón de logout -->
+<div class="header-section" style="display:flex; justify-content:space-between; align-items:center; margin:1rem 0 1rem 0;">
+    <div></div> <!-- Espacio vacío para centrar el título -->
+    <a href="/logout" class="logout-btn" title="Cerrar sesión">
+        <button type="button" style="background:var(--button-bg); color:var(--button-text); border:none; border-radius:5px; padding:0.5rem 1rem; cursor:pointer; font-size:0.9rem; transition:background 0.2s;">
+            <span style="margin-right:0.3rem;">👤</span>Cerrar Sesión
+        </button>
+    </a>
+</div>
+<div class="container">
+    <h1>Búsqueda avanzada de movimientos</h1>
+    <form th:action="@{/movimientos/busqueda-avanzada}" method="get" class="filtros">
+        <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto..." autocomplete="off" />
+        <select name="tipo" th:value="${tipo}">
+            <option value="todos" th:selected="${tipo}=='todos'">Todos</option>
+            <option value="ingresos" th:selected="${tipo}=='ingresos'">Ingresos</option>
+            <option value="gastos" th:selected="${tipo}=='gastos'">Gastos</option>
+            <option value="balance" th:selected="${tipo}=='balance'">Balance ≠ 0</option>
+        </select>
+        <select name="periodo" th:value="${periodo}">
+            <option value="3" th:selected="${periodo}==3">Últimos 3 meses</option>
+            <option value="6" th:selected="${periodo}==6">Últimos 6 meses</option>
+            <option value="12" th:selected="${periodo}==12">Últimos 12 meses</option>
+            <option value="0" th:selected="${periodo}==0">Año actual</option>
+        </select>
+        <button type="submit">Buscar</button>
+        <a th:href="@{/movimientos/busqueda-avanzada}">✖</a>
+    </form>
+    <div th:if="${busqueda != null and #strings.trim(busqueda) != ''}">
+        <div class="totals">
+            <span><b>Ingresos:</b> <span class="ingresos" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span></span>
+            <span><b>Gastos:</b> <span class="gastos" th:text="${#numbers.formatDecimal(totalGastos, 1, 2)} + ' €'"></span></span>
+            <span><b>Balance:</b> <span th:class="${totalBalance >= 0 ? 'balance-pos' : 'balance-neg'}" th:text="${#numbers.formatDecimal(totalBalance, 1, 2)} + ' €'"></span></span>
+        </div>
+        <table class="resumen-table">
+            <thead>
+                <tr>
+                    <th>Mes</th>
+                    <th>Ingresos</th>
+                    <th>Gastos</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="mes : ${resumen}">
+                    <td th:text="${#temporals.format(mes.mes, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></td>
+                    <td th:text="${#numbers.formatDecimal(mes.ingresos, 1, 2)} + ' €'" style="color:#090; font-weight:500;"></td>
+                    <td th:text="${#numbers.formatDecimal(mes.gastos, 1, 2)} + ' €'" style="color:#c00; font-weight:500;"></td>
+                    <td th:text="${#numbers.formatDecimal(mes.balance, 1, 2)} + ' €'" th:style="${mes.balance >= 0 ? 'color:#090; font-weight:500;' : 'color:#c00; font-weight:500;'}"></td>
+                </tr>
+                <tr th:if="${resumen.size()} == 0">
+                    <td colspan="4">No hay movimientos que coincidan con la búsqueda.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <a th:href="@{/movimientos}" class="volver">← Volver a movimientos</a>
+    <!-- Botón de cambio de tema -->
+    <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
+        <span class="sun-icon">☀️</span>
+        <span class="moon-icon">🌙</span>
+    </button>
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        });
+    </script>
+</div>
+</body>
+</html> 

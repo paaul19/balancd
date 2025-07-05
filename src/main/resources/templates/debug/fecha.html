@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Fecha</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .debug-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .debug-info h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .debug-info p {
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .mensaje {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div th:if="${mensaje}" class="mensaje" th:text="${mensaje}"></div>
+    
+    <div class="debug-info">
+        <h2>Información de Debug</h2>
+        <p><strong>Fecha actual:</strong> <span th:text="${fecha}"></span></p>
+        <p><strong>Zona horaria:</strong> <span th:text="${zonaHoraria}"></span></p>
+        <p><strong>Timestamp:</strong> <span th:text="${timestamp}"></span></p>
+    </div>
+    
+    <div class="debug-info">
+        <h2>Acciones de Debug</h2>
+        <a href="/debug/procesar-recurrentes" class="btn">Ejecutar Scheduler Manualmente</a>
+        <a href="/movimientos" class="btn">Volver a Movimientos</a>
+    </div>
+    
+    <div class="debug-info">
+        <h2>Información sobre Movimientos Recurrentes</h2>
+        <p><strong>Frecuencias disponibles:</strong></p>
+        <ul>
+            <li><strong>semana:</strong> Cada 7 días desde la fecha de inicio</li>
+            <li><strong>dos_semanas:</strong> Cada 14 días desde la fecha de inicio</li>
+            <li><strong>mes:</strong> El mismo día de cada mes</li>
+            <li><strong>dos_meses:</strong> El mismo día cada dos meses</li>
+        </ul>
+        <p><strong>Nota:</strong> El scheduler se ejecuta automáticamente cada día a las 00:00 AM</p>
+    </div>
+</body>
+</html> 

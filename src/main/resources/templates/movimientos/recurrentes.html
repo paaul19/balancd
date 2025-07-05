@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movimientos Recurrentes</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+    <link rel="apple-touch-icon" href="/images/logo-app.png">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Incluir estilos del tema -->
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <!-- Script para aplicar tema inmediatamente -->
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    
+    <style>
+        .container { 
+            max-width: 800px; 
+            margin: 40px auto; 
+            border-radius: 10px; 
+            padding: 2rem; 
+        }
+        
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .header-section h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+        }
+        
+        .btn {
+            background: var(--button-bg);
+            color: var(--button-text);
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-1px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        
+        .recurrentes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .recurrente-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .recurrente-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .recurrente-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .recurrente-info {
+            flex: 1;
+        }
+        
+        .recurrente-asunto {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .recurrente-cantidad {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cantidad-ingreso {
+            color: #28a745;
+        }
+        
+        .cantidad-gasto {
+            color: #dc3545;
+        }
+        
+        .recurrente-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.2rem;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .detail-value {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .recurrente-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .estado-activo {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+        
+        .estado-activo.activo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .estado-activo.inactivo {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .frecuencia-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: var(--accent-color);
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+        
+        .empty-state p {
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 95%;
+                margin: 20px auto;
+                padding: 1.5rem;
+            }
+            
+            .header-section {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .header-section h1 {
+                text-align: center;
+                font-size: 1.5rem;
+            }
+            
+            .recurrente-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .recurrente-details {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+            
+            .recurrente-actions {
+                justify-content: center;
+            }
+            
+            .recurrente-actions .btn {
+                flex: 1;
+                text-align: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                max-width: 98%;
+                margin: 10px auto;
+                padding: 1rem;
+            }
+            
+            .header-section h1 {
+                font-size: 1.3rem;
+            }
+            
+            .recurrente-item {
+                padding: 1rem;
+            }
+            
+            .recurrente-asunto {
+                font-size: 1.1rem;
+            }
+            
+            .recurrente-cantidad {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h1>Movimientos Recurrentes</h1>
+            <a th:href="@{/movimientos}" class="btn">← Volver a Movimientos</a>
+        </div>
+        
+        <div th:if="${#lists.isEmpty(recurrentes)}" class="empty-state">
+            <h3>No hay movimientos recurrentes</h3>
+            <p>Aún no has creado ningún movimiento recurrente. Los movimientos recurrentes te permiten automatizar gastos e ingresos que se repiten regularmente.</p>
+            <a th:href="@{/movimientos}" class="btn">Crear mi primer recurrente</a>
+        </div>
+        
+        <ul class="recurrentes-list" th:if="${!#lists.isEmpty(recurrentes)}">
+            <li th:each="rec : ${recurrentes}" class="recurrente-item">
+                <div class="recurrente-header">
+                    <div class="recurrente-info">
+                        <div class="recurrente-asunto" th:text="${rec.asunto}">Asunto</div>
+                        <div class="recurrente-cantidad" th:class="${rec.ingreso ? 'cantidad-ingreso' : 'cantidad-gasto'}">
+                            <span th:text="${rec.ingreso ? '+' : '-'}"></span>
+                            <span th:text="${#numbers.formatDecimal(rec.cantidad, 1, 2)} + ' €'"></span>
+                        </div>
+                    </div>
+                    <div class="estado-activo" th:class="${rec.activo ? 'estado-activo activo' : 'estado-activo inactivo'}" 
+                         th:text="${rec.activo ? 'Activo' : 'Inactivo'}">Estado</div>
+                </div>
+                
+                <div class="recurrente-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Tipo</span>
+                        <span class="detail-value" th:text="${rec.ingreso ? 'Ingreso' : 'Gasto'}">Tipo</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Fecha de inicio</span>
+                        <span class="detail-value" th:text="${#temporals.format(rec.fechaInicio, 'dd/MM/yyyy')}">Fecha</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Frecuencia</span>
+                        <span class="frecuencia-badge" th:text="${rec.frecuencia == 'semana' ? 'Cada semana' : 
+                                                                   rec.frecuencia == 'dos_semanas' ? 'Cada 2 semanas' :
+                                                                   rec.frecuencia == 'mes' ? 'Cada mes' :
+                                                                   rec.frecuencia == 'dos_meses' ? 'Cada 2 meses' : rec.frecuencia}">Frecuencia</span>
+                    </div>
+                    <div class="detail-item" th:if="${rec.fechaFin != null}">
+                        <span class="detail-label">Fecha fin</span>
+                        <span class="detail-value" th:text="${#temporals.format(rec.fechaFin, 'dd/MM/yyyy')}">Fecha fin</span>
+                    </div>
+                    <div class="detail-item" th:if="${rec.ultimaFechaEjecutada != null}">
+                        <span class="detail-label">Última ejecución</span>
+                        <span class="detail-value" th:text="${#temporals.format(rec.ultimaFechaEjecutada, 'dd/MM/yyyy')}">Última</span>
+                    </div>
+                </div>
+                
+                <div class="recurrente-actions">
+                    <a th:href="@{'/movimientos/recurrentes/terminar/' + ${rec.id}}" 
+                       class="btn btn-sm" 
+                       th:if="${rec.activo}"
+                       onclick="return confirm('¿Seguro que quieres terminar este movimiento recurrente?')">
+                        Terminar
+                    </a>
+                    <a th:href="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" 
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('¿Seguro que quieres borrar este movimiento recurrente? Esta acción no se puede deshacer.')">
+                        Borrar
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</body>
+</html> 

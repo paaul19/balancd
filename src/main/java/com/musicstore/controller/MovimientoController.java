@@ -2,6 +2,7 @@ package com.musicstore.controller;
 
 import com.musicstore.model.Movimiento;
 import com.musicstore.model.User;
+import com.musicstore.service.EncryptedMovimientoService;
 import com.musicstore.service.MovimientoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,43 +20,65 @@ import java.util.ArrayList;
 public class MovimientoController {
     @Autowired
     private MovimientoService movimientoService;
+    
+    @Autowired
+    private EncryptedMovimientoService encryptedMovimientoService;
 
     @GetMapping("/movimientos")
     public String verMovimientos(@RequestParam(value = "mes", required = false) Integer mes,
                                  @RequestParam(value = "anio", required = false) Integer anio,
+                                 @RequestParam(value = "busqueda", required = false) String busqueda,
                                  Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-        List<Movimiento> todos = movimientoService.getMovimientosByUserId(user.getId());
+        
+        // Usar el servicio cifrado para obtener movimientos
+        List<EncryptedMovimientoService.MovimientoDTO> todos = encryptedMovimientoService.getMovimientosByUserId(user.getId());
+        
+        // Filtrar por búsqueda de asunto si se proporciona
+        if (busqueda != null && !busqueda.trim().isEmpty()) {
+            String busquedaLower = busqueda.trim().toLowerCase();
+            todos = todos.stream()
+                .filter(m -> m.getAsunto() != null && m.getAsunto().toLowerCase().contains(busquedaLower))
+                .collect(java.util.stream.Collectors.toList());
+        }
+        
         // Obtener todos los meses/años únicos con movimientos
         List<YearMonth> mesesDisponibles = new ArrayList<>(todos.stream()
             .map(m -> YearMonth.of(m.getAnioAsignado(), m.getMesAsignado()))
             .distinct()
             .collect(java.util.stream.Collectors.toList()));
+        
         // Añadir meses manuales
         Set<YearMonth> mesesManuales = movimientoService.getMesesManuales(user.getId());
         mesesDisponibles.addAll(mesesManuales);
+        
         // Ordenar y quitar duplicados
         mesesDisponibles = new ArrayList<>(mesesDisponibles.stream().distinct().sorted((a, b) -> b.compareTo(a)).toList());
+        
         // Añadir el mes actual si no está
         YearMonth mesActual = YearMonth.now();
         if (!mesesDisponibles.contains(mesActual)) {
             mesesDisponibles.add(0, mesActual);
         }
         mesesDisponibles = new ArrayList<>(mesesDisponibles.stream().distinct().sorted((a, b) -> b.compareTo(a)).toList());
+        
         // Si no se especifica mes/año, usar el actual
         YearMonth actual = YearMonth.now();
         YearMonth seleccionado = (mes != null && anio != null) ? YearMonth.of(anio, mes) : (mesesDisponibles.isEmpty() ? actual : mesesDisponibles.get(0));
+        
         // Filtrar movimientos del mes/año seleccionado (ordenar por id descendente)
-        List<Movimiento> movimientos = todos.stream()
+        List<EncryptedMovimientoService.MovimientoDTO> movimientos = todos.stream()
             .filter(m -> m.getMesAsignado() == seleccionado.getMonthValue() && m.getAnioAsignado() == seleccionado.getYear())
             .sorted((a, b) -> b.getId().compareTo(a.getId()))
             .toList();
-        double totalIngresos = movimientos.stream().filter(Movimiento::isIngreso).mapToDouble(Movimiento::getCantidad).sum();
-        double totalGastos = movimientos.stream().filter(m -> !m.isIngreso()).mapToDouble(Movimiento::getCantidad).sum();
+        
+        double totalIngresos = movimientos.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+        double totalGastos = movimientos.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
         double balance = totalIngresos - totalGastos;
+        
         model.addAttribute("movimientos", movimientos);
         model.addAttribute("totalIngresos", totalIngresos);
         model.addAttribute("totalGastos", totalGastos);
@@ -64,25 +87,34 @@ public class MovimientoController {
         model.addAttribute("mesesDisponibles", mesesDisponibles);
         model.addAttribute("mesSeleccionado", seleccionado);
         model.addAttribute("mesesManuales", mesesManuales);
+        model.addAttribute("busqueda", busqueda);
         return "movimientos/lista";
     }
 
     @PostMapping("/movimientos/add")
-    public String addMovimiento(@ModelAttribute Movimiento nuevoMovimiento, @RequestParam(value = "mes", required = false) Integer mes,
-                                @RequestParam(value = "anio", required = false) Integer anio, HttpSession session) {
+    public String addMovimiento(@RequestParam Double cantidad,
+                                @RequestParam(required = false) String asunto,
+                                @RequestParam Boolean ingreso,
+                                @RequestParam(value = "mes", required = false) Integer mes,
+                                @RequestParam(value = "anio", required = false) Integer anio,
+                                @RequestParam(value = "fecha", required = false) String fechaStr,
+                                HttpSession session) {
+        System.out.println("[DEBUG] Recibido: cantidad=" + cantidad + ", ingreso=" + ingreso + ", mes=" + mes + ", anio=" + anio + ", fecha=" + fechaStr);
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-        nuevoMovimiento.setUserId(user.getId());
-        nuevoMovimiento.setFecha(LocalDate.now());
-        // Asignar mes y año lógico
-        LocalDate now = LocalDate.now();
-        int mesAsignado = (mes != null) ? mes : now.getMonthValue();
-        int anioAsignado = (anio != null) ? anio : now.getYear();
-        nuevoMovimiento.setMesAsignado(mesAsignado);
-        nuevoMovimiento.setAnioAsignado(anioAsignado);
-        movimientoService.addMovimiento(nuevoMovimiento);
+        LocalDate fecha;
+        if (fechaStr != null && !fechaStr.isEmpty()) {
+            fecha = LocalDate.parse(fechaStr);
+        } else {
+            fecha = LocalDate.now();
+        }
+        int mesAsignado = (mes != null) ? mes : fecha.getMonthValue();
+        int anioAsignado = (anio != null) ? anio : fecha.getYear();
+        System.out.println("[DEBUG] Asignando: mesAsignado=" + mesAsignado + ", anioAsignado=" + anioAsignado + ", fecha real=" + fecha);
+        // Crear movimiento con datos cifrados
+        encryptedMovimientoService.createMovimiento(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fecha, mesAsignado, anioAsignado);
         return "redirect:/movimientos?mes=" + mesAsignado + "&anio=" + anioAsignado;
     }
 
@@ -113,15 +145,13 @@ public class MovimientoController {
         }
         
         Movimiento movimiento = movimientoService.getMovimientoById(id);
-        if (movimiento == null || !movimiento.getUserId().equals(user.getId())) {
+        if (movimiento == null || !movimiento.getUser().getId().equals(user.getId())) {
             return "redirect:/movimientos";
         }
         
-        movimiento.setCantidad(cantidad);
-        movimiento.setAsunto(asunto != null ? asunto.trim() : "");
-        movimiento.setIngreso(ingreso);
+        // Usar el servicio cifrado para actualizar
+        encryptedMovimientoService.updateMovimiento(movimiento, cantidad, asunto != null ? asunto.trim() : "", ingreso);
         
-        movimientoService.updateMovimiento(movimiento);
         return "redirect:/movimientos";
     }
 
@@ -171,5 +201,160 @@ public class MovimientoController {
         // Borra el mes manual si existe
         movimientoService.eliminarMesManual(user.getId(), mes, anio);
         return "redirect:/movimientos";
+    }
+
+    @GetMapping("/movimientos/busqueda-avanzada")
+    public String busquedaAvanzada(@RequestParam(value = "busqueda", required = false) String busqueda,
+                                   @RequestParam(value = "tipo", required = false, defaultValue = "todos") String tipo,
+                                   @RequestParam(value = "periodo", required = false, defaultValue = "12") Integer periodo,
+                                   Model model, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        List<EncryptedMovimientoService.MovimientoDTO> todos = encryptedMovimientoService.getMovimientosByUserId(user.getId());
+        // Filtrar por asunto
+        if (busqueda != null && !busqueda.trim().isEmpty()) {
+            String busquedaLower = busqueda.trim().toLowerCase();
+            todos = todos.stream()
+                .filter(m -> m.getAsunto() != null && m.getAsunto().toLowerCase().contains(busquedaLower))
+                .toList();
+        }
+        // Filtrar por periodo
+        LocalDate hoy = LocalDate.now();
+        LocalDate desde;
+        if (periodo == 3) {
+            desde = hoy.minusMonths(3).withDayOfMonth(1);
+        } else if (periodo == 6) {
+            desde = hoy.minusMonths(6).withDayOfMonth(1);
+        } else if (periodo == 12) {
+            desde = hoy.minusMonths(12).withDayOfMonth(1);
+        } else if (periodo == 0) { // año actual
+            desde = hoy.withDayOfYear(1);
+        } else {
+            desde = hoy.minusMonths(12).withDayOfMonth(1);
+        }
+        todos = todos.stream()
+            .filter(m -> m.getFecha().isAfter(desde.minusDays(1)))
+            .toList();
+        // Agrupar por mes/año
+        var resumenPorMes = new java.util.TreeMap<java.time.YearMonth, java.util.List<EncryptedMovimientoService.MovimientoDTO>>();
+        for (var mov : todos) {
+            var ym = java.time.YearMonth.of(mov.getAnioAsignado(), mov.getMesAsignado());
+            resumenPorMes.computeIfAbsent(ym, k -> new java.util.ArrayList<>()).add(mov);
+        }
+        // Calcular totales por mes
+        var resumen = new java.util.ArrayList<java.util.Map<String, Object>>();
+        for (var entry : resumenPorMes.entrySet()) {
+            var ym = entry.getKey();
+            var lista = entry.getValue();
+            double ingresos = lista.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+            double gastos = lista.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+            double balance = ingresos - gastos;
+            // Filtro por tipo
+            boolean mostrar = switch (tipo) {
+                case "ingresos" -> ingresos > 0;
+                case "gastos" -> gastos > 0;
+                case "balance" -> balance != 0;
+                default -> true;
+            };
+            if (mostrar) {
+                var map = new java.util.HashMap<String, Object>();
+                map.put("mes", ym);
+                map.put("ingresos", ingresos);
+                map.put("gastos", gastos);
+                map.put("balance", balance);
+                map.put("movimientos", lista);
+                resumen.add(map);
+            }
+        }
+        resumen.sort((a, b) -> ((java.time.YearMonth) b.get("mes")).compareTo((java.time.YearMonth) a.get("mes")));
+        model.addAttribute("resumen", resumen);
+        model.addAttribute("busqueda", busqueda);
+        model.addAttribute("tipo", tipo);
+        model.addAttribute("periodo", periodo);
+        // Calcular totales globales
+        double totalIngresos = todos.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+        double totalGastos = todos.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+        double totalBalance = totalIngresos - totalGastos;
+        model.addAttribute("totalIngresos", totalIngresos);
+        model.addAttribute("totalGastos", totalGastos);
+        model.addAttribute("totalBalance", totalBalance);
+        return "movimientos/busqueda-avanzada";
+    }
+
+    @PostMapping("/movimientos/recurrente")
+    public String addMovimientoRecurrente(@RequestParam Double cantidad,
+                                          @RequestParam String asunto,
+                                          @RequestParam Boolean ingreso,
+                                          @RequestParam String fecha,
+                                          @RequestParam String frecuencia,
+                                          @RequestParam(required = false) Integer repeticiones,
+                                          @RequestParam(required = false) String fechaFin,
+                                          HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        LocalDate fechaInicio = LocalDate.parse(fecha);
+        LocalDate fechaFinParsed = (fechaFin != null && !fechaFin.isEmpty()) ? LocalDate.parse(fechaFin) : null;
+        encryptedMovimientoService.crearMovimientoRecurrente(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaInicio, frecuencia, repeticiones, fechaFinParsed);
+        return "redirect:/movimientos";
+    }
+
+    @GetMapping("/movimientos/recurrentes")
+    public String listarRecurrentes(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        List<com.musicstore.model.MovimientoRecurrente> recurrentes = encryptedMovimientoService.obtenerRecurrentesDeUsuario(user);
+        model.addAttribute("recurrentes", recurrentes);
+        return "movimientos/recurrentes";
+    }
+
+    @GetMapping("/movimientos/recurrentes/terminar/{id}")
+    public String terminarRecurrente(@PathVariable Long id, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        encryptedMovimientoService.terminarMovimientoRecurrente(id, user);
+        return "redirect:/movimientos/recurrentes";
+    }
+
+    @GetMapping("/movimientos/recurrentes/borrar/{id}")
+    public String borrarRecurrente(@PathVariable Long id, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        encryptedMovimientoService.borrarMovimientoRecurrente(id, user);
+        return "redirect:/movimientos/recurrentes";
+    }
+
+    @GetMapping("/debug/fecha")
+    public String debugFecha(Model model) {
+        LocalDate hoy = LocalDate.now();
+        model.addAttribute("fecha", hoy);
+        model.addAttribute("zonaHoraria", java.time.ZoneId.systemDefault());
+        model.addAttribute("timestamp", java.time.LocalDateTime.now());
+        return "debug/fecha";
+    }
+
+    @GetMapping("/debug/procesar-recurrentes")
+    public String procesarRecurrentesManualmente(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        // Ejecutar el scheduler manualmente
+        encryptedMovimientoService.procesarMovimientosRecurrentes();
+        
+        model.addAttribute("mensaje", "Scheduler ejecutado manualmente");
+        model.addAttribute("fecha", LocalDate.now());
+        return "debug/fecha";
     }
 }
