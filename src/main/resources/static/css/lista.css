@@ -1,0 +1,618 @@
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.main-content {
+  flex: 1;
+  padding-top: 70px;
+  padding-bottom: 20px;
+}
+/* Estilos específicos para esta página */
+.container {
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 10px;
+  padding: 2rem;
+}
+h2 { text-align: center; margin-bottom: 1.5rem; }
+ul { list-style: none; padding: 0; }
+li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; }
+.cantidad-gasto { color: #c00; font-weight: bold; }
+.cantidad-ingreso { color: #090; font-weight: bold; }
+form { display: flex; gap: 0.5rem; margin-top: 1.5rem; }
+input[type="number"] { flex: 1; padding: 0.5rem; border-radius: 5px; }
+select { padding: 0.5rem; border-radius: 5px; }
+button { border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s; }
+
+/* Estilos para la navegación de meses */
+.month-nav a {
+  text-decoration: none;
+  padding: 0.2em 0.7em;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  margin: 0 0.2em;
+  color: var(--link-color);
+}
+
+.month-nav .current-month {
+  font-size: 2rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+}
+
+/* Hover en modo claro: texto negro */
+html:not([data-theme="dark"]) .month-nav a:hover,
+html:not([data-theme="dark"]) .btn-mes-plus:hover {
+  color: #222 !important;
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+/* Hover en modo oscuro: texto blanco (ya estaba) */
+html[data-theme="dark"] .month-nav a:hover,
+html[data-theme="dark"] .btn-mes-plus:hover {
+  color: #fff !important;
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Estilos para el botón de logout */
+.logout-btn button:hover {
+  background: var(--button-hover) !important;
+}
+
+.header-section {
+  padding: 0 1rem;
+}
+
+/* Estilos específicos para móvil */
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 60px;
+    padding-bottom: 10px;
+  }
+  .container {
+    max-width: 95%;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  /* Botones de acción en columna en móvil */
+  .action-buttons {
+    flex-direction: column !important;
+    gap: 0.8rem !important;
+  }
+
+  .action-buttons button {
+    width: 100%;
+  }
+
+  /* Ajustes para los totales */
+  .totals {
+    font-size: 0.9rem;
+  }
+
+  /* Ajustes para los movimientos */
+  .movimiento-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem 0;
+  }
+
+  .movimiento-info {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .movimiento-actions {
+    width: 100%;
+  }
+
+  .movimiento-actions form {
+    width: 100%;
+  }
+
+  .movimiento-actions button {
+    width: 100%;
+  }
+
+  /* Header responsive para móvil grande */
+  .header-section h1 {
+    font-size: 1.4rem !important;
+  }
+
+  .logout-btn button {
+    padding: 0.6rem 1rem !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding-top: 60px;
+    padding-bottom: 10px;
+  }
+  .container {
+    max-width: 98%;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+  .totals {
+    font-size: 0.8rem;
+  }
+
+  .month-nav {
+    margin: 1rem 0 1rem 0;
+  }
+
+  /* Header responsive */
+  .header-section h1 {
+    font-size: 1.2rem !important;
+  }
+
+  .logout-btn button {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .logout-btn button span {
+    margin-right: 0.2rem !important;
+  }
+}
+
+.movimiento-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 1;
+}
+.movimiento-item.fading-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.movimiento-item.fading-in {
+  opacity: 1;
+}
+.movimiento-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.movimiento-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.movimiento-menu {
+  position: relative;
+  display: inline-block;
+}
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
+  z-index: 1000;
+  min-width: 120px;
+  max-width: 90vw;
+  display: none;
+  padding: 0;
+  overflow-x: auto;
+}
+@media (max-width: 600px) {
+  .main-content {
+    padding-top: 60px;
+    padding-bottom: 10px;
+  }
+  .container {
+    max-width: 99vw;
+    margin: 0 auto;
+    padding: 0.7rem 0.5rem 1.2rem 0.5rem;
+    border-radius: 8px;
+  }
+  .totals {
+    font-size: 0.95rem;
+  }
+  .action-buttons {
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+    margin-top: 0.5rem !important;
+  }
+  .action-buttons button {
+    width: 100%;
+    font-size: 1rem;
+    padding: 0.7rem 0.5rem;
+  }
+  #formularioDinamico input[type="number"],
+  #formularioDinamico input[type="text"] {
+    font-size: 0.98rem;
+    padding: 0.38rem 0.6rem;
+  }
+  #formularioDinamico button {
+    font-size: 1rem;
+    padding: 0.6rem 0.5rem;
+  }
+  .modal-content {
+    max-width: 98vw !important;
+    min-width: unset !important;
+    padding: 1.2rem 0.7rem 1rem 0.7rem !important;
+  }
+  .modal {
+    align-items: flex-end;
+    padding-bottom: 1.5rem;
+  }
+  /* Mantener barra de meses horizontal en móvil */
+  .month-nav {
+    flex-direction: row !important;
+    gap: 0.7rem !important;
+    margin: 0.7rem 0 0.7rem 0 !important;
+  }
+  .month-nav a, .btn-mes-plus {
+    font-size: 1rem !important;
+    padding: 0.2em 0.4em !important;
+  }
+  /* Mantener movimientos en fila en móvil */
+  .movimiento-item {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    padding: 0.7rem 0 !important;
+    font-size: 0.98rem !important;
+  }
+  .movimiento-info {
+    width: 100%;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+  .movimiento-actions {
+    width: auto !important;
+    justify-content: flex-end !important;
+    margin-top: 0 !important;
+  }
+  /* Menú tres puntitos tipo popover en móvil */
+  .menu-dropdown {
+    min-width: 120px !important;
+    max-width: 80vw !important;
+    width: auto !important;
+    left: auto !important;
+    right: 0 !important;
+    border-radius: 10px !important;
+    margin-left: 0 !important;
+    top: 110% !important;
+    box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18) !important;
+  }
+  .menu-item {
+    font-size: 1.1rem !important;
+    padding: 0.7rem 1.1rem !important;
+  }
+  .btn-trash {
+    top: 0.3rem !important;
+    right: 0.3rem !important;
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .modal-content input,
+  .modal-content select,
+  .modal-content input[type="date"] {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0.38rem 0.6rem !important;
+    font-size: 0.98rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+}
+
+/* Estilos para el menú de 3 puntitos */
+.menu-trigger {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.3rem 1rem;
+  color: var(--text-secondary);
+  border-radius: 3px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.menu-trigger:hover {
+  background: var(--border-color);
+}
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 18px 0 rgba(0,0,0,0.18);
+  z-index: 1000;
+  min-width: 120px;
+  max-width: 90vw;
+  display: none;
+  padding: 0;
+  overflow-x: auto;
+}
+.menu-dropdown.show {
+  display: block;
+}
+.menu-item {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.9rem;
+  border-radius: 8px;
+}
+.menu-item:hover {
+  background: var(--border-color);
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.13);
+  border-radius: 8px;
+}
+.menu-item.delete {
+  color: #c00;
+}
+@media (max-width: 600px) {
+  .movimiento-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .movimiento-menu {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    position: relative;
+  }
+  .menu-trigger {
+    font-size: 2rem;
+    padding: 0.8rem 1.2rem;
+  }
+  .menu-dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    min-width: unset;
+    max-width: unset;
+    width: 100vw;
+    margin-left: -16px;
+    border-radius: 0 0 12px 12px;
+    top: 110%;
+  }
+  .menu-item {
+    font-size: 1.2rem;
+    padding: 1.1rem 1.5rem;
+  }
+}
+
+/* Estilos para el modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.8rem;
+  border-radius: 5px;
+  border: 1px solid var(--input-border);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-cancel {
+  background: var(--border-color);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-save {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: 1px solid var(--button-bg);
+}
+
+/* Ocultar flechitas de inputs number */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+.btn-trash {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.35em;
+  border: 0px solid transparent;
+  background-color: rgba(229,57,53,0.08);
+  border-radius: 1.25em;
+  transition: all 0.2s linear;
+  box-shadow: none;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+}
+.btn-trash:hover {
+  background-color: rgba(229,57,53,0.18);
+  box-shadow: 0 2px 8px rgba(229,57,53,0.10);
+}
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 7em;
+  background-color: rgba(0, 0, 0, 0.253);
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 120%;
+  transform: translateX(-50%);
+  font-size: 0.95em;
+}
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent rgba(0, 0, 0, 0.253) transparent;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+.btn-mes-plus {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.1rem;
+  font-weight: 400;
+  display: inline;
+  transition: color 0.18s;
+  margin: 0;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1.1;
+  vertical-align: baseline;
+}
+.btn-mes-plus:hover {
+  color: #fff;
+  background: none;
+  box-shadow: none;
+  border: none;
+}
+
+/* Inputs minimalistas y modernos para cantidad y asunto */
+#formularioDinamico input[type="number"],
+#formularioDinamico input[type="text"],
+#formularioDinamico input[type="date"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.32rem 0.7rem;
+  border-radius: 6px;
+  border: 1.5px solid var(--input-border);
+  background: rgba(0,0,0,0.10);
+  color: var(--text-primary);
+  font-size: 0.89rem;
+  margin-bottom: 0.25rem;
+  outline: none;
+  transition: border 0.18s, background 0.18s;
+}
+#formularioDinamico input[type="number"]:focus,
+#formularioDinamico input[type="text"]:focus,
+#formularioDinamico input[type="date"]:focus {
+  border: 1.5px solid var(--button-bg);
+  background: rgba(0,0,0,0.13);
+}
