@@ -220,7 +220,7 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 @media (max-width: 600px) {
   .main-content {
     padding-top: 60px;
-    padding-bottom: 10px;
+    padding-bottom: 80px;
   }
   .container {
     max-width: 99vw;

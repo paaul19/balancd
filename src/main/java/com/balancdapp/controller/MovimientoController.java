@@ -90,7 +90,7 @@ public class MovimientoController {
         double totalGastos = movimientos.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
         double balance = totalIngresos - totalGastos;
 
-        //model.addAttribute("movimientos", movimientos);
+        model.addAttribute("movimientos", movimientos);
         model.addAttribute("totalIngresos", totalIngresos);
         model.addAttribute("totalGastos", totalGastos);
         model.addAttribute("balance", balance);

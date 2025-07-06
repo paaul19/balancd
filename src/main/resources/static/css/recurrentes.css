@@ -389,7 +389,8 @@ body {
   }
 
   .recurrente-details {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.8rem;
   }
 
@@ -437,5 +438,11 @@ body {
 
   .recurrente-cantidad {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding-bottom: 80px !important;
   }
 }

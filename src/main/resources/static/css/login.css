@@ -624,6 +624,12 @@ header {
   }
 }
 
+@media (max-width: 600px) {
+  body {
+    padding-bottom: 80px !important;
+  }
+}
+
 /* Mostrar logo según tema, compatible con <html> o <body> y con !important */
 .logo-claro { display: block !important; }
 .logo-oscuro { display: none !important; }

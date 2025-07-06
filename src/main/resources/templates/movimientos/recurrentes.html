@@ -29,9 +29,7 @@
         <div class="container">
             <div class="header-section">
                 <h1>Movimientos Recurrentes</h1>
-                <a th:href="@{/movimientos}" class="btn">← Volver a Movimientos</a>
             </div>
-            
             <div th:if="${#lists.isEmpty(recurrentes)}" class="empty-state">
                 <h3>No hay movimientos recurrentes</h3>
                 <p>Aún no has creado ningún movimiento recurrente. Los movimientos recurrentes te permiten automatizar gastos e ingresos que se repiten regularmente.</p>
