@@ -78,7 +78,7 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 /* Estilos específicos para móvil */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: calc(70px + env(safe-area-inset-top, 0px));
+    padding-top: calc(50px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
   .container {
@@ -149,7 +149,7 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: calc(65px + env(safe-area-inset-top, 0px));
+    padding-top: calc(50px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
   .container {
@@ -239,7 +239,7 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 }
 @media (max-width: 600px) {
   .main-content {
-    padding-top: 55px;
+    padding-top: 50px;
     padding-bottom: 80px;
   }
   .container {
