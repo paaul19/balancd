@@ -5,10 +5,9 @@
         body {
             margin: 0;
             padding: 0;
-            background: var(--bg-secondary, #232b34) !important;
         }
         .header {
-            background: var(--bg-secondary) !important;
+            background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             width: 100vw;
             min-height: 64px;
@@ -111,12 +110,28 @@
             left: 0;
             width: 100vw;
             height: env(safe-area-inset-top, 0px);
-            background: var(--bg-secondary, #232b34) !important;
+            background: var(--bg-secondary) !important;
             z-index: 2000;
+        }
+        .ios-notch-fix {
+            display: none;
+        }
+        @supports(padding-top: env(safe-area-inset-top)) {
+            .ios-notch-fix {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: env(safe-area-inset-top, 0px);
+                background: var(--bg-secondary);
+                z-index: 2001;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="ios-notch-fix"></div>
     <header class="header" th:fragment="header">
         <div class="header-inner">
             <div style="position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:2;">
