@@ -7,7 +7,7 @@ body {
 }
 .main-content {
   flex: 1;
-  padding-top: calc(100px + env(safe-area-inset-top, 0px));
+  padding-top: calc(80px + env(safe-area-inset-top, 0px));
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 /* Estilos específicos para esta página */
@@ -15,7 +15,7 @@ body {
   max-width: 400px;
   margin: 0 auto;
   border-radius: 10px;
-  padding: 2rem;
+  padding: 1.5rem 2rem;
 }
 h2 { text-align: center; margin-bottom: 1.5rem; }
 ul { list-style: none; padding: 0; }
@@ -29,8 +29,8 @@ button { border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; transition: 
 
 /* Estilos para la navegación de meses */
 .month-nav {
-  margin-top: 2rem;
-  padding-top: 1rem;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
 }
 .month-nav a {
   text-decoration: none;
@@ -78,13 +78,13 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 /* Estilos específicos para móvil */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: calc(70px + env(safe-area-inset-top, 0px));
+    padding-top: calc(85px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
   .container {
     max-width: 95%;
     margin: 0 auto;
-    padding: 1.5rem;
+    padding: 1.2rem 1.5rem;
   }
 
   /* Botones de acción en columna en móvil */
@@ -141,20 +141,20 @@ html[data-theme="dark"] .btn-mes-plus:hover {
   
   /* Navegación de meses en móvil */
   .month-nav {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
+    margin-top: 1rem;
+    padding-top: 0.5rem;
   }
 }
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: calc(70px + env(safe-area-inset-top, 0px));
+    padding-top: calc(90px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
   .container {
     max-width: 98%;
     margin: 0 auto;
-    padding: 1rem;
+    padding: 0.8rem 1rem;
   }
 
   h2 {
@@ -185,8 +185,8 @@ html[data-theme="dark"] .btn-mes-plus:hover {
   
   /* Navegación de meses en móvil pequeño */
   .month-nav {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
+    margin-top: 1rem;
+    padding-top: 0.5rem;
   }
 }
 
