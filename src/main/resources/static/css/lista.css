@@ -141,8 +141,8 @@ html[data-theme="dark"] .btn-mes-plus:hover {
   
   /* Navegación de meses en móvil */
   .month-nav {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: 0.2rem;
+    padding-top: 0.3rem;
   }
 }
 
@@ -166,8 +166,8 @@ html[data-theme="dark"] .btn-mes-plus:hover {
   }
 
   .month-nav {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: 0.2rem;
+    padding-top: 0.3rem;
   }
 
   /* Header responsive */
@@ -186,8 +186,8 @@ html[data-theme="dark"] .btn-mes-plus:hover {
   
   /* Navegación de meses en móvil pequeño */
   .month-nav {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: 0.1rem;
+    padding-top: 0.2rem;
   }
 }
 
