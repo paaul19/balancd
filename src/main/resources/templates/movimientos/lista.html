@@ -17,6 +17,8 @@
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <link rel="stylesheet" href="/css/lista.css">
     <script src="/js/lista.js"></script>
+    <script src="/js/footer-modals.js"></script>
+
     <!-- Script para aplicar tema inmediatamente -->
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
 </head>
@@ -25,7 +27,7 @@
     <div th:replace="~{fragments/header :: header}"></div>
     <div class="main-content">
         <!-- Barra de navegación de meses arriba del todo -->
-        <div class="month-nav" style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin: 1rem 0 1.5rem 0;">
+        <div class="month-nav" style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin: 1rem 0 0.6rem 0;">
             <!-- Columna izquierda: mes anterior (más antiguo) -->
             <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:0.5rem;">
                 <span style="font-size:1.1rem; color:#888; opacity:0.7; text-transform:capitalize; display:flex; align-items:baseline;">
@@ -63,24 +65,9 @@
                 </span>
             </div>
         </div>
-        <div class="container" style="position:relative; padding-top:1.2rem;">
-            <!-- Botón de búsqueda avanzada, esquina superior izquierda -->
-            <a href="/movimientos/busqueda-avanzada" class="btn-busqueda tooltip" style="position:absolute; top:2.7rem; left:0.7rem; z-index:3; background:none; display:flex; align-items:center; justify-content:center;">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" height="20" width="20">
-                    <circle cx="9" cy="9" r="7" stroke="#1e88e5" stroke-width="2" fill="none"/>
-                    <line x1="14.2" y1="14.2" x2="18" y2="18" stroke="#1e88e5" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span class="tooltiptext">Búsqueda avanzada</span>
-            </a>
-            <!-- Botón de gestionar recurrentes, esquina superior izquierda -->
-            <a href="/movimientos/recurrentes" class="btn-busqueda tooltip" style="position:absolute; top:2.7rem; left:3.5rem; z-index:3; background:none; display:flex; align-items:center; justify-content:center;">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" height="20" width="20">
-                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 7a2 2 0 114 0 2 2 0 01-4 0zm2 8a2 2 0 100-4 2 2 0 000 4z" stroke="#1e88e5" stroke-width="2" fill="none"/>
-                </svg>
-                <span class="tooltiptext">Gestionar recurrentes</span>
-            </a>
+        <div class="container" style="position:relative; padding-top:0.2rem;">
             <!-- Botón papelera eliminar mes dentro del recuadro, esquina superior derecha -->
-            <form th:action="@{/movimientos/eliminar-mes}" method="post" style="position:absolute; top:0.7rem; right:0.7rem; z-index:3;">
+            <form th:action="@{/movimientos/eliminar-mes}" method="post" style="position:absolute; top:0.1rem; right:0.3rem; z-index:3;">
                 <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
                 <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
                 <button type="submit" class="btn-trash tooltip" style="background:none;" onclick="return confirm('¿Seguro que quieres eliminar este mes y todos sus movimientos?');">
@@ -97,7 +84,7 @@
                 <div><b>Balance:</b> <span th:style="${balance >= 0 ? 'color:#090;' : 'color:#c00;'}" th:text="${#numbers.formatDecimal(balance, 1, 2)} + ' €'"></span></div>
             </div>
             <!-- Formulario de búsqueda por asunto -->
-            <div style="max-width:400px; margin:0 auto 1.2rem auto;">
+            <div style="max-width:300px; margin:0 auto 1.2rem auto;">
                 <form th:action="@{/movimientos}" method="get" style="display:flex; gap:0.5rem; align-items:center;">
                     <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto..." style="flex:1; padding:0.5rem; border-radius:5px; border:1px solid #ccc;" autocomplete="off" />
                     <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
@@ -162,15 +149,6 @@
                     </form>
                 </div>
             </div>
-            
-            <!-- Botones de acción abajo -->
-            <div class="action-buttons" style="display:flex; justify-content:center; gap:1rem; margin-top:0.7rem;">
-                <button type="button" id="btnIngreso">Añadir ingreso</button>
-                <button type="button" id="btnGasto">Añadir gasto</button>
-                <button type="button" id="btnRecurrente">Añadir recurrente</button>
-            </div>
-            <!-- Formularios dinámicos -->
-            <div id="formularioDinamico" style="margin-top:1.5rem;"></div>
             <!-- Modal de confirmación de eliminación de movimiento -->
             <div id="modalConfirmarEliminar" class="modal">
                 <div class="modal-content" style="max-width:340px;">
@@ -181,66 +159,12 @@
                     </div>
                 </div>
             </div>
-            <!-- Modal para añadir movimiento recurrente -->
-            <div id="recurrenteModal" class="modal">
-                <div class="modal-content" style="max-width:400px;">
-                    <div class="modal-header">
-                        <h3 class="modal-title">Añadir Movimiento Recurrente</h3>
-                    </div>
-                    <form id="recurrenteForm" class="modal-form" method="post" action="/movimientos/recurrente">
-                        <div class="form-group">
-                            <label for="recCantidad">Cantidad (€)</label>
-                            <input type="number" id="recCantidad" name="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="recAsunto">Asunto</label>
-                            <input type="text" id="recAsunto" name="asunto" maxlength="50" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="recTipo">Tipo</label>
-                            <select id="recTipo" name="ingreso" required>
-                                <option value="true">Ingreso</option>
-                                <option value="false">Gasto</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="recFecha">Primer día</label>
-                            <input type="date" id="recFecha" name="fecha" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="recFrecuencia">Frecuencia</label>
-                            <select id="recFrecuencia" name="frecuencia" required>
-                                <option value="semana">Cada semana</option>
-                                <option value="dos_semanas">Cada dos semanas</option>
-                                <option value="mes">Cada mes</option>
-                                <option value="dos_meses">Cada dos meses</option>
-                                <option value="anio">Cada año</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="recFechaFin">Fecha fin (opcional)</label>
-                            <input type="date" id="recFechaFin" name="fechaFin">
-                        </div>
-                        <div class="modal-actions">
-                            <button type="button" class="btn-cancel" id="btnCancelarRecurrente">Cancelar</button>
-                            <button type="submit" class="btn-save">Guardar</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
     
     <!-- Script del header -->
     <script th:replace="~{fragments/header :: header-script}"></script>
-
-    <!-- Botón de cambio de tema -->
-    <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
-        <span class="sun-icon">☀️</span>
-        <span class="moon-icon">🌙</span>
-    </button>
 <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
 </body>
 </html> 

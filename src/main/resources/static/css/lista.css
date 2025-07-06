@@ -319,6 +319,30 @@ html[data-theme="dark"] .btn-mes-plus:hover {
     font-size: 0.98rem !important;
     margin-bottom: 0.25rem !important;
   }
+  .container form[action="/movimientos"] {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.3rem !important;
+    width: 100%;
+  }
+  .container form[action="/movimientos"] input[type="text"] {
+    flex: 1 1 0%;
+    min-width: 0;
+    font-size: 1em;
+    padding: 0.45rem;
+  }
+  .container form[action="/movimientos"] button[type="submit"] {
+    flex: 0 0 auto;
+    font-size: 0.98em;
+    padding: 0.45rem 0.7rem;
+  }
+  .container form[action="/movimientos"] a {
+    flex: 0 0 auto;
+    font-size: 1.2em;
+    padding: 0 0.2em;
+    margin-left: 0 !important;
+  }
 }
 
 /* Estilos para el menú de 3 puntitos */
@@ -557,8 +581,8 @@ input[type="number"] {
   z-index: 10;
   left: 50%;
   top: 120%;
-  transform: translateX(-50%);
-  font-size: 0.95em;
+  transform: translateX(-70%);
+  font-size: 0.8em;
 }
 .tooltip .tooltiptext::after {
   content: "";
