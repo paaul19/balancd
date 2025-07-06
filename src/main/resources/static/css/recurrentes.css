@@ -8,6 +8,7 @@ body {
 .main-content {
   flex: 1;
   padding-top: calc(70px + env(safe-area-inset-top, 0px)); /* altura del header fijo + margen + notch */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 .container {
   max-width: 800px;
