@@ -7,7 +7,8 @@ body {
 }
 .main-content {
   flex: 1;
-  padding-top: 70px; /* altura del header fijo + margen */
+  padding-top: calc(70px + env(safe-area-inset-top, 0px)); /* altura del header fijo + margen + notch */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 .container {
   max-width: 800px;
@@ -389,7 +390,8 @@ body {
   }
 
   .recurrente-details {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.8rem;
   }
 
@@ -437,5 +439,11 @@ body {
 
   .recurrente-cantidad {
     font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding-bottom: 80px !important;
   }
 }

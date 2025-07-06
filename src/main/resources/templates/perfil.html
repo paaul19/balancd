@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Perfil</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+    <link rel="apple-touch-icon" href="/images/logo-app.png">
+    <meta name="theme-color" content="#1e1e1e">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Estilos globales y de fragmentos -->
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/footer-modals.js"></script>
+    <style>
+        .main-content {
+            flex: 1;
+            padding-top: calc(80px + env(safe-area-inset-top, 0px));
+            padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mensaje-mantenimiento {
+            background: var(--bg-secondary, #181818);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.13);
+            text-align: center;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+        .mensaje-mantenimiento h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .mensaje-mantenimiento p {
+            font-size: 1.1rem;
+            color: #e57373;
+        }
+    </style>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+    
+    <div class="main-content">
+        <!-- Mensaje de mantenimiento -->
+        <div class="mensaje-mantenimiento">
+            <h1>🚧 Página en mantenimiento</h1>
+            <p>Esta sección estará disponible próximamente.<br>Vuelve más tarde.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Scripts de header y tema -->
+    <script th:replace="~{fragments/header :: header-script}"></script>
+    <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+</body>
+</html> 

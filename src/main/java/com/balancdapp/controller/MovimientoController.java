@@ -73,10 +73,17 @@ public class MovimientoController {
         YearMonth actual = YearMonth.now();
         YearMonth seleccionado = (mes != null && anio != null) ? YearMonth.of(anio, mes) : (mesesDisponibles.isEmpty() ? actual : mesesDisponibles.get(0));
 
-        // Filtrar movimientos del mes/año seleccionado (ordenar por fecha descendente)
+        // Filtrar movimientos del mes/año seleccionado (ordenar por fecha descendente y luego por ID descendente para que los más recientes aparezcan primero)
         List<EncryptedMovimientoService.MovimientoDTO> movimientos = todos.stream()
                 .filter(m -> m.getMesAsignado() == seleccionado.getMonthValue() && m.getAnioAsignado() == seleccionado.getYear())
-                .sorted((a, b) -> b.getFecha().compareTo(a.getFecha()))
+                .sorted((a, b) -> {
+                    int fechaComparison = b.getFecha().compareTo(a.getFecha());
+                    if (fechaComparison != 0) {
+                        return fechaComparison;
+                    }
+                    // Si las fechas son iguales, ordenar por ID descendente (más reciente primero)
+                    return Long.compare(b.getId(), a.getId());
+                })
                 .toList();
 
         double totalIngresos = movimientos.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();

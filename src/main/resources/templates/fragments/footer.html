@@ -69,22 +69,24 @@
         }
         @media (max-width: 600px) {
             .footer-bar {
-                height: 54px;
-                padding: 0;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                flex-wrap: nowrap;
+                height: 64px;
+                padding-bottom: env(safe-area-inset-bottom, 22px);
             }
             .footer-btn, .footer-btn.center {
-                width: 38px;
-                height: 38px;
-                min-width: 0;
-                min-height: 0;
+                width: 48px;
+                height: 48px;
+            }
+            .footer-btn.center {
+                padding: 4px !important;
+                box-sizing: border-box;
             }
             .footer-btn svg {
-                width: 20px;
-                height: 20px;
+                width: 26px;
+                height: 26px;
+            }
+            .footer-btn.center svg {
+                width: 22px;
+                height: 22px;
             }
         }
     </style>
@@ -105,12 +107,27 @@
         </button>
         <!-- Movimientos recurrentes -->
         <a href="/movimientos/recurrentes" class="footer-btn" title="Recurrentes">
-            <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><path d="M17 1v6h6" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 11V9a4 4 0 0 1 4-4h14" stroke-linecap="round"/><path d="M7 23v-6H1" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 13v2a4 4 0 0 1-4 4H3" stroke-linecap="round"/></svg>
+            <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 295.914 295.914">
+                <g>
+                    <path d="M67.964,120.522H53.356c11.922-42,50.267-72.631,95.604-72.631c22.904,0,44.424,7.687,62.234,21.997
+                c9.912,7.966,18.172,17.564,24.362,28.634h35.811c-8.395-21.286-22.133-39.853-39.871-54.107
+                c-23.292-18.717-52.604-28.751-82.537-28.751c-63.354,0-116.41,44.858-129.009,104.858H0l33.491,55.506L67.964,120.522z"
+                          fill="currentColor"/>
+                    <path d="M262.423,120.015l-34.473,55.508h14.607c-11.922,42-50.267,72.135-95.604,72.135c-22.904,0-44.424-7.202-62.234-21.513
+                c-10.011-8.043-18.324-17.622-24.537-28.622H24.394c8.389,21,22.189,39.517,40.023,53.848
+                c23.292,18.717,52.603,28.88,82.537,28.88c63.354,0,116.41-44.727,129.009-104.727h19.951L262.423,120.015z"
+                          fill="currentColor"/>
+                </g>
+            </svg>
         </a>
+
+
+
         <!-- Perfil -->
-        <button class="footer-btn" title="Perfil">
+        <a href="/perfil" class="footer-btn" title="Perfil">
             <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7" stroke-linecap="round"/></svg>
-        </button>
+        </a>
     </footer>
 </body>
-</html> 
+</html>
+

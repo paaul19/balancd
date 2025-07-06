@@ -2,12 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Movimientos Recurrentes</title>
     <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
     <link rel="apple-touch-icon" href="/images/logo-app.png">
     <meta name="theme-color" content="#1e1e1e">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <!-- Incluir estilos del tema -->
@@ -29,9 +29,7 @@
         <div class="container">
             <div class="header-section">
                 <h1>Movimientos Recurrentes</h1>
-                <a th:href="@{/movimientos}" class="btn">← Volver a Movimientos</a>
             </div>
-            
             <div th:if="${#lists.isEmpty(recurrentes)}" class="empty-state">
                 <h3>No hay movimientos recurrentes</h3>
                 <p>Aún no has creado ningún movimiento recurrente. Los movimientos recurrentes te permiten automatizar gastos e ingresos que se repiten regularmente.</p>

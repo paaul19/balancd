@@ -10,7 +10,8 @@ body {
 }
 .main-content {
   flex: 1;
-  padding-top: 70px; /* altura del header fijo + margen */
+  padding-top: calc(70px + env(safe-area-inset-top, 0px)); /* altura del header fijo + margen + notch */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 .container {
   max-width: 600px;
@@ -126,5 +127,83 @@ h1 {
     min-width: 0;
     width: 100%;
     flex: 1 1 100%;
+  }
+}
+@media (max-width: 600px) {
+  .container {
+    max-width: 98%;
+    padding: 1.2rem 0.7rem;
+    margin: 20px auto;
+    border-radius: 16px;
+  }
+  .filtros {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  .filtros-row {
+    display: flex;
+    flex-direction: row;
+    gap: 0.7rem;
+    width: 100%;
+  }
+  .filtros-row input[type="text"],
+  .filtros-row select {
+    width: 50%;
+    min-width: 0;
+    border-radius: 12px;
+    font-size: 1.08rem;
+    padding: 0.7rem 1rem;
+    margin-bottom: 0;
+  }
+  .filtros select[name="frecuencia"] {
+    width: 100%;
+    border-radius: 12px;
+    font-size: 1.08rem;
+    padding: 0.7rem 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .filtros-row-boton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin-top: 0.5rem;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .filtros-row-boton button {
+    width: 85%;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    padding: 0.8rem 0;
+    background: var(--button-bg, #444);
+    color: var(--button-text, #fff);
+    margin: 0;
+    display: block;
+  }
+  .filtros-row-boton a {
+    width: 15%;
+    min-width: 36px;
+    max-width: 48px;
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--button-text, #fff);
+    background: none;
+    border: none;
+    padding: 0.5rem 0.2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .filtros-row-boton a:hover {
+    background: rgba(255,255,255,0.08);
+  }
+  body {
+    padding-bottom: 80px !important;
   }
 }

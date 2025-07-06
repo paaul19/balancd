@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Búsqueda avanzada de movimientos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
     <link rel="apple-touch-icon" href="/images/logo-app.png">
     <meta name="theme-color" content="#1e1e1e">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <!-- Incluir estilos del header y footer -->
@@ -25,21 +26,25 @@
     <div class="container">
         <h1>Búsqueda avanzada de movimientos</h1>
         <form th:action="@{/movimientos/busqueda-avanzada}" method="get" class="filtros">
-            <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto..." autocomplete="off" />
-            <select name="tipo" th:value="${tipo}">
-                <option value="todos" th:selected="${tipo}=='todos'">Todos</option>
-                <option value="ingresos" th:selected="${tipo}=='ingresos'">Ingresos</option>
-                <option value="gastos" th:selected="${tipo}=='gastos'">Gastos</option>
-                <option value="balance" th:selected="${tipo}=='balance'">Balance ≠ 0</option>
-            </select>
+            <div class="filtros-row">
+                <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto..." autocomplete="off" />
+                <select name="tipo" th:value="${tipo}">
+                    <option value="todos" th:selected="${tipo}=='todos'">Todos</option>
+                    <option value="ingresos" th:selected="${tipo}=='ingresos'">Ingresos</option>
+                    <option value="gastos" th:selected="${tipo}=='gastos'">Gastos</option>
+                    <option value="balance" th:selected="${tipo}=='balance'">Balance ≠ 0</option>
+                </select>
+            </div>
             <select name="periodo" th:value="${periodo}">
                 <option value="3" th:selected="${periodo}==3">Últimos 3 meses</option>
                 <option value="6" th:selected="${periodo}==6">Últimos 6 meses</option>
                 <option value="12" th:selected="${periodo}==12">Últimos 12 meses</option>
                 <option value="0" th:selected="${periodo}==0">Año actual</option>
             </select>
-            <button type="submit">Buscar</button>
-            <a th:href="@{/movimientos/busqueda-avanzada}">✖</a>
+            <div class="filtros-row-boton">
+                <button type="submit">Buscar</button>
+                <a th:href="@{/movimientos/busqueda-avanzada}">✖</a>
+            </div>
         </form>
         <div th:if="${busqueda != null and #strings.trim(busqueda) != ''}">
             <div class="totals">
@@ -69,7 +74,6 @@
                 </tbody>
             </table>
         </div>
-        <a th:href="@{/movimientos}" class="volver">← Volver a movimientos</a>
     </div>
 </div>
 <!-- Footer -->
