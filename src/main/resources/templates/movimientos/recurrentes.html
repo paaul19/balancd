@@ -16,6 +16,7 @@
     <style th:replace="~{fragments/header :: header-styles}"></style>
     <link rel="stylesheet" href="/css/recurrentes.css">
     <script src="/js/recurrentes.js"></script>
+    <script src="/js/footer-modals.js"></script>
 
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <!-- Script para aplicar tema inmediatamente -->
@@ -144,12 +145,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Botón de cambio de tema -->
-    <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
-        <span class="sun-icon">☀️</span>
-        <span class="moon-icon">🌙</span>
-    </button>
 
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>

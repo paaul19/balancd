@@ -107,6 +107,14 @@
 <body>
     <header class="header" th:fragment="header">
         <div class="header-inner">
+            <div style="position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:2;">
+
+                <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
+                    <span class="sun-icon">☀️</span>
+                    <span class="moon-icon">🌙</span>
+                </button>
+
+            </div>
             <div class="header-logo">
                 <img src="/images/logo-negro.png" alt="Logo" class="logo-negro">
                 <img src="/images/logo-blanco.png" alt="Logo" class="logo-blanco" style="display: none;">

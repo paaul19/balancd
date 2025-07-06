@@ -13,6 +13,7 @@
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <link rel="stylesheet" href="/css/acceso.css">
+    <script src="/js/footer-modals.js"></script>
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
 </head>
 <body>
@@ -26,7 +27,7 @@
 </div>
 
 <!-- Incluir botón de cambio de tema y script -->
-<div th:replace="~{fragments/theme-switcher :: body}"></div>
+
 <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
 
 </body>
