@@ -5,9 +5,10 @@
         body {
             margin: 0;
             padding: 0;
+            background: var(--bg-secondary, #232b34) !important;
         }
         .header {
-            background: var(--bg-secondary);
+            background: var(--bg-secondary) !important;
             border-bottom: 1px solid var(--border-color);
             width: 100vw;
             min-height: 64px;
@@ -110,8 +111,8 @@
             left: 0;
             width: 100vw;
             height: env(safe-area-inset-top, 0px);
-            background: var(--bg-secondary);
-            z-index: 1001;
+            background: var(--bg-secondary, #232b34) !important;
+            z-index: 2000;
         }
     </style>
 </head>
