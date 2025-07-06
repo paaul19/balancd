@@ -7,7 +7,7 @@ body {
 }
 .main-content {
   flex: 1;
-  padding-top: calc(80px + env(safe-area-inset-top, 0px));
+  padding-top: calc(64px + env(safe-area-inset-top, 0px));
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 /* Estilos específicos para esta página */
@@ -29,7 +29,7 @@ button { border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; transition: 
 
 /* Estilos para la navegación de meses */
 .month-nav {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   padding-top: 0.5rem;
 }
 .month-nav a {
@@ -78,7 +78,7 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 /* Estilos específicos para móvil */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: calc(85px + env(safe-area-inset-top, 0px));
+    padding-top: calc(54px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
   .container {
@@ -148,7 +148,7 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: calc(90px + env(safe-area-inset-top, 0px));
+    padding-top: calc(44px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
   .container {
