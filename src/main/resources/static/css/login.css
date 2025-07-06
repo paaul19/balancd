@@ -1,6 +1,7 @@
 body {
   margin: 0;
   padding: 0;
+  padding-top: env(safe-area-inset-top, 0px);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
