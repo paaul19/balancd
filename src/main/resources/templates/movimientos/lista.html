@@ -6,9 +6,10 @@
     <title>Mis Movimientos</title>
     <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
     <link rel="apple-touch-icon" href="/images/logo-app.png">
-    <meta name="theme-color" content="#1e1e1e">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#2D2D2D">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#2D2D2D">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="balanc*d">
 
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
@@ -27,7 +28,7 @@
     <div th:replace="~{fragments/header :: header}"></div>
     <div class="main-content">
         <!-- Barra de navegación de meses arriba del todo -->
-        <div class="month-nav" style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin: 1rem 0 0.6rem 0;">
+        <div class="month-nav" style="display: flex; justify-content: center; align-items: center; gap: 2rem;">
             <!-- Columna izquierda: mes anterior (más antiguo) -->
             <div style="flex:1; display:flex; justify-content:flex-end; align-items:center; gap:0.5rem;">
                 <span style="font-size:1.1rem; color:#888; opacity:0.7; text-transform:capitalize; display:flex; align-items:baseline;">
