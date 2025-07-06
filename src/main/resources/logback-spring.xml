@@ -1,16 +1,23 @@
 <configuration>
+    <property name="LOG_HOME" value="logs"/>
+
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/logs_balancd.log</file>
+        <file>${LOG_HOME}/latest.log</file>
+
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/logs_balancd_%d{dd_MM_yy}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <!-- Ruta completa con carpetas por año/mes/día y nombre de archivo por hora -->
+            <fileNamePattern>${LOG_HOME}/%d{yyyy/MM/dd}/%d{HH}.log</fileNamePattern>
+
+            <!-- Cuántos logs mantener (opcional, 168h = 7 días) -->
+            <maxHistory>168</maxHistory>
         </rollingPolicy>
+
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <root level="info">
-        <appender-ref ref="FILE" />
+    <root level="INFO">
+        <appender-ref ref="FILE"/>
     </root>
 </configuration>
