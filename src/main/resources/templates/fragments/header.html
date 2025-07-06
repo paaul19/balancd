@@ -102,6 +102,17 @@
                 font-size: 0.75rem;
             }
         }
+        .header::before {
+            content: '';
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: env(safe-area-inset-top, 0px);
+            background: var(--bg-secondary);
+            z-index: 1001;
+        }
     </style>
 </head>
 <body>
