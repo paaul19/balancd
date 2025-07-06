@@ -7,7 +7,7 @@ body {
 }
 .main-content {
   flex: 1;
-  padding-top: calc(70px + env(safe-area-inset-top, 0px));
+  padding-top: calc(80px + env(safe-area-inset-top, 0px));
   padding-bottom: 20px;
 }
 /* Estilos específicos para esta página */
@@ -28,6 +28,10 @@ select { padding: 0.5rem; border-radius: 5px; }
 button { border-radius: 5px; padding: 0.5rem 1rem; cursor: pointer; transition: background 0.2s; }
 
 /* Estilos para la navegación de meses */
+.month-nav {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+}
 .month-nav a {
   text-decoration: none;
   padding: 0.2em 0.7em;
@@ -74,7 +78,7 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 /* Estilos específicos para móvil */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: calc(60px + env(safe-area-inset-top, 0px));
+    padding-top: calc(70px + env(safe-area-inset-top, 0px));
     padding-bottom: 10px;
   }
   .container {
@@ -134,11 +138,17 @@ html[data-theme="dark"] .btn-mes-plus:hover {
     padding: 0.6rem 1rem !important;
     font-size: 0.85rem !important;
   }
+  
+  /* Navegación de meses en móvil */
+  .month-nav {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: calc(60px + env(safe-area-inset-top, 0px));
+    padding-top: calc(70px + env(safe-area-inset-top, 0px));
     padding-bottom: 10px;
   }
   .container {
@@ -171,6 +181,12 @@ html[data-theme="dark"] .btn-mes-plus:hover {
 
   .logout-btn button span {
     margin-right: 0.2rem !important;
+  }
+  
+  /* Navegación de meses en móvil pequeño */
+  .month-nav {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
   }
 }
 
