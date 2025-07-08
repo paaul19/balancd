@@ -106,4 +106,34 @@ public class AuthController {
             return "error";
         }
     }
+
+    @GetMapping("/forgot-password")
+    public String forgotPasswordForm(Model model) {
+        return "auth/forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam("email") String email, Model model) {
+        boolean sent = userService.sendPasswordResetToken(email);
+        model.addAttribute("email", email);
+        model.addAttribute("sent", sent);
+        return "auth/forgot-password-confirm";
+    }
+
+    @GetMapping("/reset-password")
+    public String resetPasswordForm(@RequestParam("token") String token, Model model) {
+        boolean valid = userService.isValidResetToken(token);
+        model.addAttribute("token", token);
+        model.addAttribute("valid", valid);
+        return "auth/reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String processResetPassword(@RequestParam("token") String token,
+                                       @RequestParam("password") String password,
+                                       Model model) {
+        boolean success = userService.resetPassword(token, password);
+        model.addAttribute("success", success);
+        return "auth/reset-password-confirm";
+    }
 }

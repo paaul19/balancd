@@ -75,6 +75,29 @@ public class PerfilController {
         return "redirect:/perfil";
     }
 
+    @PostMapping("/perfil/cambiar-email")
+    public String cambiarEmail(@RequestParam("nuevoEmail") String nuevoEmail,
+                               HttpSession session,
+                               RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        if (nuevoEmail == null || nuevoEmail.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "El correo electrónico no puede estar vacío.");
+            return "redirect:/perfil";
+        }
+        if (userService.getUserByEmail(nuevoEmail).isPresent()) {
+            redirectAttributes.addFlashAttribute("error", "Ese correo electrónico ya está en uso.");
+            return "redirect:/perfil";
+        }
+        user.setEmail(nuevoEmail);
+        User actualizado = userService.updateUser(user);
+        session.setAttribute("user", actualizado);
+        redirectAttributes.addFlashAttribute("success", "Correo electrónico actualizado correctamente.");
+        return "redirect:/perfil";
+    }
+
     @PostMapping("/perfil/eliminar-cuenta")
     public String eliminarCuenta(HttpSession session, RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");

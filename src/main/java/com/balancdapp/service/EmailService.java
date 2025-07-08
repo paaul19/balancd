@@ -42,6 +42,24 @@ public class EmailService {
         System.out.println("HEADERS: " + response.getHeaders());
     }
 
+    public void sendPasswordResetEmail(String toEmail, String resetLink) throws IOException {
+        Email from = new Email(fromEmail);
+        String subject = "Restablece tu contraseña en Balancd";
+        Email to = new Email(toEmail);
+        String htmlContent = loadTemplate("templates/email/password-reset.html").replace("${resetLink}", resetLink);
+        Content content = new Content("text/html", htmlContent);
+        Mail mail = new Mail(from, subject, to, content);
+        SendGrid sg = new SendGrid(sendgridApiKey);
+        Request request = new Request();
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+        Response response = sg.api(request);
+        System.out.println("STATUS: " + response.getStatusCode());
+        System.out.println("BODY: " + response.getBody());
+        System.out.println("HEADERS: " + response.getHeaders());
+    }
+
     private String loadTemplate(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
         byte[] bytes = Files.readAllBytes(resource.getFile().toPath());

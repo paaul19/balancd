@@ -126,6 +126,44 @@ public class UserService {
         return true;
     }
 
+    public boolean sendPasswordResetToken(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return false;
+        }
+        User user = userOpt.get();
+        String token = UUID.randomUUID().toString();
+        VerificationToken resetToken = new VerificationToken();
+        resetToken.setToken(token);
+        resetToken.setUser(user);
+        verificationTokenRepository.save(resetToken);
+        String resetUrl = "http://localhost:8080/reset-password?token=" + token;
+        try {
+            emailService.sendPasswordResetEmail(user.getEmail(), resetUrl);
+        } catch (Exception e) {
+            System.err.println("Error sending password reset email: " + e.getMessage());
+            // No lanzar excepción, solo loguear
+        }
+        return true;
+    }
+
+    public boolean isValidResetToken(String token) {
+        return verificationTokenRepository.findByToken(token).isPresent();
+    }
+
+    public boolean resetPassword(String token, String newPassword) {
+        Optional<VerificationToken> tokenOpt = verificationTokenRepository.findByToken(token);
+        if (tokenOpt.isEmpty()) {
+            return false;
+        }
+        VerificationToken verificationToken = tokenOpt.get();
+        User user = verificationToken.getUser();
+        user.setPassword(newPassword);
+        saveUser(user);
+        verificationTokenRepository.delete(verificationToken);
+        return true;
+    }
+
     public User updateUser(User updatedUser) {
         if (updatedUser == null || updatedUser.getId() == null) {
             throw new RuntimeException("User or user ID cannot be null");

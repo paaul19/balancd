@@ -68,6 +68,16 @@
                 <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar nombre de usuario</button>
             </form>
 
+            <!-- Formulario para cambiar email -->
+            <form th:action="@{/perfil/cambiar-email}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+                <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                    <span style="font-size:1.3em;">📧</span>
+                    <label for="nuevoEmail" style="font-weight:600; font-size:1.05em;">Correo electrónico</label>
+                </div>
+                <input type="email" id="nuevoEmail" name="nuevoEmail" th:value="${user.email}" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+                <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar correo electrónico</button>
+            </form>
+
             <!-- Formulario para cambiar contraseña -->
             <form th:action="@{/perfil/cambiar-password}" method="post" style="width:100%; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
                 <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
