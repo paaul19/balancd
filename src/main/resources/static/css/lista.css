@@ -839,4 +839,20 @@ input[type="number"] {
   }
 }
 
+@media (max-width: 600px) {
+  .introjs-tooltip, .custom-introjs-tooltip {
+    position: fixed !important;
+    left: 50% !important;
+    bottom: 70px !important; /* Ajusta según la altura real de tu footer */
+    top: auto !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+    width: 95vw !important;
+    max-width: 420px !important;
+    min-width: 0 !important;
+    z-index: 9999 !important;
+    box-sizing: border-box !important;
+  }
+}
+
 
