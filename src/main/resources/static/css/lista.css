@@ -833,4 +833,10 @@ input[type="number"] {
   right: 16px !important;
 }
 
+@media (max-width: 600px) {
+  .introjs-tooltip, .custom-introjs-tooltip {
+    margin-bottom: 12px !important;
+  }
+}
+
 

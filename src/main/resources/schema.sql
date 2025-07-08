@@ -141,9 +141,5 @@ CREATE TABLE IF NOT EXISTS verification_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-
--- Añadir el campo tutorial_visto a la tabla users
-ALTER TABLE users ADD COLUMN tutorial_visto TINYINT(1) NOT NULL DEFAULT 0;
-
 -- Asegurarse de que todos los usuarios existentes tienen el campo en 0
-UPDATE users SET tutorial_visto = 0 WHERE tutorial_visto IS NULL;
+UPDATE users SET tutorial_visto = 0;
