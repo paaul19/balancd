@@ -49,10 +49,39 @@
     <div th:replace="~{fragments/header :: header}"></div>
     
     <div class="main-content">
-        <!-- Mensaje de mantenimiento -->
-        <div class="mensaje-mantenimiento">
-            <h1>🚧 Página en mantenimiento</h1>
-            <p>Esta sección estará disponible próximamente.<br>Vuelve más tarde.</p>
+        <div class="perfil-container" style="border-radius: 12px; background: var(--bg-secondary); box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 2.5rem 2rem; min-width:320px; max-width:370px; width:100%; margin:0 auto; display:flex; flex-direction:column; align-items:center;">
+            <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+                <img src="/images/logo-app.png" alt="Perfil" style="width:60px; height:60px; border-radius:50%; margin-bottom:1.2rem; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                <h2 style="text-align:center; margin-bottom:1.2rem; font-size:1.6rem; letter-spacing:0.5px;">Mi Perfil</h2>
+            </div>
+            <!-- Mensajes de error/éxito -->
+            <div th:if="${error}" class="error" th:text="${error}" style="color:#c00; margin-bottom:1rem; text-align:center;"></div>
+            <div th:if="${success}" class="success" th:text="${success}" style="color:#090; margin-bottom:1rem; text-align:center;"></div>
+
+            <!-- Formulario para cambiar nombre de usuario -->
+            <form th:action="@{/perfil/cambiar-usuario}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+                <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                    <span style="font-size:1.3em;">👤</span>
+                    <label for="nuevoUsername" style="font-weight:600; font-size:1.05em;">Nombre de usuario</label>
+                </div>
+                <input type="text" id="nuevoUsername" name="nuevoUsername" th:value="${user.username}" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+                <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar nombre de usuario</button>
+            </form>
+
+            <!-- Formulario para cambiar contraseña -->
+            <form th:action="@{/perfil/cambiar-password}" method="post" style="width:100%; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+                <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                    <span style="font-size:1.3em;">🔒</span>
+                    <label for="passwordActual" style="font-weight:600; font-size:1.05em;">Contraseña actual</label>
+                </div>
+                <input type="password" id="passwordActual" name="passwordActual" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+                <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem; margin-top:0.7rem;">
+                    <span style="font-size:1.3em;">✨</span>
+                    <label for="nuevoPassword" style="font-weight:600; font-size:1.05em;">Nueva contraseña</label>
+                </div>
+                <input type="password" id="nuevoPassword" name="nuevoPassword" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+                <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar contraseña</button>
+            </form>
         </div>
     </div>
 
