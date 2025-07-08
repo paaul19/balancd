@@ -104,7 +104,7 @@ public class UserService {
         verificationToken.setToken(token);
         verificationToken.setUser(savedUser);
         verificationTokenRepository.save(verificationToken);
-        String verificationUrl = "https://balancd.site:8080/verify?token=" + token;
+        String verificationUrl = "https://balancd.site/verify?token=" + token;
         try {
             emailService.sendVerificationEmail(savedUser.getEmail(), verificationUrl);
         } catch (Exception e) {
