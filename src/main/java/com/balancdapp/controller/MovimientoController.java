@@ -124,7 +124,6 @@ public class MovimientoController {
                                 @RequestParam(value = "mes", required = false) Integer mes,
                                 @RequestParam(value = "anio", required = false) Integer anio,
                                 HttpSession session) {
-        System.out.println("[DEBUG] Recibido: cantidad=" + cantidad + ", ingreso=" + ingreso + ", fecha=" + fecha + ", mes=" + mes + ", anio=" + anio);
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -134,7 +133,6 @@ public class MovimientoController {
         int mesAsignado = (mes != null) ? mes : fechaMovimiento.getMonthValue();
         int anioAsignado = (anio != null) ? anio : fechaMovimiento.getYear();
 
-        System.out.println("[DEBUG] Asignando: mesAsignado=" + mesAsignado + ", anioAsignado=" + anioAsignado + ", fecha real=" + fechaMovimiento);
         // Crear movimiento con datos cifrados
         encryptedMovimientoService.createMovimiento(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaMovimiento, mesAsignado, anioAsignado);
         return "redirect:/movimientos?mes=" + mesAsignado + "&anio=" + anioAsignado;

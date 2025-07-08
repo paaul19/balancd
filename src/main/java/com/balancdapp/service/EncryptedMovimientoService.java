@@ -83,7 +83,6 @@ public class EncryptedMovimientoService {
             return LocalDate.now();
         }
         String fechaDescifrada = encryptionService.decrypt(movimiento.getFechaCifrada());
-        System.out.println("[DEBUG] Fecha cifrada: " + movimiento.getFechaCifrada() + " | Descifrada: '" + fechaDescifrada + "'");
         return LocalDate.parse(fechaDescifrada, DATE_FORMATTER);
     }
 
@@ -236,12 +235,9 @@ public class EncryptedMovimientoService {
                         rec.getUser(), hoy.getMonthValue(), hoy.getYear(), cantidadCifrada, rec.isIngreso(), asuntoCifrado, fechaCifrada);
 
                 if (!existe) {
-                    System.out.println("[DEBUG] Creando movimiento recurrente: " + asunto + " - " + rec.getFrecuencia() + " - " + hoy);
                     createMovimiento(rec.getUser(), cantidad, rec.isIngreso(), asunto, hoy, hoy.getMonthValue(), hoy.getYear());
                     rec.setUltimaFechaEjecutada(hoy);
                     movimientoRecurrenteRepository.save(rec);
-                } else {
-                    System.out.println("[DEBUG] Movimiento recurrente ya existe para hoy: " + asunto);
                 }
             }
         }
