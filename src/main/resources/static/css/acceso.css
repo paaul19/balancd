@@ -87,3 +87,65 @@ body {
     padding-bottom: 80px !important;
   }
 }
+
+/* Estilo global para cajas de notificación y formularios de autenticación */
+.check-email-box {
+    max-width: 400px;
+    margin: 60px auto;
+    background: #2d2d2d;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    padding: 36px 28px;
+    text-align: center;
+    animation: fadeIn 0.6s ease-out;
+}
+
+.check-email-box img {
+    width: 80px;
+    margin-bottom: 18px;
+}
+
+.check-email-box h2 {
+    color: #f4f4f4;
+    font-size: 1.5em;
+    margin-bottom: 12px;
+}
+
+.check-email-box p {
+    color: #cbd5e0;
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+.check-email-box .email {
+    color: #63b3ed;
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.check-email-box .success {
+    color: #38a169;
+    font-weight: bold;
+}
+
+.check-email-box .error {
+    color: #e53e3e;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.check-email-box a {
+    color: #63b3ed;
+    text-decoration: underline;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
