@@ -146,6 +146,7 @@ public class MovimientoController {
                                  @RequestParam Double cantidad,
                                  @RequestParam(required = false) String asunto,
                                  @RequestParam Boolean ingreso,
+                                 @RequestParam String fecha,
                                  HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -157,8 +158,8 @@ public class MovimientoController {
             return "redirect:/movimientos";
         }
 
-        // Usar el servicio cifrado para actualizar
-        encryptedMovimientoService.updateMovimiento(movimiento, cantidad, asunto != null ? asunto.trim() : "", ingreso);
+        LocalDate fechaMovimiento = LocalDate.parse(fecha);
+        encryptedMovimientoService.updateMovimiento(movimiento, cantidad, asunto != null ? asunto.trim() : "", ingreso, fechaMovimiento);
 
         return "redirect:/movimientos";
     }

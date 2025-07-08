@@ -90,10 +90,13 @@ public class EncryptedMovimientoService {
     /**
      * Actualiza un movimiento con datos cifrados
      */
-    public void updateMovimiento(Movimiento movimiento, double cantidad, String asunto, boolean ingreso) {
+    public void updateMovimiento(Movimiento movimiento, double cantidad, String asunto, boolean ingreso, LocalDate fecha) {
         movimiento.setIngreso(ingreso);
         movimiento.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         movimiento.setAsuntoCifrado(encryptionService.encrypt(asunto));
+        movimiento.setFechaCifrada(encryptionService.encrypt(fecha.toString()));
+        movimiento.setMesAsignado(fecha.getMonthValue());
+        movimiento.setAnioAsignado(fecha.getYear());
         movimientoRepository.save(movimiento);
     }
 

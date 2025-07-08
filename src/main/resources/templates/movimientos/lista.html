@@ -95,7 +95,7 @@
                 </form>
             </div>
             <ul id="movimientos-list">
-                <li class="movimiento-item" th:each="mov,iter : ${movimientos}" th:data-index="${iter.index}" th:data-id="${mov.id}" style="display:none;">
+                <li class="movimiento-item" th:each="mov,iter : ${movimientos}" th:data-index="${iter.index}" th:data-id="${mov.id}" th:data-fecha="${#temporals.format(mov.fecha, 'yyyy-MM-dd')}" style="display:none;">
                     <div class="movimiento-info" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
                         <div style="display:flex; align-items:center; gap:0.5rem;">
                             <span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'">
@@ -142,6 +142,10 @@
                                 <option value="true">Ingreso</option>
                                 <option value="false">Gasto</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editFecha">Fecha</label>
+                            <input type="date" id="editFecha" name="fecha" required>
                         </div>
                         <div class="modal-actions">
                             <button type="button" class="btn-cancel" id="btnCancelar">Cancelar</button>

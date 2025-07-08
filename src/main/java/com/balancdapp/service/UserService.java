@@ -104,7 +104,7 @@ public class UserService {
         verificationToken.setToken(token);
         verificationToken.setUser(savedUser);
         verificationTokenRepository.save(verificationToken);
-        String verificationUrl = "http://localhost:8080/verify?token=" + token;
+        String verificationUrl = "https://balancd.site:8080/verify?token=" + token;
         try {
             emailService.sendVerificationEmail(savedUser.getEmail(), verificationUrl);
         } catch (Exception e) {
@@ -137,7 +137,7 @@ public class UserService {
         resetToken.setToken(token);
         resetToken.setUser(user);
         verificationTokenRepository.save(resetToken);
-        String resetUrl = "http://localhost:8080/reset-password?token=" + token;
+        String resetUrl = "https://balancd.site/reset-password?token=" + token;
         try {
             emailService.sendPasswordResetEmail(user.getEmail(), resetUrl);
         } catch (Exception e) {

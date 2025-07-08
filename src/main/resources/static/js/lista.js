@@ -56,6 +56,16 @@
     document.getElementById('editCantidad').value = cantidad;
     document.getElementById('editAsunto').value = asunto;
     document.getElementById('editTipo').value = ingreso ? 'true' : 'false';
+    // Obtener fecha
+    let fecha = li.getAttribute('data-fecha');
+    // Convertir fecha de dd/MM/yyyy a yyyy-MM-dd
+    if (fecha) {
+        const partes = fecha.split('/');
+        if (partes.length === 3) {
+            fecha = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+        }
+    }
+    document.getElementById('editFecha').value = fecha;
     // Guardar id en el form
     document.getElementById('editForm').action = '/movimientos/edit/' + id;
     // Mostrar modal
