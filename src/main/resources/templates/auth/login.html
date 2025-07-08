@@ -39,13 +39,14 @@
 
     <!-- Formulario de Login -->
     <form class="login-form active" th:action="@{/login}" method="post">
-        <input type="text" name="username" placeholder="Usuario" required>
+        <input type="text" name="username" placeholder="Usuario o Email" required>
         <input type="password" name="password" placeholder="Contraseña" required>
         <button type="submit" style="width:auto; align-self:center;">Iniciar sesión</button>
     </form>
 
     <!-- Formulario de Registro -->
     <form class="register-form" th:action="@{/auth/register}" method="post">
+        <input type="email" name="email" placeholder="Correo electrónico" required>
         <input type="text" name="username" placeholder="Usuario" required>
         <input type="password" name="password" placeholder="Contraseña" required>
         <button type="submit" style="width:auto; align-self:center;">Registrarse</button>

@@ -37,6 +37,10 @@ public class AuthController {
     public String login(@ModelAttribute User user, HttpSession session, RedirectAttributes redirectAttributes) {
         return userService.authenticateUser(user.getUsername(), user.getPassword())
                 .map(authenticatedUser -> {
+                    if (!authenticatedUser.isVerified()) {
+                        redirectAttributes.addFlashAttribute("error", "Debes verificar tu correo antes de iniciar sesión.");
+                        return "redirect:/login";
+                    }
                     session.setAttribute("user", authenticatedUser);
                     return "redirect:/movimientos";
                 })
@@ -50,14 +54,17 @@ public class AuthController {
     @PostMapping("/auth/register")
     public String register(@ModelAttribute User user, RedirectAttributes redirectAttributes, Model model) {
         try {
-            // Check if username already exists
             if (userService.getUserByUsername(user.getUsername()).isPresent()) {
                 model.addAttribute("error", "Username already in use");
                 return "error";
             }
+            if (userService.getUserByEmail(user.getEmail()).isPresent()) {
+                model.addAttribute("error", "Email already in use");
+                return "error";
+            }
             userService.registerUser(user);
-            redirectAttributes.addFlashAttribute("success", "Registration successful. Please login.");
-            return "redirect:/login";
+            model.addAttribute("email", user.getEmail());
+            return "auth/check-email";
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/auth/register";
@@ -85,6 +92,18 @@ public class AuthController {
         } else {
             model.addAttribute("error", "Contraseña incorrecta");
             return "auth/acceso";
+        }
+    }
+
+    @GetMapping("/verify")
+    public String verifyEmail(@RequestParam("token") String token, Model model) {
+        boolean verified = userService.verifyUser(token);
+        if (verified) {
+            model.addAttribute("message", "¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.");
+            return "auth/login";
+        } else {
+            model.addAttribute("error", "Token de verificación inválido o expirado.");
+            return "error";
         }
     }
 }

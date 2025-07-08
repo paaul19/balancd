@@ -25,6 +25,9 @@ public class AuthRestController {
         String password = payload.get("password");
         return userService.authenticateUser(username, password)
                 .map(user -> {
+                    if (!user.isVerified()) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Debes verificar tu correo antes de iniciar sesión"));
+                    }
                     String token = jwtService.generateToken(user);
                     Map<String, Object> response = new HashMap<>();
                     response.put("token", token);
@@ -49,6 +52,16 @@ public class AuthRestController {
             return ResponseEntity.ok(Map.of("success", true));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyEmail(@RequestParam("token") String token) {
+        boolean verified = userService.verifyUser(token);
+        if (verified) {
+            return ResponseEntity.ok(Map.of("success", true, "message", "Cuenta verificada exitosamente"));
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("success", false, "error", "Token inválido o expirado"));
         }
     }
 } 

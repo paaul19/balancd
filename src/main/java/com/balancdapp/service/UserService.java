@@ -1,12 +1,16 @@
 package com.balancdapp.service;
 
 import com.balancdapp.model.User;
+import com.balancdapp.model.VerificationToken;
 import com.balancdapp.repository.UserRepository;
+import com.balancdapp.repository.VerificationTokenRepository;
+import com.balancdapp.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -18,6 +22,12 @@ public class UserService {
     @Autowired
     private PasswordService passwordService;
 
+    @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
+
+    @Autowired
+    private EmailService emailService;
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
@@ -28,6 +38,10 @@ public class UserService {
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
+    }
+
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     public User saveUser(User user) {
@@ -59,14 +73,22 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Optional<User> authenticateUser(String username, String password) {
-        return userRepository.findByUsername(username)
-                .filter(user -> passwordService.matches(password, user.getPassword()));
+    public Optional<User> authenticateUser(String identifier, String password) {
+        // Permitir login por email o username
+        Optional<User> userOpt = identifier.contains("@") ? userRepository.findByEmail(identifier) : userRepository.findByUsername(identifier);
+        return userOpt.filter(user -> passwordService.matches(password, user.getPassword()))
+                .filter(User::isVerified);
     }
 
     public User registerUser(User user) {
         if (user == null) {
             throw new RuntimeException("User cannot be null");
+        }
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            throw new RuntimeException("Email cannot be empty");
+        }
+        if (userRepository.existsByEmail(user.getEmail())) {
+            throw new RuntimeException("Email already in use");
         }
         if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
             throw new RuntimeException("Username cannot be empty");
@@ -74,7 +96,34 @@ public class UserService {
         if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
             throw new RuntimeException("Password cannot be empty");
         }
-        return saveUser(user);
+        user.setVerified(false);
+        User savedUser = saveUser(user);
+        // Generar token y guardar
+        String token = UUID.randomUUID().toString();
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(token);
+        verificationToken.setUser(savedUser);
+        verificationTokenRepository.save(verificationToken);
+        String verificationUrl = "http://localhost:8080/verify?token=" + token;
+        try {
+            emailService.sendVerificationEmail(savedUser.getEmail(), verificationUrl);
+        } catch (Exception e) {
+            System.err.println("Error sending verification email: " + e.getMessage());
+            // No lanzar excepción, solo loguear
+        }
+        return savedUser;
+    }
+
+    public boolean verifyUser(String token) {
+        VerificationToken verificationToken = verificationTokenRepository.findByToken(token).orElse(null);
+        if (verificationToken == null) {
+            return false;
+        }
+        User user = verificationToken.getUser();
+        user.setVerified(true);
+        saveUser(user);
+        verificationTokenRepository.delete(verificationToken);
+        return true;
     }
 
     public User updateUser(User updatedUser) {

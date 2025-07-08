@@ -5,7 +5,9 @@
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Eliminar tabla movimientos si existe (para recrearla con la estructura correcta)
@@ -129,3 +131,11 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- Nota: Los índices se crearán automáticamente por JPA usando las anotaciones @Index 
+-- Crear tabla de tokens de verificación si no existe
+CREATE TABLE IF NOT EXISTS verification_tokens (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+); 

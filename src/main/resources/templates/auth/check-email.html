@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Revisa tu correo • balanc*d</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+    <meta name="theme-color" content="#1e1e1e">
+    <link rel="stylesheet" href="/css/login.css">
+    <style>
+        .check-email-box {
+            max-width: 400px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 32px 24px;
+            text-align: center;
+        }
+        .check-email-box img {
+            width: 80px;
+            margin-bottom: 18px;
+        }
+        .check-email-box h2 {
+            color: #2d3a4a;
+            margin-bottom: 12px;
+        }
+        .check-email-box p {
+            color: #4a5568;
+            font-size: 1.1em;
+        }
+        .check-email-box .email {
+            color: #2b6cb0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="check-email-box">
+    <img src="/images/logo-app.png" alt="balanc*d">
+    <h2>¡Revisa tu correo!</h2>
+    <p>Para activar tu cuenta, hemos enviado un enlace de verificación a:</p>
+    <p class="email" th:text="${email}"></p>
+    <p>Haz clic en el enlace para completar tu registro.<br>Si no ves el correo, revisa tu carpeta de spam.</p>
+</div>
+</body>
+</html> 
