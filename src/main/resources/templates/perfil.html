@@ -82,6 +82,29 @@
                 <input type="password" id="nuevoPassword" name="nuevoPassword" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
                 <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar contraseña</button>
             </form>
+            <!-- Botón para eliminar cuenta -->
+            <form th:action="@{/perfil/eliminar-cuenta}" method="post" id="formEliminarCuenta" style="width:100%; margin-top:2.2rem; display:flex; flex-direction:column; align-items:center;">
+                <button type="button" id="btnEliminarCuenta" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:#e53935; color:#fff; border:none; margin-top:0.2rem; transition:background 0.2s; font-weight:600;">Eliminar cuenta</button>
+            </form>
+            <!-- Modal de confirmación -->
+            <div id="modalConfirmarEliminar" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center;">
+                <div style="background:var(--bg-secondary,#fff); border-radius:12px; box-shadow:0 2px 16px rgba(0,0,0,0.18); padding:2rem 1.5rem; max-width:340px; margin:auto; text-align:center;">
+                    <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres eliminar tu cuenta? Esta acción <b>no se puede deshacer</b> y se borrarán todos tus datos.</div>
+                    <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                        <button type="button" id="cancelarEliminar" style="background:var(--border-color); color:var(--text-primary); border-radius:5px; padding:0.6rem 1.2rem;">Cancelar</button>
+                        <button type="button" id="confirmarEliminar" style="background:#e53935; color:#fff; border-radius:5px; padding:0.6rem 1.2rem;">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+            <script>
+                const btnEliminarCuenta = document.getElementById('btnEliminarCuenta');
+                const modal = document.getElementById('modalConfirmarEliminar');
+                const cancelar = document.getElementById('cancelarEliminar');
+                const confirmar = document.getElementById('confirmarEliminar');
+                btnEliminarCuenta.addEventListener('click', () => { modal.style.display = 'flex'; });
+                cancelar.addEventListener('click', () => { modal.style.display = 'none'; });
+                confirmar.addEventListener('click', () => { document.getElementById('formEliminarCuenta').submit(); });
+            </script>
         </div>
     </div>
 

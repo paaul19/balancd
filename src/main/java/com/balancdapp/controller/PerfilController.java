@@ -3,6 +3,7 @@ package com.balancdapp.controller;
 import com.balancdapp.model.User;
 import com.balancdapp.service.UserService;
 import com.balancdapp.service.PasswordService;
+import com.balancdapp.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,8 @@ public class PerfilController {
     private UserService userService;
     @Autowired
     private PasswordService passwordService;
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/perfil")
     public String perfil(HttpSession session, Model model) {
@@ -70,5 +73,18 @@ public class PerfilController {
         session.setAttribute("user", actualizado);
         redirectAttributes.addFlashAttribute("success", "Contraseña actualizada correctamente.");
         return "redirect:/perfil";
+    }
+
+    @PostMapping("/perfil/eliminar-cuenta")
+    public String eliminarCuenta(HttpSession session, RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        // Eliminar usuario y sus datos
+        userRepository.deleteById(user.getId());
+        session.invalidate();
+        redirectAttributes.addFlashAttribute("success", "Tu cuenta ha sido eliminada correctamente.");
+        return "redirect:/login";
     }
 } 
