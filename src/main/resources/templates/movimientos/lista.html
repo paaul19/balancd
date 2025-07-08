@@ -20,6 +20,10 @@
     <script src="/js/lista.js"></script>
     <script src="/js/footer-modals.js"></script>
 
+    <!-- Intro.js: Tour interactivo para usuarios nuevos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js/minified/introjs.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/intro.js/minified/intro.min.js"></script>
+
     <!-- Script para aplicar tema inmediatamente -->
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
 </head>
@@ -188,5 +192,9 @@
     <!-- Script del header -->
     <script th:replace="~{fragments/header :: header-script}"></script>
 <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+<script src="/js/tutorial.js"></script>
+<script>
+    window.tutorialVisto = [[${tutorialVisto}]];
+</script>
 </body>
 </html> 

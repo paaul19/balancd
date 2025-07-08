@@ -28,6 +28,9 @@ public class User {
     @Column(name = "is_verified", nullable = false)
     private boolean isVerified = false;
 
+    @Column(name = "tutorial_visto", nullable = false)
+    private boolean tutorialVisto = false;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Movimiento> movimientos;
 
@@ -46,6 +49,9 @@ public class User {
 
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean isVerified) { this.isVerified = isVerified; }
+
+    public boolean isTutorialVisto() { return tutorialVisto; }
+    public void setTutorialVisto(boolean tutorialVisto) { this.tutorialVisto = tutorialVisto; }
 
     public List<Movimiento> getMovimientos() { return movimientos; }
     public void setMovimientos(List<Movimiento> movimientos) { this.movimientos = movimientos; }

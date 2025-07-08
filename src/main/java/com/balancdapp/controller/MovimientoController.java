@@ -5,6 +5,7 @@ import com.balancdapp.model.User;
 import com.balancdapp.service.EncryptedMovimientoRecurrenteService;
 import com.balancdapp.service.EncryptedMovimientoService;
 import com.balancdapp.service.MovimientoService;
+import com.balancdapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -28,14 +29,26 @@ public class MovimientoController {
     @Autowired
     private EncryptedMovimientoRecurrenteService encryptedRecurrenteService;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/movimientos")
     public String verMovimientos(@RequestParam(value = "mes", required = false) Integer mes,
                                  @RequestParam(value = "anio", required = false) Integer anio,
                                  @RequestParam(value = "busqueda", required = false) String busqueda,
+                                 @RequestParam(value = "tutorialVisto", required = false) Integer tutorialVisto,
                                  Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
+        }
+        // Recuperar el usuario actualizado de la base de datos
+        user = userService.getUserById(user.getId()).orElse(user);
+        // Si viene el parámetro y el usuario aún no lo tenía marcado, lo marcamos
+        if (tutorialVisto != null && tutorialVisto == 1 && !user.isTutorialVisto()) {
+            user.setTutorialVisto(true);
+            userService.saveUser(user);
+            session.setAttribute("user", user);
         }
 
         // Usar el servicio cifrado para obtener movimientos
@@ -99,6 +112,7 @@ public class MovimientoController {
         model.addAttribute("mesSeleccionado", seleccionado);
         model.addAttribute("mesesManuales", mesesManuales);
         model.addAttribute("busqueda", busqueda);
+        model.addAttribute("tutorialVisto", user.isTutorialVisto());
         return "movimientos/lista";
     }
 

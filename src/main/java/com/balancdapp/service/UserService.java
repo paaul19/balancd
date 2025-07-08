@@ -192,4 +192,11 @@ public class UserService {
 
         return userRepository.save(updatedUser);
     }
+
+    public void marcarTutorialVisto(String username) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setTutorialVisto(true);
+            userRepository.save(user);
+        });
+    }
 }

@@ -94,19 +94,19 @@
 <body>
     <footer class="footer-bar" th:fragment="footer">
         <!-- Página principal -->
-        <a href="/movimientos" class="footer-btn" title="Inicio">
+        <a href="/movimientos" class="footer-btn" title="Inicio" data-intro="Consulta tus movimientos de cada mes." data-step="1">
             <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><path d="M3 12l9-8 9 8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 10v8a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4h2v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
         <!-- Búsqueda avanzada -->
-        <a href="/movimientos/busqueda-avanzada" class="footer-btn" title="Búsqueda avanzada">
+        <a href="/movimientos/busqueda-avanzada" class="footer-btn" title="Búsqueda avanzada" data-intro="Filtra movimientos por asunto y periodo de tiempo." data-step="2">
             <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke-linecap="round"/></svg>
         </a>
         <!-- Botón central (+) -->
-        <button class="footer-btn center" title="Añadir">
+        <button class="footer-btn center" title="Añadir" data-intro="Añade un ingreso o gasto nuevo." data-step="3">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" stroke="#00e676" stroke-width="2.5"/><line x1="12" y1="8" x2="12" y2="16" stroke="#00e676" stroke-width="2.5" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="#00e676" stroke-width="2.5" stroke-linecap="round"/></svg>
         </button>
         <!-- Movimientos recurrentes -->
-        <a href="/movimientos/recurrentes" class="footer-btn" title="Recurrentes">
+        <a href="/movimientos/recurrentes" class="footer-btn" title="Recurrentes" data-intro="Gestiona tus movimientos recurrentes." data-step="4">
             <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 295.914 295.914">
                 <g>
                     <path d="M67.964,120.522H53.356c11.922-42,50.267-72.631,95.604-72.631c22.904,0,44.424,7.687,62.234,21.997
@@ -124,7 +124,7 @@
 
 
         <!-- Perfil -->
-        <a href="/perfil" class="footer-btn" title="Perfil">
+        <a href="/perfil" class="footer-btn" title="Perfil" data-intro="Edita tu perfil y contraseña." data-step="5">
             <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7" stroke-linecap="round"/></svg>
         </a>
     </footer>

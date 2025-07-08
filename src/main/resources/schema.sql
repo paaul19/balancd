@@ -2,6 +2,9 @@
 -- Este script se ejecutará automáticamente al iniciar la aplicación
 
 -- Crear tabla de usuarios si no existe
+
+
+
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
@@ -9,8 +12,6 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE
 );
-
--- Eliminar tabla movimientos si existe (para recrearla con la estructura correcta)
 
 -- Crear tabla de movimientos con campos cifrados
 CREATE TABLE IF NOT EXISTS movimientos (
@@ -138,4 +139,11 @@ CREATE TABLE IF NOT EXISTS verification_tokens (
     user_id BIGINT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-); 
+);
+
+
+-- Añadir el campo tutorial_visto a la tabla users
+ALTER TABLE users ADD COLUMN tutorial_visto TINYINT(1) NOT NULL DEFAULT 0;
+
+-- Asegurarse de que todos los usuarios existentes tienen el campo en 0
+UPDATE users SET tutorial_visto = 0 WHERE tutorial_visto IS NULL;
