@@ -140,6 +140,3 @@ CREATE TABLE IF NOT EXISTS verification_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
--- Asegurarse de que todos los usuarios existentes tienen el campo en 0
-UPDATE users SET tutorial_visto = 0;
