@@ -2,8 +2,6 @@
 -- Este script se ejecutará automáticamente al iniciar la aplicación
 
 -- Crear tabla de usuarios si no existe
-ALTER TABLE movimientos_recurrentes ADD COLUMN categoria VARCHAR(40) NULL;
-ALTER TABLE movimientos ADD COLUMN categoria VARCHAR(40) NULL;
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
