@@ -91,7 +91,7 @@
                         </button>
                         <a th:href="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" 
                            class="btn btn-sm btn-danger"
-                           onclick="return confirm('¿Seguro que quieres borrar este movimiento recurrente? Esta acción no se puede deshacer.')">
+                           >
                             Borrar
                         </a>
                     </div>
@@ -141,6 +141,18 @@
                         <button type="submit" class="btn-save">Guardar</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal de confirmación de eliminación de recurrente -->
+    <div id="modalConfirmarEliminarRecurrente" class="modal">
+        <div class="modal-content" style="max-width:340px;">
+            <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres borrar este movimiento recurrente?</div>
+            <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                <button id="cancelarEliminarRecurrente" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
+                <button id="confirmarEliminarRecurrente" style="background:#e53935; color:#fff;">Eliminar</button>
             </div>
         </div>
     </div>

@@ -221,4 +221,29 @@
 }
     // Submit normal (POST) al backend
 };
-});
+ });
+
+ document.addEventListener('DOMContentLoaded', function() {
+     const btnEliminarMes = document.getElementById('btnEliminarMes');
+     const formEliminarMes = document.getElementById('formEliminarMes');
+     const modalEliminarMes = document.getElementById('modalConfirmarEliminarMes');
+     const cancelarEliminarMes = document.getElementById('cancelarEliminarMes');
+     const confirmarEliminarMes = document.getElementById('confirmarEliminarMes');
+
+     if (btnEliminarMes && formEliminarMes && modalEliminarMes && cancelarEliminarMes && confirmarEliminarMes) {
+         btnEliminarMes.addEventListener('click', function() {
+             modalEliminarMes.classList.add('show');
+         });
+         cancelarEliminarMes.addEventListener('click', function() {
+             modalEliminarMes.classList.remove('show');
+         });
+         confirmarEliminarMes.addEventListener('click', function() {
+             modalEliminarMes.classList.remove('show');
+             formEliminarMes.submit();
+         });
+     } else {
+         console.error("Algún elemento no se encontró:", {
+             btnEliminarMes, formEliminarMes, modalEliminarMes, cancelarEliminarMes, confirmarEliminarMes
+         });
+     }
+ });

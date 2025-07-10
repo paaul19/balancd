@@ -76,4 +76,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error al modificar el movimiento recurrente');
             });
     });
+
+    // --- Modal de confirmación de borrado de recurrente ---
+    let recurrenteAEliminar = null;
+    document.querySelectorAll('.btn-danger').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            recurrenteAEliminar = this.getAttribute('href');
+            document.getElementById('modalConfirmarEliminarRecurrente').classList.add('show');
+        });
+    });
+    document.getElementById('cancelarEliminarRecurrente').addEventListener('click', function() {
+        document.getElementById('modalConfirmarEliminarRecurrente').classList.remove('show');
+        recurrenteAEliminar = null;
+    });
+    document.getElementById('confirmarEliminarRecurrente').addEventListener('click', function() {
+        if (recurrenteAEliminar) {
+            window.location.href = recurrenteAEliminar;
+        }
+    });
 });
