@@ -131,20 +131,7 @@
                             <span th:if="${mov.asunto != null and mov.asunto != ''}" class="mov-categoria" style="margin-left:0.5rem;">
                                 <span th:text="${mov.asunto}"></span>
                             </span>
-                            <span th:if="${mov.categoria != null}" style="margin-left:0.5rem; color:#888; font-size:0.95em;">
-                                (<span th:switch="${mov.categoria}">
-                                    <span th:case="'TRANSPORTE'">Transporte</span>
-                                    <span th:case="'COMIDA'">Comida</span>
-                                    <span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span>
-                                    <span th:case="'HOGAR'">Hogar</span>
-                                    <span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span>
-                                    <span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span>
-                                    <span th:case="'COMPRAS'">Compras</span>
-                                    <span th:case="'COMPRAS_ONLINE'">Compras Online</span>
-                                    <span th:case="'SUSCRIPCION'">Suscripción</span>
-                                    <span th:case="*">[[${mov.categoria}]]</span>
-                                </span>)
-                            </span>
+                            <span th:if="${mov.categoria != null}" style="margin-left:0.5rem; color:#888; font-size:0.95em;">(<span th:switch="${mov.categoria}"><span th:case="'TRANSPORTE'">Transporte</span><span th:case="'COMIDA'">Comida</span><span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span><span th:case="'HOGAR'">Hogar</span><span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span><span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span><span th:case="'COMPRAS'">Compras</span><span th:case="'COMPRAS_ONLINE'">Compras Online</span><span th:case="'SUSCRIPCION'">Suscripción</span><span th:case="*">[[${mov.categoria}]]</span></span>)</span>
                         </div>
                         <span style="color:#888; font-size:0.92em; min-width:80px; text-align:right; margin-left:1.2rem; margin-right:0.8rem; white-space:nowrap;" th:text="${#temporals.format(mov.fecha, 'dd/MM/yyyy')}"></span>
                     </div>
