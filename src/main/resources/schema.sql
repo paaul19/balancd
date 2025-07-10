@@ -2,15 +2,16 @@
 -- Este script se ejecutará automáticamente al iniciar la aplicación
 
 -- Crear tabla de usuarios si no existe
-
-
+ALTER TABLE movimientos_recurrentes ADD COLUMN categoria VARCHAR(40) NULL;
+ALTER TABLE movimientos ADD COLUMN categoria VARCHAR(40) NULL;
 
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    is_verified BOOLEAN NOT NULL DEFAULT FALSE
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    balance_total DECIMAL(19,2) NULL
 );
 
 -- Crear tabla de movimientos con campos cifrados
@@ -23,6 +24,7 @@ CREATE TABLE IF NOT EXISTS movimientos (
     fecha_cifrada VARCHAR(255) NOT NULL,
     mes_asignado INT NOT NULL,
     anio_asignado INT NOT NULL,
+    categoria VARCHAR(40) NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -48,6 +50,7 @@ CREATE TABLE IF NOT EXISTS movimientos_recurrentes (
     fecha_fin DATE,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     ultima_fecha_ejecutada DATE,
+    categoria VARCHAR(40) NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 

@@ -36,6 +36,10 @@ public class MovimientoRecurrente {
 
     private LocalDate ultimaFechaEjecutada;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categoria", nullable = true)
+    private CategoriaMovimiento categoria;
+
     // Getters y setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -79,4 +83,6 @@ public class MovimientoRecurrente {
     public void setActivo(boolean activo) { this.activo = activo; }
     public LocalDate getUltimaFechaEjecutada() { return ultimaFechaEjecutada; }
     public void setUltimaFechaEjecutada(LocalDate ultimaFechaEjecutada) { this.ultimaFechaEjecutada = ultimaFechaEjecutada; }
+    public CategoriaMovimiento getCategoria() { return categoria; }
+    public void setCategoria(CategoriaMovimiento categoria) { this.categoria = categoria; }
 } 

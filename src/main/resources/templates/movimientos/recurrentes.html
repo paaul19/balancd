@@ -76,6 +76,21 @@
                             <span class="detail-label">Última vez ejecutado</span>
                             <span class="detail-value" th:text="${#temporals.format(rec.ultimaFechaEjecutada, 'dd/MM/yyyy')}">Última</span>
                         </div>
+                        <div class="detail-item" th:if="${rec.categoria != null}">
+                            <span class="detail-label">Categoría</span>
+                            <span class="detail-value" th:switch="${rec.categoria}">
+                                <span th:case="'TRANSPORTE'">Transporte</span>
+                                <span th:case="'COMIDA'">Comida</span>
+                                <span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span>
+                                <span th:case="'HOGAR'">Hogar</span>
+                                <span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span>
+                                <span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span>
+                                <span th:case="'COMPRAS'">Compras</span>
+                                <span th:case="'COMPRAS_ONLINE'">Compras Online</span>
+                                <span th:case="'SUSCRIPCION'">Suscripción</span>
+                                <span th:case="*">[[${rec.categoria}]]</span>
+                            </span>
+                        </div>
                     </div>
                     
                     <div class="recurrente-actions">
@@ -86,7 +101,8 @@
                                 th:data-cantidad="${rec.cantidad}"
                                 th:data-ingreso="${rec.ingreso}"
                                 th:data-fecha="${#temporals.format(rec.fechaInicio, 'yyyy-MM-dd')}"
-                                th:data-frecuencia="${rec.frecuencia}">
+                                th:data-frecuencia="${rec.frecuencia}"
+                                th:data-categoria="${rec.categoria}">
                             Modificar
                         </button>
                         <a th:href="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" 
@@ -101,7 +117,7 @@
 
         <!-- Modal para editar movimiento recurrente -->
         <div id="editRecurrenteModal" class="modal">
-            <div class="modal-content">
+            <div class="modal-content recurrente-modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Modificar Movimiento Recurrente</h3>
                 </div>
@@ -134,6 +150,21 @@
                             <option value="mes">Cada mes</option>
                             <option value="dos_meses">Cada dos meses</option>
                             <option value="anio">Cada año</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoriaRecurrente">Categoría</label>
+                        <select id="categoriaRecurrente" name="categoria">
+                            <option value="" selected>Sin categoría</option>
+                            <option value="TRANSPORTE">Transporte</option>
+                            <option value="COMIDA">Comida</option>
+                            <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
+                            <option value="HOGAR">Hogar</option>
+                            <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
+                            <option value="EDUCACION_CURSOS">Educación y Cursos</option>
+                            <option value="COMPRAS">Compras</option>
+                            <option value="COMPRAS_ONLINE">Compras Online</option>
+                            <option value="SUSCRIPCION">Suscripción</option>
                         </select>
                     </div>
                     <div class="modal-actions">

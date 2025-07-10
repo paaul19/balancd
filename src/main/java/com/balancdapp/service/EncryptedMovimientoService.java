@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.annotation.PostConstruct;
+import com.balancdapp.model.MovimientoRecurrente;
 
 @Service
 @Transactional
@@ -35,12 +36,15 @@ public class EncryptedMovimientoService {
     @Autowired
     private EncryptedMovimientoRecurrenteService encryptedRecurrenteService;
 
+    @Autowired
+    private MovimientoService movimientoService;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * Crea un movimiento con datos cifrados
      */
-    public Movimiento createMovimiento(User user, double cantidad, boolean ingreso, String asunto, LocalDate fecha, int mesAsignado, int anioAsignado) {
+    public Movimiento createMovimiento(User user, double cantidad, boolean ingreso, String asunto, LocalDate fecha, int mesAsignado, int anioAsignado, String categoria) {
         Movimiento movimiento = new Movimiento();
         movimiento.setUser(user);
         movimiento.setIngreso(ingreso);
@@ -52,7 +56,19 @@ public class EncryptedMovimientoService {
         movimiento.setAsuntoCifrado(encryptionService.encrypt(asunto));
         movimiento.setFechaCifrada(encryptionService.encrypt(fecha.format(DATE_FORMATTER)));
 
-        return movimientoRepository.save(movimiento);
+        // Asignar categoría si viene
+        if (categoria != null && !categoria.isBlank()) {
+            try {
+                movimiento.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
+            } catch (IllegalArgumentException e) {
+                movimiento.setCategoria(null); // Si no es válida, no asignar
+            }
+        } else {
+            movimiento.setCategoria(null);
+        }
+
+        // Usar MovimientoService para que se actualice el balanceTotal
+        return movimientoService.addMovimiento(movimiento);
     }
 
     /**
@@ -89,14 +105,25 @@ public class EncryptedMovimientoService {
     /**
      * Actualiza un movimiento con datos cifrados
      */
-    public void updateMovimiento(Movimiento movimiento, double cantidad, String asunto, boolean ingreso, LocalDate fecha) {
+    public void updateMovimiento(Movimiento movimiento, double cantidad, String asunto, boolean ingreso, LocalDate fecha, String categoria) {
         movimiento.setIngreso(ingreso);
         movimiento.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         movimiento.setAsuntoCifrado(encryptionService.encrypt(asunto));
         movimiento.setFechaCifrada(encryptionService.encrypt(fecha.toString()));
         movimiento.setMesAsignado(fecha.getMonthValue());
         movimiento.setAnioAsignado(fecha.getYear());
-        movimientoRepository.save(movimiento);
+        // Actualizar categoría
+        if (categoria != null && !categoria.isBlank()) {
+            try {
+                movimiento.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
+            } catch (IllegalArgumentException e) {
+                movimiento.setCategoria(null);
+            }
+        } else {
+            movimiento.setCategoria(null);
+        }
+        // Usar MovimientoService para que se actualice el balanceTotal
+        movimientoService.updateMovimiento(movimiento);
     }
 
     /**
@@ -126,6 +153,7 @@ public class EncryptedMovimientoService {
         dto.setFecha(getFecha(movimiento));
         dto.setMesAsignado(movimiento.getMesAsignado());
         dto.setAnioAsignado(movimiento.getAnioAsignado());
+        dto.setCategoria(movimiento.getCategoria() != null ? movimiento.getCategoria().name() : null);
         return dto;
     }
 
@@ -141,6 +169,7 @@ public class EncryptedMovimientoService {
         private LocalDate fecha;
         private int mesAsignado;
         private int anioAsignado;
+        private String categoria;
 
         // Getters y setters
         public Long getId() { return id; }
@@ -166,6 +195,9 @@ public class EncryptedMovimientoService {
 
         public int getAnioAsignado() { return anioAsignado; }
         public void setAnioAsignado(int anioAsignado) { this.anioAsignado = anioAsignado; }
+
+        public String getCategoria() { return categoria; }
+        public void setCategoria(String categoria) { this.categoria = categoria; }
     }
 
     /**
@@ -174,7 +206,7 @@ public class EncryptedMovimientoService {
     public void createMovimientosRecurrentes(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, int repeticiones) {
         LocalDate fecha = fechaInicio;
         for (int i = 0; i < repeticiones; i++) {
-            createMovimiento(user, cantidad, ingreso, asunto, fecha, fecha.getMonthValue(), fecha.getYear());
+            createMovimiento(user, cantidad, ingreso, asunto, fecha, fecha.getMonthValue(), fecha.getYear(), null);
             switch (frecuencia) {
                 case "semanal":
                     fecha = fecha.plusWeeks(1);
@@ -197,12 +229,12 @@ public class EncryptedMovimientoService {
         }
     }
 
-    public void crearMovimientoRecurrente(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, Integer repeticiones, LocalDate fechaFin) {
-        com.balancdapp.model.MovimientoRecurrente rec = encryptedRecurrenteService.createMovimientoRecurrente(user, cantidad, ingreso, asunto, fechaInicio, frecuencia, fechaFin);
+    public void crearMovimientoRecurrente(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, Integer repeticiones, LocalDate fechaFin, String categoria) {
+        com.balancdapp.model.MovimientoRecurrente rec = encryptedRecurrenteService.createMovimientoRecurrente(user, cantidad, ingreso, asunto, fechaInicio, frecuencia, fechaFin, categoria);
         // Si la fecha de inicio es hoy, crear el movimiento real ya
         LocalDate hoy = LocalDate.now(java.time.ZoneId.of("Europe/Madrid"));
         if (fechaInicio.equals(hoy)) {
-            createMovimiento(user, cantidad, ingreso, asunto, hoy, hoy.getMonthValue(), hoy.getYear());
+            createMovimiento(user, cantidad, ingreso, asunto, hoy, hoy.getMonthValue(), hoy.getYear(), categoria);
             rec.setUltimaFechaEjecutada(hoy);
             movimientoRecurrenteRepository.save(rec);
         }
@@ -235,7 +267,7 @@ public class EncryptedMovimientoService {
                         rec.getUser(), hoy.getMonthValue(), hoy.getYear(), cantidadCifrada, rec.isIngreso(), asuntoCifrado, fechaCifrada);
 
                 if (!existe) {
-                    createMovimiento(rec.getUser(), cantidad, rec.isIngreso(), asunto, hoy, hoy.getMonthValue(), hoy.getYear());
+                    createMovimiento(rec.getUser(), cantidad, rec.isIngreso(), asunto, hoy, hoy.getMonthValue(), hoy.getYear(), null);
                     rec.setUltimaFechaEjecutada(hoy);
                     movimientoRecurrenteRepository.save(rec);
                 }
@@ -300,7 +332,30 @@ public class EncryptedMovimientoService {
     /**
      * Modifica un movimiento recurrente
      */
-    public void modificarMovimientoRecurrente(Long id, User user, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia) {
-        encryptedRecurrenteService.modificarMovimientoRecurrente(id, user, cantidad, asunto, ingreso, fechaInicio, frecuencia);
+    public void modificarMovimientoRecurrente(Long id, User user, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia, String categoria) {
+        MovimientoRecurrente recurrente = movimientoRecurrenteRepository.findById(id).orElse(null);
+        if (recurrente != null && recurrente.getUser().getId().equals(user.getId())) {
+            encryptedRecurrenteService.updateMovimientoRecurrente(recurrente, cantidad, asunto, ingreso, fechaInicio, frecuencia, categoria);
+        }
+    }
+
+    public void deleteMovimiento(Movimiento movimiento) {
+        if (movimiento != null && movimiento.getUser() != null) {
+            movimientoService.deleteMovimiento(movimiento.getId(), movimiento.getUser().getId());
+        }
+    }
+
+    /**
+     * Obtiene movimientos descifrados de un usuario para un mes y año concretos
+     */
+    public List<MovimientoDTO> getMovimientosByUserAndMesAnio(Long userId, int mes, int anio) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            List<Movimiento> movimientos = movimientoRepository.findByUserAndMesAsignadoAndAnioAsignado(userOpt.get(), mes, anio);
+            return movimientos.stream()
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+        }
+        return List.of();
     }
 } 

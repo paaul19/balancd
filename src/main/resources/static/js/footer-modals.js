@@ -83,6 +83,21 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label for="fecha">Fecha del movimiento</label>
                         <input type="date" id="fecha" name="fecha" value="${new Date().toISOString().slice(0,10)}" required>
                     </div>
+                    <div class="form-group">
+                        <label for="categoria">Categoría</label>
+                        <select id="categoria" name="categoria">
+                            <option value="" selected>Sin categoría</option>
+                            <option value="TRANSPORTE">Transporte</option>
+                            <option value="COMIDA">Comida</option>
+                            <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
+                            <option value="HOGAR">Hogar</option>
+                            <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
+                            <option value="EDUCACION_CURSOS">Educación y Cursos</option>
+                            <option value="COMPRAS">Compras</option>
+                            <option value="COMPRAS_ONLINE">Compras Online</option>
+                            <option value="SUSCRIPCION">Suscripción</option>
+                        </select>
+                    </div>
                     <input type="hidden" name="ingreso" value="${tipo === 'ingreso' ? 'true' : 'false'}">
                     <input type="hidden" name="mes" value="${mes}">
                     <input type="hidden" name="anio" value="${anio}">
@@ -102,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.id = 'recurrenteModal';
         modal.className = 'modal';
         modal.innerHTML = `
-            <div class="modal-content recurrente-modal-content" style="max-width: 480px;">
+            <div class="modal-content recurrente-modal-content" style="max-width: 400px;">
                 <div class="modal-header">
                     <h3 class="modal-title">Añadir Movimiento Recurrente</h3>
                     <button type="button" class="modal-close" id="closeRecurrenteModal">&times;</button>
@@ -135,6 +150,21 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="mes">Cada mes</option>
                             <option value="dos_meses">Cada dos meses</option>
                             <option value="anio">Cada año</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recCategoria">Categoría</label>
+                        <select id="recCategoria" name="categoria">
+                            <option value="" selected>Sin categoría</option>
+                            <option value="TRANSPORTE">Transporte</option>
+                            <option value="COMIDA">Comida</option>
+                            <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
+                            <option value="HOGAR">Hogar</option>
+                            <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
+                            <option value="EDUCACION_CURSOS">Educación y Cursos</option>
+                            <option value="COMPRAS">Compras</option>
+                            <option value="COMPRAS_ONLINE">Compras Online</option>
+                            <option value="SUSCRIPCION">Suscripción</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -441,37 +471,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         .recurrente-modal-content {
-            max-width: 480px !important;
+            max-width: 400px !important;
             width: 100%;
             box-sizing: border-box;
-            max-height: 96vh;
-            overflow-y: visible;
-            padding: 0 1.1rem 1.1rem 1.1rem !important;
-            font-size: 0.92rem;
+            max-height: 92vh;
+            overflow-y: auto;
+            padding: 0 0.7rem 0.7rem 0.7rem !important;
+            font-size: 0.85rem;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+        .recurrente-modal-content::-webkit-scrollbar {
+            display: none; /* Chrome, Safari y Opera */
         }
         .recurrente-modal-content .modal-title {
-            font-size: 1.05rem;
+            font-size: 0.98rem;
         }
         .recurrente-modal-content .form-group {
-            margin-bottom: 0.65rem;
+            margin-bottom: 0.45rem;
         }
         .recurrente-modal-content .form-group label {
-            font-size: 0.92rem;
-            margin-bottom: 0.18rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.12rem;
         }
         .recurrente-modal-content .form-group input,
         .recurrente-modal-content .form-group select {
-            font-size: 0.92rem;
-            padding: 0.38rem 0.6rem;
+            font-size: 0.85rem;
+            padding: 0.28rem 0.5rem;
         }
         .recurrente-modal-content .modal-actions {
-            margin-top: 0.7rem;
+            margin-top: 0.4rem;
         }
         @media (max-width: 700px) {
             .recurrente-modal-content {
                 max-width: 98vw !important;
-                margin: 0.5rem !important;
-                padding: 0.3rem !important;
+                margin: 0.2rem !important;
+                padding: 0.1rem !important;
             }
         }
         @media (max-width: 480px) {

@@ -22,7 +22,7 @@ public class EncryptedMovimientoRecurrenteService {
     /**
      * Crea un movimiento recurrente con datos cifrados
      */
-    public MovimientoRecurrente createMovimientoRecurrente(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, LocalDate fechaFin) {
+    public MovimientoRecurrente createMovimientoRecurrente(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, LocalDate fechaFin, String categoria) {
         MovimientoRecurrente recurrente = new MovimientoRecurrente();
         recurrente.setUser(user);
         recurrente.setIngreso(ingreso);
@@ -32,11 +32,19 @@ public class EncryptedMovimientoRecurrenteService {
         if (fechaFin != null) {
             recurrente.setFechaFin(fechaFin);
         }
-
         // Cifrar datos sensibles
         recurrente.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         recurrente.setAsuntoCifrado(encryptionService.encrypt(asunto));
-
+        // Asignar categoría si viene
+        if (categoria != null && !categoria.isBlank()) {
+            try {
+                recurrente.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
+            } catch (IllegalArgumentException e) {
+                recurrente.setCategoria(null);
+            }
+        } else {
+            recurrente.setCategoria(null);
+        }
         return movimientoRecurrenteRepository.save(recurrente);
     }
 
@@ -63,12 +71,22 @@ public class EncryptedMovimientoRecurrenteService {
     /**
      * Actualiza un movimiento recurrente con datos cifrados
      */
-    public void updateMovimientoRecurrente(MovimientoRecurrente recurrente, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia) {
+    public void updateMovimientoRecurrente(MovimientoRecurrente recurrente, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia, String categoria) {
         recurrente.setIngreso(ingreso);
         recurrente.setFechaInicio(fechaInicio);
         recurrente.setFrecuencia(frecuencia);
         recurrente.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         recurrente.setAsuntoCifrado(encryptionService.encrypt(asunto));
+        // Actualizar categoría
+        if (categoria != null && !categoria.isBlank()) {
+            try {
+                recurrente.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
+            } catch (IllegalArgumentException e) {
+                recurrente.setCategoria(null);
+            }
+        } else {
+            recurrente.setCategoria(null);
+        }
         movimientoRecurrenteRepository.save(recurrente);
     }
 
@@ -97,6 +115,7 @@ public class EncryptedMovimientoRecurrenteService {
         dto.setFechaFin(recurrente.getFechaFin());
         dto.setActivo(recurrente.isActivo());
         dto.setUltimaFechaEjecutada(recurrente.getUltimaFechaEjecutada());
+        dto.setCategoria(recurrente.getCategoria() != null ? recurrente.getCategoria().name() : null);
         return dto;
     }
 
@@ -114,6 +133,7 @@ public class EncryptedMovimientoRecurrenteService {
         private LocalDate fechaFin;
         private boolean activo;
         private LocalDate ultimaFechaEjecutada;
+        private String categoria;
 
         // Getters y setters
         public Long getId() { return id; }
@@ -145,6 +165,9 @@ public class EncryptedMovimientoRecurrenteService {
 
         public LocalDate getUltimaFechaEjecutada() { return ultimaFechaEjecutada; }
         public void setUltimaFechaEjecutada(LocalDate ultimaFechaEjecutada) { this.ultimaFechaEjecutada = ultimaFechaEjecutada; }
+
+        public String getCategoria() { return categoria; }
+        public void setCategoria(String categoria) { this.categoria = categoria; }
     }
 
     /**
@@ -181,7 +204,7 @@ public class EncryptedMovimientoRecurrenteService {
     public void modificarMovimientoRecurrente(Long id, User user, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia) {
         MovimientoRecurrente recurrente = movimientoRecurrenteRepository.findById(id).orElse(null);
         if (recurrente != null && recurrente.getUser().getId().equals(user.getId())) {
-            updateMovimientoRecurrente(recurrente, cantidad, asunto, ingreso, fechaInicio, frecuencia);
+            updateMovimientoRecurrente(recurrente, cantidad, asunto, ingreso, fechaInicio, frecuencia, null);
         }
     }
 } 

@@ -18,8 +18,8 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
 
     List<Movimiento> findByUserAndMesAsignadoAndAnioAsignado(User user, int mes, int anio);
 
-    @Query("SELECT DISTINCT new java.time.YearMonth(m.anioAsignado, m.mesAsignado) FROM Movimiento m WHERE m.user = :user")
-    Set<YearMonth> findDistinctYearMonthsByUser(@Param("user") User user);
+    @Query("SELECT DISTINCT m.anioAsignado, m.mesAsignado FROM Movimiento m WHERE m.user = :user")
+    List<Object[]> findDistinctYearMonthsByUser(@Param("user") User user);
 
     boolean existsByUserAndMesAsignadoAndAnioAsignado(User user, int mes, int anio);
 

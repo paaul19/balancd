@@ -4,13 +4,16 @@ import com.balancdapp.model.User;
 import com.balancdapp.model.VerificationToken;
 import com.balancdapp.repository.UserRepository;
 import com.balancdapp.repository.VerificationTokenRepository;
+import com.balancdapp.repository.MovimientoRepository;
 import com.balancdapp.service.EmailService;
+import com.balancdapp.service.PasswordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.math.BigDecimal;
 
 @Service
 @Transactional
@@ -27,6 +30,9 @@ public class UserService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private MovimientoRepository movimientoRepository;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();

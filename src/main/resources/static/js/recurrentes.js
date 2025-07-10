@@ -15,6 +15,7 @@ function openEditModal(button) {
     const ingreso = button.getAttribute('data-ingreso');
     const fechaInicio = button.getAttribute('data-fecha');
     const frecuencia = button.getAttribute('data-frecuencia');
+    const categoria = button.getAttribute('data-categoria') || '';
 
     document.getElementById('editRecurrenteId').value = id;
     document.getElementById('editRecurrenteCantidad').value = cantidad;
@@ -22,6 +23,7 @@ function openEditModal(button) {
     document.getElementById('editRecurrenteTipo').value = ingreso;
     document.getElementById('editRecurrenteFecha').value = fechaInicio;
     document.getElementById('editRecurrenteFrecuencia').value = frecuencia;
+    document.getElementById('categoriaRecurrente').value = categoria;
 
     document.getElementById('editRecurrenteModal').classList.add('show');
 }
