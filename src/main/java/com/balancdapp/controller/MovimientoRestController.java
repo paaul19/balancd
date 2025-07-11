@@ -57,4 +57,76 @@ public class MovimientoRestController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping
+    public ResponseEntity<?> getMovimientos(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Token no proporcionado"));
+        }
+        String token = authHeader.substring(7);
+        Claims claims = jwtService.validateToken(token);
+        if (claims == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Token inválido o expirado"));
+        }
+        Long userId = ((Number) claims.get("id")).longValue();
+        Optional<User> userOpt = userService.getUserById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Usuario no encontrado"));
+        }
+        User user = userOpt.get();
+        
+        try {
+            var movimientos = encryptedMovimientoService.getMovimientosByUser(user);
+            double balanceTotal = encryptedMovimientoService.getBalanceTotal(user);
+            double totalIngresos = encryptedMovimientoService.getTotalIngresos(user);
+            double totalGastos = encryptedMovimientoService.getTotalGastos(user);
+            
+            Map<String, Object> response = Map.of(
+                "movimientos", movimientos,
+                "balanceTotal", balanceTotal,
+                "totalIngresos", totalIngresos,
+                "totalGastos", totalGastos
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/resumen")
+    public ResponseEntity<?> getResumen(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Token no proporcionado"));
+        }
+        String token = authHeader.substring(7);
+        Claims claims = jwtService.validateToken(token);
+        if (claims == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Token inválido o expirado"));
+        }
+        Long userId = ((Number) claims.get("id")).longValue();
+        Optional<User> userOpt = userService.getUserById(userId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Usuario no encontrado"));
+        }
+        User user = userOpt.get();
+        
+        try {
+            double balanceTotal = encryptedMovimientoService.getBalanceTotal(user);
+            double totalIngresos = encryptedMovimientoService.getTotalIngresos(user);
+            double totalGastos = encryptedMovimientoService.getTotalGastos(user);
+            
+            Map<String, Object> response = Map.of(
+                "balanceTotal", balanceTotal,
+                "totalIngresos", totalIngresos,
+                "totalGastos", totalGastos
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", e.getMessage()));
+        }
+    }
 } 

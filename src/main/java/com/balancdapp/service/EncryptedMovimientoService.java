@@ -358,4 +358,49 @@ public class EncryptedMovimientoService {
         }
         return List.of();
     }
+
+    /**
+     * Obtiene todos los movimientos de un usuario
+     */
+    public List<MovimientoDTO> getMovimientosByUser(User user) {
+        List<Movimiento> movimientos = movimientoRepository.findByUser(user);
+        return movimientos.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Obtiene el balance total de un usuario
+     */
+    public double getBalanceTotal(User user) {
+        List<Movimiento> movimientos = movimientoRepository.findByUser(user);
+        return movimientos.stream()
+                .mapToDouble(movimiento -> {
+                    double cantidad = getCantidad(movimiento);
+                    return movimiento.isIngreso() ? cantidad : -cantidad;
+                })
+                .sum();
+    }
+
+    /**
+     * Obtiene el total de ingresos de un usuario
+     */
+    public double getTotalIngresos(User user) {
+        List<Movimiento> movimientos = movimientoRepository.findByUser(user);
+        return movimientos.stream()
+                .filter(Movimiento::isIngreso)
+                .mapToDouble(this::getCantidad)
+                .sum();
+    }
+
+    /**
+     * Obtiene el total de gastos de un usuario
+     */
+    public double getTotalGastos(User user) {
+        List<Movimiento> movimientos = movimientoRepository.findByUser(user);
+        return movimientos.stream()
+                .filter(movimiento -> !movimiento.isIngreso())
+                .mapToDouble(this::getCantidad)
+                .sum();
+    }
 } 
