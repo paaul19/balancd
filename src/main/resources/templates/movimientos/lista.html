@@ -18,10 +18,15 @@
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <link rel="stylesheet" href="/css/lista.css">
     <script src="/js/lista.js"></script>
-    <script src="/js/footer-modals.js"></script>
+
+    <!-- Intro.js: Tour interactivo para usuarios nuevos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intro.js/minified/introjs.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/intro.js/minified/intro.min.js"></script>
 
     <!-- Script para aplicar tema inmediatamente -->
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/footer-modals.js"></script>
+
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
     <!-- Header -->
@@ -67,22 +72,44 @@
             </div>
         </div>
         <div class="container" style="position:relative; padding-top:0.2rem;">
-            <!-- Botón papelera eliminar mes dentro del recuadro, esquina superior derecha -->
-            <form th:action="@{/movimientos/eliminar-mes}" method="post" style="position:absolute; top:0.1rem; right:0.3rem; z-index:3;">
-                <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
-                <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
-                <button type="submit" class="btn-trash tooltip" style="background:none;" onclick="return confirm('¿Seguro que quieres eliminar este mes y todos sus movimientos?');">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" height="22" width="22">
-                        <path fill="#e53935" d="M8.78842 5.03866C8.86656 4.96052 8.97254 4.91663 9.08305 4.91663H11.4164C11.5269 4.91663 11.6329 4.96052 11.711 5.03866C11.7892 5.11681 11.833 5.22279 11.833 5.33329V5.74939H8.66638V5.33329C8.66638 5.22279 8.71028 5.11681 8.78842 5.03866ZM7.16638 5.74939V5.33329C7.16638 4.82496 7.36832 4.33745 7.72776 3.978C8.08721 3.61856 8.57472 3.41663 9.08305 3.41663H11.4164C11.9247 3.41663 12.4122 3.61856 12.7717 3.978C13.1311 4.33745 13.333 4.82496 13.333 5.33329V5.74939H15.5C15.9142 5.74939 16.25 6.08518 16.25 6.49939C16.25 6.9136 15.9142 7.24939 15.5 7.24939H15.0105L14.2492 14.7095C14.2382 15.2023 14.0377 15.6726 13.6883 16.0219C13.3289 16.3814 12.8414 16.5833 12.333 16.5833H8.16638C7.65805 16.5833 7.17054 16.3814 6.81109 16.0219C6.46176 15.6726 6.2612 15.2023 6.25019 14.7095L5.48896 7.24939H5C4.58579 7.24939 4.25 6.9136 4.25 6.49939C4.25 6.08518 4.58579 5.74939 5 5.74939H6.16667H7.16638ZM7.91638 7.24996H12.583H13.5026L12.7536 14.5905C12.751 14.6158 12.7497 14.6412 12.7497 14.6666C12.7497 14.7771 12.7058 14.8831 12.6277 14.9613C12.5495 15.0394 12.4436 15.0833 12.333 15.0833H8.16638C8.05588 15.0833 7.94989 15.0394 7.87175 14.9613C7.79361 14.8831 7.74972 14.7771 7.74972 14.6666C7.74972 14.6412 7.74842 14.6158 7.74584 14.5905L6.99681 7.24996H7.91638Z" clip-rule="evenodd" fill-rule="evenodd"></path>
-                    </svg>
-                    <span class="tooltiptext">Eliminar mes</span>
-                </button>
-            </form>
+            <!-- Contenedor de botones de acciones (recarga y papelera) -->
+            <div class="acciones-mes">
+                <form th:action="@{/movimientos}" method="get">
+                    <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
+                    <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
+                    <button type="submit" class="accion-btn tooltip">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0,0,256,256">
+                            <g fill="#b8cad7" fill-rule="nonzero">
+                                <g transform="scale(8,8)">
+                                    <path d="M16,4c-5.11328,0 -9.38281,3.16016 -11.125,7.625l1.84375,0.75c1.45703,-3.73437 4.99219,-6.375 9.28125,-6.375c3.24219,0 6.13281,1.58984 7.9375,4h-3.9375v2h7v-7h-2v3.09375c-2.19141,-2.51172 -5.42969,-4.09375 -9,-4.09375zM25.28125,19.625c-1.45703,3.73438 -4.99219,6.375 -9.28125,6.375c-3.27734,0 -6.15625,-1.61328 -7.96875,-4h3.96875v-2h-7v7h2v-3.09375c2.1875,2.48047 5.39453,4.09375 9,4.09375c5.11328,0 9.38281,-3.16016 11.125,-7.625z"></path>
+                                </g>
+                            </g>
+                        </svg>
+                        <span class="tooltiptext">Recargar movimientos</span>
+                    </button>
+                </form>
+                <form th:action="@{/movimientos/eliminar-mes}" method="post" id="formEliminarMes">
+                    <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
+                    <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
+                    <button type="button" id="btnEliminarMes" class="accion-btn tooltip">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                            <path fill="#e53935" d="M8.78842 5.03866C8.86656 4.96052 8.97254 4.91663 9.08305 4.91663H11.4164C11.5269 4.91663 11.6329 4.96052 11.711 5.03866C11.7892 5.11681 11.833 5.22279 11.833 5.33329V5.74939H8.66638V5.33329C8.66638 5.22279 8.71028 5.11681 8.78842 5.03866ZM7.16638 5.74939V5.33329C7.16638 4.82496 7.36832 4.33745 7.72776 3.978C8.08721 3.61856 8.57472 3.41663 9.08305 3.41663H11.4164C11.9247 3.41663 12.4122 3.61856 12.7717 3.978C13.1311 4.33745 13.333 4.82496 13.333 5.33329V5.74939H15.5C15.9142 5.74939 16.25 6.08518 16.25 6.49939C16.25 6.9136 15.9142 7.24939 15.5 7.24939H15.0105L14.2492 14.7095C14.2382 15.2023 14.0377 15.6726 13.6883 16.0219C13.3289 16.3814 12.8414 16.5833 12.333 16.5833H8.16638C7.65805 16.5833 7.17054 16.3814 6.81109 16.0219C6.46176 15.6726 6.2612 15.2023 6.25019 14.7095L5.48896 7.24939H5C4.58579 7.24939 4.25 6.9136 4.25 6.49939C4.25 6.08518 4.58579 5.74939 5 5.74939H6.16667H7.16638ZM7.91638 7.24996H12.583H13.5026L12.7536 14.5905C12.751 14.6158 12.7497 14.6412 12.7497 14.6666C12.7497 14.7771 12.7058 14.8831 12.6277 14.9613C12.5495 15.0394 12.4436 15.0833 12.333 15.0833H8.16638C8.05588 15.0833 7.94989 15.0394 7.87175 14.9613C7.79361 14.8831 7.74972 14.7771 7.74972 14.6666C7.74972 14.6412 7.74842 14.6158 7.74584 14.5905L6.99681 7.24996H7.91638Z" clip-rule="evenodd" fill-rule="evenodd"></path>
+                        </svg>
+                        <span class="tooltiptext">Eliminar mes</span>
+                    </button>
+                </form>
+            </div>
+
             <h2>Mis Movimientos</h2>
+
             <div class="totals" style="margin-bottom: 1.5rem;">
                 <div><b>Ingresos:</b> <span style="color:#090;" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span></div>
                 <div><b>Gastos:</b> <span style="color:#c00;" th:text="${#numbers.formatDecimal(totalGastos, 1, 2)} + ' €'"></span></div>
                 <div><b>Balance:</b> <span th:style="${balance >= 0 ? 'color:#090;' : 'color:#c00;'}" th:text="${#numbers.formatDecimal(balance, 1, 2)} + ' €'"></span></div>
+                <div><b>Balance total:</b>
+                  <span th:if="${user.balanceTotal} != null" th:style="${user.balanceTotal} >= 0 ? 'color:#1976d2;' : 'color:#e53935;'" th:text="${#numbers.formatDecimal(user.balanceTotal, 1, 2)} + ' €'"></span>
+                  <span th:if="${user.balanceTotal} == null">-</span>
+                </div>
             </div>
             <!-- Formulario de búsqueda por asunto -->
             <div style="max-width:300px; margin:0 auto 1.2rem auto;">
@@ -101,9 +128,10 @@
                             <span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'">
                                 <span th:text="${#numbers.formatDecimal(mov.cantidad, 1, 2)} + ' €'"></span>
                             </span>
-                            <span th:if="${mov.asunto != null and mov.asunto != ''}" style="margin-left:0.5rem; color:#888; font-size:0.95em;">
-                                (<span th:text="${mov.asunto}"></span>)
+                            <span th:if="${mov.asunto != null and mov.asunto != ''}" class="mov-categoria" style="margin-left:0.5rem;">
+                                <span th:text="${mov.asunto}"></span>
                             </span>
+                            <span th:if="${mov.categoria != null}" style="margin-left:0.5rem; color:#888; font-size:0.95em;">(<span th:switch="${mov.categoria}"><span th:case="'TRANSPORTE'">Transporte</span><span th:case="'COMIDA'">Comida</span><span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span><span th:case="'HOGAR'">Hogar</span><span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span><span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span><span th:case="'COMPRAS'">Compras</span><span th:case="'COMPRAS_ONLINE'">Compras Online</span><span th:case="'SUSCRIPCION'">Suscripción</span><span th:case="*">[[${mov.categoria}]]</span></span>)</span>
                         </div>
                         <span style="color:#888; font-size:0.92em; min-width:80px; text-align:right; margin-left:1.2rem; margin-right:0.8rem; white-space:nowrap;" th:text="${#temporals.format(mov.fecha, 'dd/MM/yyyy')}"></span>
                     </div>
@@ -147,6 +175,21 @@
                             <label for="editFecha">Fecha</label>
                             <input type="date" id="editFecha" name="fecha" required>
                         </div>
+                        <div class="form-group">
+                            <label for="editCategoria">Categoría</label>
+                            <select id="editCategoria" name="categoria">
+                                <option value="" selected>Sin categoría</option>
+                                <option value="TRANSPORTE">Transporte</option>
+                                <option value="COMIDA">Comida</option>
+                                <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
+                                <option value="HOGAR">Hogar</option>
+                                <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
+                                <option value="EDUCACION_CURSOS">Educación y Cursos</option>
+                                <option value="COMPRAS">Compras</option>
+                                <option value="COMPRAS_ONLINE">Compras Online</option>
+                                <option value="SUSCRIPCION">Suscripción</option>
+                            </select>
+                        </div>
                         <div class="modal-actions">
                             <button type="button" class="btn-cancel" id="btnCancelar">Cancelar</button>
                             <button type="submit" class="btn-save">Guardar</button>
@@ -164,6 +207,19 @@
                     </div>
                 </div>
             </div>
+
+
+            <!-- Modal de confirmación de eliminación de mes -->
+            <div id="modalConfirmarEliminarMes" class="modal">
+                <div class="modal-content" style="max-width:340px;">
+                    <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres eliminar este mes y todos sus movimientos?</div>
+                    <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                        <button id="cancelarEliminarMes" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
+                        <button id="confirmarEliminarMes" style="background:#e53935; color:#fff;">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+
     </div>
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
@@ -171,5 +227,9 @@
     <!-- Script del header -->
     <script th:replace="~{fragments/header :: header-script}"></script>
 <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+<script src="/js/tutorial.js"></script>
+<script>
+    window.tutorialVisto = [[${tutorialVisto}]];
+</script>
 </body>
 </html> 

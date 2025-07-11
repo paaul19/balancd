@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Perfil</title>
+    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
+    <link rel="apple-touch-icon" href="/images/logo-app.png">
+    <meta name="theme-color" content="#2D2D2D">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Estilos globales y de fragmentos -->
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/footer-modals.js"></script>
+    <style>
+        .main-content {
+            flex: 1;
+            padding-top: calc(80px + env(safe-area-inset-top, 0px));
+            padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mensaje-mantenimiento {
+            background: var(--bg-secondary, #181818);
+            border-radius: 12px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.13);
+            text-align: center;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+        .mensaje-mantenimiento h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .mensaje-mantenimiento p {
+            font-size: 1.1rem;
+            color: #e57373;
+        }
+    </style>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+<!-- Header -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="main-content">
+    <div class="perfil-container" style="border-radius: 12px; background: var(--bg-secondary); box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 2.5rem 2rem; min-width:320px; max-width:370px; width:100%; margin:0 auto; display:flex; flex-direction:column; align-items:center;">
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            <img src="/images/logo-app.png" alt="Perfil" style="width:60px; height:60px; border-radius:50%; margin-bottom:1.2rem; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+            <h2 style="text-align:center; margin-bottom:1.2rem; font-size:1.6rem; letter-spacing:0.5px;">Mi Perfil</h2>
+        </div>
+        <!-- Mensajes de error/éxito -->
+        <div th:if="${error}" class="error" th:text="${error}" style="color:#c00; margin-bottom:1rem; text-align:center;"></div>
+        <div th:if="${success}" class="success" th:text="${success}" style="color:#090; margin-bottom:1rem; text-align:center;"></div>
+
+        <!-- Formulario para cambiar nombre de usuario -->
+        <form th:action="@{/perfil/cambiar-usuario}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                <span style="font-size:1.3em;">👤</span>
+                <label for="nuevoUsername" style="font-weight:600; font-size:1.05em;">Nombre de usuario</label>
+            </div>
+            <input type="text" id="nuevoUsername" name="nuevoUsername" th:value="${user.username}" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar nombre de usuario</button>
+        </form>
+
+        <!-- Formulario para cambiar email -->
+        <form th:action="@{/perfil/cambiar-email}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                <span style="font-size:1.3em;">📧</span>
+                <label for="nuevoEmail" style="font-weight:600; font-size:1.05em;">Correo electrónico</label>
+            </div>
+            <input type="email" id="nuevoEmail" name="nuevoEmail" th:value="${user.email}" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar correo electrónico</button>
+        </form>
+
+        <!-- Formulario para cambiar contraseña -->
+        <form th:action="@{/perfil/cambiar-password}" method="post" style="width:100%; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                <span style="font-size:1.3em;">🔒</span>
+                <label for="passwordActual" style="font-weight:600; font-size:1.05em;">Contraseña actual</label>
+            </div>
+            <input type="password" id="passwordActual" name="passwordActual" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem; margin-top:0.7rem;">
+                <span style="font-size:1.3em;">✨</span>
+                <label for="nuevoPassword" style="font-weight:600; font-size:1.05em;">Nueva contraseña</label>
+            </div>
+            <input type="password" id="nuevoPassword" name="nuevoPassword" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar contraseña</button>
+        </form>
+
+        <!-- Sección de balance total -->
+        <form th:action="@{/perfil/cambiar-balance}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
+            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
+                <span style="font-size:1.3em;">💰</span>
+                <label for="nuevoBalance" style="font-weight:600; font-size:1.05em;">Balance total</label>
+            </div>
+            <input type="number" step="0.01" id="nuevoBalance" name="nuevoBalance" th:value="${user.balanceTotal}" style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
+            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar balance total</button>
+        </form>
+
+        <!-- Botón para eliminar cuenta -->
+        <form th:action="@{/perfil/eliminar-cuenta}" method="post" id="formEliminarCuenta" style="width:100%; margin-top:2.2rem; display:flex; flex-direction:column; align-items:center;">
+            <button type="button" id="btnEliminarCuenta" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:#e53935; color:#fff; border:none; margin-top:0.2rem; transition:background 0.2s; font-weight:600;">Eliminar cuenta</button>
+        </form>
+        <!-- Modal de confirmación -->
+        <div id="modalConfirmarEliminar" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center;">
+            <div style="background:var(--bg-secondary,#fff); border-radius:12px; box-shadow:0 2px 16px rgba(0,0,0,0.18); padding:2rem 1.5rem; max-width:340px; margin:auto; text-align:center;">
+                <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres eliminar tu cuenta? Esta acción <b>no se puede deshacer</b> y se borrarán todos tus datos.</div>
+                <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                    <button type="button" id="cancelarEliminar" style="background:var(--border-color); color:var(--text-primary); border-radius:5px; padding:0.6rem 1.2rem;">Cancelar</button>
+                    <button type="button" id="confirmarEliminar" style="background:#e53935; color:#fff; border-radius:5px; padding:0.6rem 1.2rem;">Eliminar</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            const btnEliminarCuenta = document.getElementById('btnEliminarCuenta');
+            const modal = document.getElementById('modalConfirmarEliminar');
+            const cancelar = document.getElementById('cancelarEliminar');
+            const confirmar = document.getElementById('confirmarEliminar');
+            btnEliminarCuenta.addEventListener('click', () => { modal.style.display = 'flex'; });
+            cancelar.addEventListener('click', () => { modal.style.display = 'none'; });
+            confirmar.addEventListener('click', () => { document.getElementById('formEliminarCuenta').submit(); });
+        </script>
+    </div>
+</div>
+
+<!-- Footer -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- Scripts de header y tema -->
+<script th:replace="~{fragments/header :: header-script}"></script>
+<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+</body>
+</html>

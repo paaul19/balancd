@@ -22,6 +22,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/login", "/api/register", "/api/verify").permitAll()
                         .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/api/tutorial/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .csrf(csrf -> csrf.disable())

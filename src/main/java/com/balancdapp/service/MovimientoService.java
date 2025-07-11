@@ -6,6 +6,7 @@ import com.balancdapp.model.MesManual;
 import com.balancdapp.repository.MovimientoRepository;
 import com.balancdapp.repository.MesManualRepository;
 import com.balancdapp.repository.UserRepository;
+import com.balancdapp.service.DataEncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
+import java.math.BigDecimal;
 
 @Service
 @Transactional
@@ -28,6 +30,9 @@ public class MovimientoService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private DataEncryptionService dataEncryptionService;
 
     public List<Movimiento> getMovimientosByUserId(Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
@@ -46,13 +51,36 @@ public class MovimientoService {
         if (movimiento.getUser() == null) {
             throw new RuntimeException("User cannot be null for movimiento");
         }
-        return movimientoRepository.save(movimiento);
+        Movimiento saved = movimientoRepository.save(movimiento);
+        // Actualizar balanceTotal
+        User user = movimiento.getUser();
+        Double cantidadDescifrada = dataEncryptionService.decryptNumber(movimiento.getCantidadCifrada());
+        BigDecimal cantidad = cantidadDescifrada == null ? BigDecimal.ZERO : BigDecimal.valueOf(cantidadDescifrada);
+        if (movimiento.isIngreso()) {
+            user.setBalanceTotal(user.getBalanceTotal().add(cantidad));
+        } else {
+            user.setBalanceTotal(user.getBalanceTotal().subtract(cantidad));
+        }
+        userRepository.save(user);
+        return saved;
     }
 
     public void deleteMovimiento(Long movimientoId, Long userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+            Optional<Movimiento> movOpt = movimientoRepository.findById(movimientoId);
+            if (movOpt.isPresent()) {
+                Movimiento mov = movOpt.get();
+                Double cantidadDescifrada = dataEncryptionService.decryptNumber(mov.getCantidadCifrada());
+                BigDecimal cantidad = cantidadDescifrada == null ? BigDecimal.ZERO : BigDecimal.valueOf(cantidadDescifrada);
+                if (mov.isIngreso()) {
+                    user.setBalanceTotal(user.getBalanceTotal().subtract(cantidad));
+                } else {
+                    user.setBalanceTotal(user.getBalanceTotal().add(cantidad));
+                }
+                userRepository.save(user);
+            }
             movimientoRepository.deleteByUserAndId(user, movimientoId);
         }
     }
@@ -72,12 +100,29 @@ public class MovimientoService {
         }
 
         Movimiento existing = existingOpt.get();
-
         // Preservar el usuario si no se proporciona
         if (movimientoActualizado.getUser() == null) {
             movimientoActualizado.setUser(existing.getUser());
         }
-
+        // Actualizar balanceTotal
+        User user = movimientoActualizado.getUser();
+        Double oldCantidadDescifrada = dataEncryptionService.decryptNumber(existing.getCantidadCifrada());
+        Double newCantidadDescifrada = dataEncryptionService.decryptNumber(movimientoActualizado.getCantidadCifrada());
+        BigDecimal oldCantidad = oldCantidadDescifrada == null ? BigDecimal.ZERO : BigDecimal.valueOf(oldCantidadDescifrada);
+        BigDecimal newCantidad = newCantidadDescifrada == null ? BigDecimal.ZERO : BigDecimal.valueOf(newCantidadDescifrada);
+        // Deshacer el efecto del movimiento anterior
+        if (existing.isIngreso()) {
+            user.setBalanceTotal(user.getBalanceTotal().subtract(oldCantidad));
+        } else {
+            user.setBalanceTotal(user.getBalanceTotal().add(oldCantidad));
+        }
+        // Aplicar el nuevo efecto
+        if (movimientoActualizado.isIngreso()) {
+            user.setBalanceTotal(user.getBalanceTotal().add(newCantidad));
+        } else {
+            user.setBalanceTotal(user.getBalanceTotal().subtract(newCantidad));
+        }
+        userRepository.save(user);
         movimientoRepository.save(movimientoActualizado);
     }
 

@@ -66,6 +66,27 @@
         }
     }
     document.getElementById('editFecha').value = fecha;
+    // Obtener categoría
+    let categoria = li.querySelector('.mov-categoria');
+    let categoriaValue = '';
+    if (categoria) {
+        // Buscar el atributo th:switch original o el valor del span
+        categoriaValue = categoria.getAttribute('th:switch') || categoria.textContent.trim();
+        // Si es un valor bonito, mapearlo al valor del enum
+        switch (categoriaValue) {
+            case 'Transporte': categoriaValue = 'TRANSPORTE'; break;
+            case 'Comida': categoriaValue = 'COMIDA'; break;
+            case 'Ocio y Entretenimiento': categoriaValue = 'OCIO_ENTRETENIMIENTO'; break;
+            case 'Hogar': categoriaValue = 'HOGAR'; break;
+            case 'Salud y Bienestar': categoriaValue = 'SALUD_BIENESTAR'; break;
+            case 'Educación y Cursos': categoriaValue = 'EDUCACION_CURSOS'; break;
+            case 'Compras': categoriaValue = 'COMPRAS'; break;
+            case 'Compras Online': categoriaValue = 'COMPRAS_ONLINE'; break;
+            case 'Suscripción': categoriaValue = 'SUSCRIPCION'; break;
+            default: break;
+        }
+    }
+    document.getElementById('editCategoria').value = categoriaValue;
     // Guardar id en el form
     document.getElementById('editForm').action = '/movimientos/edit/' + id;
     // Mostrar modal
@@ -221,4 +242,29 @@
 }
     // Submit normal (POST) al backend
 };
-});
+ });
+
+ document.addEventListener('DOMContentLoaded', function() {
+     const btnEliminarMes = document.getElementById('btnEliminarMes');
+     const formEliminarMes = document.getElementById('formEliminarMes');
+     const modalEliminarMes = document.getElementById('modalConfirmarEliminarMes');
+     const cancelarEliminarMes = document.getElementById('cancelarEliminarMes');
+     const confirmarEliminarMes = document.getElementById('confirmarEliminarMes');
+
+     if (btnEliminarMes && formEliminarMes && modalEliminarMes && cancelarEliminarMes && confirmarEliminarMes) {
+         btnEliminarMes.addEventListener('click', function() {
+             modalEliminarMes.classList.add('show');
+         });
+         cancelarEliminarMes.addEventListener('click', function() {
+             modalEliminarMes.classList.remove('show');
+         });
+         confirmarEliminarMes.addEventListener('click', function() {
+             modalEliminarMes.classList.remove('show');
+             formEliminarMes.submit();
+         });
+     } else {
+         console.error("Algún elemento no se encontró:", {
+             btnEliminarMes, formEliminarMes, modalEliminarMes, cancelarEliminarMes, confirmarEliminarMes
+         });
+     }
+ });

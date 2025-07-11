@@ -5,6 +5,7 @@ import com.balancdapp.model.User;
 import com.balancdapp.service.EncryptedMovimientoRecurrenteService;
 import com.balancdapp.service.EncryptedMovimientoService;
 import com.balancdapp.service.MovimientoService;
+import com.balancdapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -28,14 +29,26 @@ public class MovimientoController {
     @Autowired
     private EncryptedMovimientoRecurrenteService encryptedRecurrenteService;
 
+    @Autowired
+    private UserService userService;
+
     @GetMapping("/movimientos")
     public String verMovimientos(@RequestParam(value = "mes", required = false) Integer mes,
                                  @RequestParam(value = "anio", required = false) Integer anio,
                                  @RequestParam(value = "busqueda", required = false) String busqueda,
+                                 @RequestParam(value = "tutorialVisto", required = false) Integer tutorialVisto,
                                  Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
+        }
+        // Recuperar el usuario actualizado de la base de datos
+        user = userService.getUserById(user.getId()).orElse(user);
+        // Si viene el parámetro y el usuario aún no lo tenía marcado, lo marcamos
+        if (tutorialVisto != null && tutorialVisto == 1 && !user.isTutorialVisto()) {
+            user.setTutorialVisto(true);
+            userService.saveUser(user);
+            session.setAttribute("user", user);
         }
 
         // Usar el servicio cifrado para obtener movimientos
@@ -99,6 +112,8 @@ public class MovimientoController {
         model.addAttribute("mesSeleccionado", seleccionado);
         model.addAttribute("mesesManuales", mesesManuales);
         model.addAttribute("busqueda", busqueda);
+        model.addAttribute("tutorialVisto", user.isTutorialVisto());
+        model.addAttribute("user", user);
         return "movimientos/lista";
     }
 
@@ -109,20 +124,19 @@ public class MovimientoController {
                                 @RequestParam String fecha,
                                 @RequestParam(value = "mes", required = false) Integer mes,
                                 @RequestParam(value = "anio", required = false) Integer anio,
+                                @RequestParam(value = "categoria", required = false) String categoria,
                                 HttpSession session) {
-        System.out.println("[DEBUG] Recibido: cantidad=" + cantidad + ", ingreso=" + ingreso + ", fecha=" + fecha + ", mes=" + mes + ", anio=" + anio);
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-
         LocalDate fechaMovimiento = LocalDate.parse(fecha);
         int mesAsignado = (mes != null) ? mes : fechaMovimiento.getMonthValue();
         int anioAsignado = (anio != null) ? anio : fechaMovimiento.getYear();
-
-        System.out.println("[DEBUG] Asignando: mesAsignado=" + mesAsignado + ", anioAsignado=" + anioAsignado + ", fecha real=" + fechaMovimiento);
-        // Crear movimiento con datos cifrados
-        encryptedMovimientoService.createMovimiento(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaMovimiento, mesAsignado, anioAsignado);
+        encryptedMovimientoService.createMovimiento(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaMovimiento, mesAsignado, anioAsignado, categoria);
+        // Actualizar user en sesión
+        User actualizado = userService.getUserById(user.getId()).orElse(user);
+        session.setAttribute("user", actualizado);
         return "redirect:/movimientos?mes=" + mesAsignado + "&anio=" + anioAsignado;
     }
 
@@ -134,6 +148,9 @@ public class MovimientoController {
             return "redirect:/login";
         }
         movimientoService.deleteMovimiento(id, user.getId());
+        // Actualizar user en sesión
+        User actualizado = userService.getUserById(user.getId()).orElse(user);
+        session.setAttribute("user", actualizado);
         if (mes != null && anio != null) {
             return "redirect:/movimientos?mes=" + mes + "&anio=" + anio;
         } else {
@@ -147,20 +164,21 @@ public class MovimientoController {
                                  @RequestParam(required = false) String asunto,
                                  @RequestParam Boolean ingreso,
                                  @RequestParam String fecha,
+                                 @RequestParam(value = "categoria", required = false) String categoria,
                                  HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-
         Movimiento movimiento = movimientoService.getMovimientoById(id);
         if (movimiento == null || !movimiento.getUser().getId().equals(user.getId())) {
             return "redirect:/movimientos";
         }
-
         LocalDate fechaMovimiento = LocalDate.parse(fecha);
-        encryptedMovimientoService.updateMovimiento(movimiento, cantidad, asunto != null ? asunto.trim() : "", ingreso, fechaMovimiento);
-
+        encryptedMovimientoService.updateMovimiento(movimiento, cantidad, asunto != null ? asunto.trim() : "", ingreso, fechaMovimiento, categoria);
+        // Actualizar user en sesión
+        User actualizado = userService.getUserById(user.getId()).orElse(user);
+        session.setAttribute("user", actualizado);
         return "redirect:/movimientos";
     }
 
@@ -299,6 +317,7 @@ public class MovimientoController {
                                           @RequestParam Boolean ingreso,
                                           @RequestParam String fecha,
                                           @RequestParam String frecuencia,
+                                          @RequestParam(value = "categoria", required = false) String categoria,
                                           @RequestParam(required = false) Integer repeticiones,
                                           @RequestParam(required = false) String fechaFin,
                                           HttpSession session) {
@@ -308,7 +327,7 @@ public class MovimientoController {
         }
         LocalDate fechaInicio = LocalDate.parse(fecha);
         LocalDate fechaFinParsed = (fechaFin != null && !fechaFin.isEmpty()) ? LocalDate.parse(fechaFin) : null;
-        encryptedMovimientoService.crearMovimientoRecurrente(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaInicio, frecuencia, repeticiones, fechaFinParsed);
+        encryptedMovimientoService.crearMovimientoRecurrente(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaInicio, frecuencia, repeticiones, fechaFinParsed, categoria);
         return "redirect:/movimientos";
     }
 
@@ -350,6 +369,7 @@ public class MovimientoController {
                                       @RequestParam Boolean ingreso,
                                       @RequestParam String fechaInicio,
                                       @RequestParam String frecuencia,
+                                      @RequestParam(value = "categoria", required = false) String categoria,
                                       HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -357,7 +377,7 @@ public class MovimientoController {
         }
 
         LocalDate fechaInicioParsed = LocalDate.parse(fechaInicio);
-        encryptedMovimientoService.modificarMovimientoRecurrente(id, user, cantidad, asunto, ingreso, fechaInicioParsed, frecuencia);
+        encryptedMovimientoService.modificarMovimientoRecurrente(id, user, cantidad, asunto, ingreso, fechaInicioParsed, frecuencia, categoria);
 
         return "redirect:/movimientos/recurrentes";
     }

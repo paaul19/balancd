@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import java.util.List;
 import com.balancdapp.model.Movimiento;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "users")
@@ -28,6 +29,12 @@ public class User {
     @Column(name = "is_verified", nullable = false)
     private boolean isVerified = false;
 
+    @Column(name = "tutorial_visto", nullable = false)
+    private boolean tutorialVisto = false;
+
+    @Column(name = "balance_total", nullable = true)
+    private BigDecimal balanceTotal;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Movimiento> movimientos;
 
@@ -46,6 +53,12 @@ public class User {
 
     public boolean isVerified() { return isVerified; }
     public void setVerified(boolean isVerified) { this.isVerified = isVerified; }
+
+    public boolean isTutorialVisto() { return tutorialVisto; }
+    public void setTutorialVisto(boolean tutorialVisto) { this.tutorialVisto = tutorialVisto; }
+
+    public BigDecimal getBalanceTotal() { return balanceTotal; }
+    public void setBalanceTotal(BigDecimal balanceTotal) { this.balanceTotal = balanceTotal; }
 
     public List<Movimiento> getMovimientos() { return movimientos; }
     public void setMovimientos(List<Movimiento> movimientos) { this.movimientos = movimientos; }

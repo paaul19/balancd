@@ -15,6 +15,7 @@ function openEditModal(button) {
     const ingreso = button.getAttribute('data-ingreso');
     const fechaInicio = button.getAttribute('data-fecha');
     const frecuencia = button.getAttribute('data-frecuencia');
+    const categoria = button.getAttribute('data-categoria') || '';
 
     document.getElementById('editRecurrenteId').value = id;
     document.getElementById('editRecurrenteCantidad').value = cantidad;
@@ -22,6 +23,7 @@ function openEditModal(button) {
     document.getElementById('editRecurrenteTipo').value = ingreso;
     document.getElementById('editRecurrenteFecha').value = fechaInicio;
     document.getElementById('editRecurrenteFrecuencia').value = frecuencia;
+    document.getElementById('categoriaRecurrente').value = categoria;
 
     document.getElementById('editRecurrenteModal').classList.add('show');
 }
@@ -75,5 +77,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 alert('Error al modificar el movimiento recurrente');
             });
+    });
+
+    // --- Modal de confirmación de borrado de recurrente ---
+    let recurrenteAEliminar = null;
+    document.querySelectorAll('.btn-danger').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            recurrenteAEliminar = this.getAttribute('href');
+            document.getElementById('modalConfirmarEliminarRecurrente').classList.add('show');
+        });
+    });
+    document.getElementById('cancelarEliminarRecurrente').addEventListener('click', function() {
+        document.getElementById('modalConfirmarEliminarRecurrente').classList.remove('show');
+        recurrenteAEliminar = null;
+    });
+    document.getElementById('confirmarEliminarRecurrente').addEventListener('click', function() {
+        if (recurrenteAEliminar) {
+            window.location.href = recurrenteAEliminar;
+        }
     });
 });

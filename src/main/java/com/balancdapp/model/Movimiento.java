@@ -29,6 +29,10 @@ public class Movimiento {
     @Column(name = "fecha_cifrada", nullable = false)
     private String fechaCifrada; // Fecha cifrada como string
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "categoria", nullable = true)
+    private CategoriaMovimiento categoria;
+
     @Column(name = "mes_asignado", nullable = false)
     private int mesAsignado; // mes lógico asignado (1-12) - NO cifrado para consultas
 
@@ -107,4 +111,7 @@ public class Movimiento {
     public void setAnioAsignado(int anioAsignado) {
         this.anioAsignado = anioAsignado;
     }
+
+    public CategoriaMovimiento getCategoria() { return categoria; }
+    public void setCategoria(CategoriaMovimiento categoria) { this.categoria = categoria; }
 }
