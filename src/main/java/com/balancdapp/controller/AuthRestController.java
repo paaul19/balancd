@@ -41,15 +41,32 @@ public class AuthRestController {
     public ResponseEntity<?> register(@RequestBody Map<String, String> payload) {
         String username = payload.get("username");
         String password = payload.get("password");
+        String email = payload.get("email");
+        
+        if (username == null || username.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Username is required"));
+        }
+        if (password == null || password.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Password is required"));
+        }
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Email is required"));
+        }
+        
         if (userService.getUserByUsername(username).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Username already in use"));
         }
+        if (userService.getUserByEmail(email).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already in use"));
+        }
+        
         try {
             User user = new User();
             user.setUsername(username);
             user.setPassword(password);
+            user.setEmail(email);
             userService.registerUser(user);
-            return ResponseEntity.ok(Map.of("success", true));
+            return ResponseEntity.ok(Map.of("success", true, "message", "Account created successfully. Please check your email to verify your account."));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
