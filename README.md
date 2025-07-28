@@ -69,7 +69,9 @@
 - Logback (logging)
 - Spring Boot Actuator (monitoreo)
 
-## 📁 Estructura del Proyecto (Resumen)
+## 📁 Estructura del Proyecto
+
+```
 balancd/
 ├── src/
 │ ├── main/java/... # Código Java estructurado por capas
@@ -79,6 +81,7 @@ balancd/
 ├── Dockerfile # Configuración Docker
 ├── pom.xml # Dependencias
 └── README.md # Este archivo
+```
 
 ## 🔐 Seguridad
 
