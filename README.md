@@ -1,9 +1,9 @@
 # balanc*d
 **balanc*d** es una aplicación web completa y segura para la gestión de finanzas personales. Permite a los usuarios registrar, categorizar y analizar sus ingresos y gastos por meses, con funcionalidades avanzadas como movimientos recurrentes, búsqueda avanzada y cifrado de datos sensibles.
 
-## 🚀 Características Principales
+## Características Principales
 
-### 🔐 Autenticación y Seguridad
+### Autenticación y Seguridad
 - Registro de usuarios con verificación de email
 - Login seguro con contraseñas cifradas (BCrypt)
 - Recuperación de contraseña vía email
@@ -11,38 +11,38 @@
 - Acceso protegido con contraseña adicional
 - Verificación obligatoria de email para activar cuentas
 
-### 💰 Gestión Financiera
+### Gestión Financiera
 - Registro de ingresos y gastos detallados
 - Categorización (Comida, Transporte, Ocio, etc.)
 - Organización por meses (asignación manual)
 - Edición y eliminación de movimientos
 - Balance automático mensual
 
-### 🔄 Movimientos Recurrentes
+### Movimientos Recurrentes
 - Configuración de pagos automáticos
 - Fechas de inicio/fin configurables
 - Activación y pausa de movimientos
 - Procesamiento programado
 - CRUD completo para movimientos recurrentes
 
-### 🔍 Búsqueda y Filtros
+### Búsqueda y Filtros
 - Búsqueda por descripción
 - Filtros por tipo y período
 - Búsqueda avanzada por múltiples criterios
 - Navegación por meses con vista de balance
 
-### 📊 Análisis y Reportes
+### Análisis y Reportes
 - Balance total y mensual
 - Estadísticas por categoría
 - Historial completo de movimientos
 
-### 🎨 Interfaz de Usuario
+### Interfaz de Usuario
 - Responsive (desktop y móvil)
 - Tema claro/oscuro configurable
 - UI intuitiva con tutorial incluido
 - Navegación fluida y notificaciones
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 ### Backend
 - Java 17
@@ -69,7 +69,7 @@
 - Logback (logging)
 - Spring Boot Actuator (monitoreo)
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 balancd/
@@ -83,7 +83,7 @@ balancd/
 └── README.md # Este archivo
 ```
 
-## 🔐 Seguridad
+## Seguridad
 
 ### Cifrado
 - Contraseñas: BCrypt con salt automático
