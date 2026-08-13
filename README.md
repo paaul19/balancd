@@ -1,4 +1,4 @@
-# balanc*d
+# ![Logo](./src/main/resources/static/images/logo-blanco.png)
 **balanc*d** es una aplicación web completa y segura para la gestión de finanzas personales. Permite a los usuarios registrar, categorizar y analizar sus ingresos y gastos por meses, con funcionalidades avanzadas como movimientos recurrentes, búsqueda avanzada y cifrado de datos sensibles.
 
 ## Características Principales
