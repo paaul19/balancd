@@ -45,47 +45,18 @@
     cantidad = cantidadSpan.innerText.replace(' €','').replace(',','.');
 }
     // Obtener asunto
-    let asunto = '';
-    const asuntoElem = li.querySelector('span[style*="margin-left:0.5rem"] span');
-    if (asuntoElem) {
-    asunto = asuntoElem.innerText;
-}
+    const asunto = li.getAttribute('data-asunto') || '';
     // Saber si es ingreso
     const ingreso = li.querySelector('.cantidad-ingreso') !== null;
     // Rellenar modal
     document.getElementById('editCantidad').value = cantidad;
     document.getElementById('editAsunto').value = asunto;
     document.getElementById('editTipo').value = ingreso ? 'true' : 'false';
-    // Obtener fecha
-    let fecha = li.getAttribute('data-fecha');
-    // Convertir fecha de dd/MM/yyyy a yyyy-MM-dd
-    if (fecha) {
-        const partes = fecha.split('/');
-        if (partes.length === 3) {
-            fecha = `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
-        }
-    }
+    // Obtener fecha (ya viene en formato yyyy-MM-dd)
+    const fecha = li.getAttribute('data-fecha');
     document.getElementById('editFecha').value = fecha;
     // Obtener categoría
-    let categoria = li.querySelector('.mov-categoria');
-    let categoriaValue = '';
-    if (categoria) {
-        // Buscar el atributo th:switch original o el valor del span
-        categoriaValue = categoria.getAttribute('th:switch') || categoria.textContent.trim();
-        // Si es un valor bonito, mapearlo al valor del enum
-        switch (categoriaValue) {
-            case 'Transporte': categoriaValue = 'TRANSPORTE'; break;
-            case 'Comida': categoriaValue = 'COMIDA'; break;
-            case 'Ocio y Entretenimiento': categoriaValue = 'OCIO_ENTRETENIMIENTO'; break;
-            case 'Hogar': categoriaValue = 'HOGAR'; break;
-            case 'Salud y Bienestar': categoriaValue = 'SALUD_BIENESTAR'; break;
-            case 'Educación y Cursos': categoriaValue = 'EDUCACION_CURSOS'; break;
-            case 'Compras': categoriaValue = 'COMPRAS'; break;
-            case 'Compras Online': categoriaValue = 'COMPRAS_ONLINE'; break;
-            case 'Suscripción': categoriaValue = 'SUSCRIPCION'; break;
-            default: break;
-        }
-    }
+    const categoriaValue = li.getAttribute('data-categoria') || '';
     document.getElementById('editCategoria').value = categoriaValue;
     // Guardar id en el form
     document.getElementById('editForm').action = '/movimientos/edit/' + id;
@@ -208,40 +179,6 @@
 }
 }
     renderPage();
-
-    // --- Botón y modal de recurrente ---
-    const recurrenteModal = document.getElementById('recurrenteModal');
-    const btnCancelarRecurrente = document.getElementById('btnCancelarRecurrente');
-    btnRecurrente.addEventListener('click', function() {
-    recurrenteModal.classList.add('show');
-});
-    btnCancelarRecurrente.addEventListener('click', function() {
-    recurrenteModal.classList.remove('show');
-});
-    // Validación: fecha no pasada
-    document.getElementById('recFecha').min = new Date().toISOString().split('T')[0];
-    // Envío del formulario recurrente
-    document.getElementById('recurrenteForm').onsubmit = function(e) {
-    const cantidad = document.getElementById('recCantidad').value;
-    const asunto = document.getElementById('recAsunto').value;
-    const fecha = document.getElementById('recFecha').value;
-    if (cantidad <= 0) {
-    alert('La cantidad debe ser mayor que 0');
-    e.preventDefault();
-    return false;
-}
-    if (!asunto.trim()) {
-    alert('El asunto es obligatorio');
-    e.preventDefault();
-    return false;
-}
-    if (!fecha) {
-    alert('Debes seleccionar una fecha');
-    e.preventDefault();
-    return false;
-}
-    // Submit normal (POST) al backend
-};
  });
 
  document.addEventListener('DOMContentLoaded', function() {

@@ -1,68 +1,63 @@
 package com.balancdapp.service;
 
-import com.sendgrid.*;
-import com.sendgrid.helpers.mail.Mail;
-import com.sendgrid.helpers.mail.objects.Content;
-import com.sendgrid.helpers.mail.objects.Email;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    @Value("${sendgrid.api.key}")
-    private String sendgridApiKey;
+    private static final String RESEND_API_URL = "https://api.resend.com/emails";
 
-    @Value("${sendgrid.from.email}")
+    @Value("${resend.api.key}")
+    private String resendApiKey;
+
+    @Value("${resend.from.email}")
     private String fromEmail;
 
+    private final RestTemplate restTemplate = new RestTemplate();
+
     public void sendVerificationEmail(String toEmail, String verificationLink) throws IOException {
-        Email from = new Email(fromEmail);
-        String subject = "Verifica tu cuenta en TuApp";
-        Email to = new Email(toEmail);
+        String subject = "Verifica tu cuenta en balanc*d";
         String htmlContent = loadTemplate("templates/email/verification.html").replace("${verificationLink}", verificationLink);
-        Content content = new Content("text/html", htmlContent);
-        Mail mail = new Mail(from, subject, to, content);
-
-        SendGrid sg = new SendGrid(sendgridApiKey);
-        Request request = new Request();
-
-        request.setMethod(Method.POST);
-        request.setEndpoint("mail/send");
-        request.setBody(mail.build());
-
-        Response response = sg.api(request);
-        System.out.println("STATUS: " + response.getStatusCode());
-        System.out.println("BODY: " + response.getBody());
-        System.out.println("HEADERS: " + response.getHeaders());
+        send(toEmail, subject, htmlContent);
     }
 
     public void sendPasswordResetEmail(String toEmail, String resetLink) throws IOException {
-        Email from = new Email(fromEmail);
-        String subject = "Restablece tu contraseña en Balancd";
-        Email to = new Email(toEmail);
+        String subject = "Restablece tu contraseña en balanc*d";
         String htmlContent = loadTemplate("templates/email/password-reset.html").replace("${resetLink}", resetLink);
-        Content content = new Content("text/html", htmlContent);
-        Mail mail = new Mail(from, subject, to, content);
-        SendGrid sg = new SendGrid(sendgridApiKey);
-        Request request = new Request();
-        request.setMethod(Method.POST);
-        request.setEndpoint("mail/send");
-        request.setBody(mail.build());
-        Response response = sg.api(request);
+        send(toEmail, subject, htmlContent);
+    }
+
+    private void send(String toEmail, String subject, String htmlContent) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(resendApiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> body = Map.of(
+                "from", fromEmail,
+                "to", toEmail,
+                "subject", subject,
+                "html", htmlContent
+        );
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        var response = restTemplate.postForEntity(RESEND_API_URL, request, String.class);
         System.out.println("STATUS: " + response.getStatusCode());
         System.out.println("BODY: " + response.getBody());
-        System.out.println("HEADERS: " + response.getHeaders());
     }
 
     private String loadTemplate(String path) throws IOException {
         ClassPathResource resource = new ClassPathResource(path);
-        byte[] bytes = Files.readAllBytes(resource.getFile().toPath());
+        byte[] bytes = resource.getInputStream().readAllBytes();
         return new String(bytes, StandardCharsets.UTF_8);
     }
 }

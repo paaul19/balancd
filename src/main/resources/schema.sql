@@ -9,8 +9,22 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
-    balance_total DECIMAL(19,2) NULL
+    balance_total DECIMAL(19,2) NULL,
+    tutorial_visto BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+-- Añadir columna tutorial_visto si la tabla ya existía sin ella
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+     AND TABLE_NAME = 'users'
+     AND COLUMN_NAME = 'tutorial_visto') = 0,
+    'ALTER TABLE users ADD COLUMN tutorial_visto BOOLEAN NOT NULL DEFAULT FALSE;',
+    'SELECT "Columna tutorial_visto ya existe" as status;'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 -- Crear tabla de movimientos con campos cifrados
 CREATE TABLE IF NOT EXISTS movimientos (

@@ -2,120 +2,274 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <style th:fragment="theme-styles">
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
         /* Variables CSS para temas */
         :root {
-            /* Tema claro (por defecto) */
-            --bg-primary: #fff;
-            --bg-secondary: #fcfcfd;
-            --text-primary: #222222;
-            --text-secondary: #555555;
-            --border-color: #eeeeee;
-            --shadow: 0 2px 12px rgba(0,0,0,0.13);
-            --button-bg: #222222;
-            --button-hover: #444444;
+            /* Tema claro (por defecto): porcelana cálida, casi-monocromo con color con propósito */
+            --bg-primary: #f5f3ef;
+            --bg-secondary: #ffffff;
+            --bg-elevated: #ffffff;
+            --text-primary: #17161a;
+            --text-secondary: #6f6d76;
+            --text-tertiary: #a4a1aa;
+            --border-color: #e8e5df;
+            --shadow-sm: 0 2px 10px rgba(23,22,26,0.05);
+            --shadow: 0 10px 34px rgba(23,22,26,0.07);
+            --shadow-lg: 0 28px 70px rgba(23,22,26,0.14);
+            --button-bg: #17161a;
+            --button-hover: #322f38;
             --button-text: #ffffff;
-            --input-border: #cccccc;
-            --link-color: #222222;
+            --input-border: #e0ddd6;
+            --link-color: #17161a;
+            --accent: #1a9c63;
+            --accent-soft: rgba(26,156,99,0.12);
+            --danger: #d94c42;
+            --danger-soft: rgba(217,76,66,0.12);
+            --info: #6d5ef0;
+            --info-soft: rgba(109,94,240,0.12);
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+
+            /* Materiales: peso de blur/saturación según tamaño de superficie */
+            --blur-thin: 12px;
+            --blur-regular: 20px;
+            --blur-thick: 34px;
+
+            /* Motion: curvas que aproximan springs (critically damped por defecto, sin overshoot) */
+            --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+            --ease-standard-in: cubic-bezier(0.64, 0, 0.78, 0);
+            --ease-momentum: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --dur-instant: 100ms;
+            --dur-fast: 180ms;
+            --dur-base: 320ms;
+            --dur-slow: 420ms;
+
+            /* Tipografía: tracking/leading específicos por tamaño (óptico) */
+            --tracking-display: -0.03em;
+            --tracking-title: -0.015em;
+            --tracking-body: -0.005em;
+            --tracking-caption: 0.01em;
+
+            --focus-ring: 0 0 0 3px var(--accent-soft), 0 0 0 1.5px var(--accent);
         }
 
-        /* Tema oscuro */
+        /* Tema oscuro: grafito cálido, no negro puro */
         [data-theme="dark"] {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --text-primary: #ffffff;
-            --text-secondary: #cccccc;
-            --border-color: #404040;
-            --shadow: 0 2px 12px rgba(0,0,0,0.3);
-            --button-bg: #4a4a4a;
-            --button-hover: #666666;
-            --button-text: #ffffff;
-            --input-border: #555555;
-            --link-color: #ffffff;
+            --bg-primary: #0c0c0e;
+            --bg-secondary: #17171b;
+            --bg-elevated: #1e1e24;
+            --text-primary: #f5f4f2;
+            --text-secondary: #a09eaa;
+            --text-tertiary: #6f6d78;
+            --border-color: #27272e;
+            --shadow-sm: 0 2px 10px rgba(0,0,0,0.3);
+            --shadow: 0 14px 44px rgba(0,0,0,0.45);
+            --shadow-lg: 0 32px 80px rgba(0,0,0,0.6);
+            --button-bg: #f5f4f2;
+            --button-hover: #dad8d4;
+            --button-text: #0c0c0e;
+            --input-border: #2c2c33;
+            --link-color: #f5f4f2;
+            --accent: #32d399;
+            --accent-soft: rgba(50,211,153,0.16);
+            --danger: #ff6f66;
+            --danger-soft: rgba(255,111,102,0.16);
+            --info: #9b8cff;
+            --info-soft: rgba(155,140,255,0.18);
         }
 
         /* Aplicar variables CSS */
-        body {
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
             background: var(--bg-primary);
+        }
+
+        /* Reserva siempre el espacio de la scrollbar: sin esto, las páginas con
+           poco contenido (búsqueda, recurrentes) no la muestran y el footer fijo
+           (centrado con left:50%) queda unos píxeles desplazado respecto a las
+           páginas con scroll (dashboard, perfil), dando sensación de que "se mueve". */
+        html {
+            scrollbar-gutter: stable;
+            overflow-y: scroll;
+        }
+
+        body {
             color: var(--text-primary);
-            font-family: sans-serif;
-            transition: all 0.3s ease;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            letter-spacing: var(--tracking-body);
+            transition: background-color var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .container {
             background: var(--bg-secondary);
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
         }
 
         h1, h2, h3, h4, h5, h6 {
             color: var(--text-primary);
+            letter-spacing: var(--tracking-title);
+            line-height: 1.15;
         }
 
         button {
             background: var(--button-bg);
             color: var(--button-text);
             border: 1px solid var(--border-color);
+            font-family: inherit;
+            transition: background-color var(--dur-fast) var(--ease-standard), transform var(--dur-instant) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard);
         }
 
         button:hover {
             background: var(--button-hover);
         }
 
+        /* Feedback de presión: instantáneo en pointer-down, no en release */
+        button:not(:disabled):active,
+        .theme-switcher:active,
+        .footer-btn:active,
+        .accion-btn:active,
+        a.logout-btn:active {
+            transform: scale(0.96);
+            transition-duration: var(--dur-instant);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         input, select, textarea {
-            background: var(--bg-secondary);
+            background: var(--bg-elevated);
             color: var(--text-primary);
             border: 1px solid var(--input-border);
+            font-family: inherit;
+            transition: border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard);
         }
 
         a {
             color: var(--link-color);
+            transition: opacity var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
         }
 
         li {
             border-bottom: 1px solid var(--border-color);
         }
 
+        /* Foco visible solo para navegación por teclado: no molesta al usar el ratón/touch */
+        :focus {
+            outline: none;
+        }
+        :focus-visible {
+            outline: none;
+            box-shadow: var(--focus-ring);
+            border-radius: var(--radius-sm);
+        }
+
+        /* Escala tipográfica óptica: tracking/leading propios por tamaño */
+        .type-display {
+            letter-spacing: var(--tracking-display);
+            line-height: 1.05;
+            font-weight: 800;
+        }
+        .type-title {
+            letter-spacing: var(--tracking-title);
+            line-height: 1.2;
+            font-weight: 700;
+        }
+        .type-caption {
+            letter-spacing: var(--tracking-caption);
+            line-height: 1.4;
+        }
+
+        /* Importes: cifras de ancho fijo para que no "bailen" al cambiar */
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Materiales translúcidos: blur/saturación por peso de superficie */
+        .material-thin {
+            background: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+            backdrop-filter: blur(var(--blur-thin)) saturate(160%);
+            -webkit-backdrop-filter: blur(var(--blur-thin)) saturate(160%);
+        }
+        .material-regular {
+            background: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+            backdrop-filter: blur(var(--blur-regular)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--blur-regular)) saturate(180%);
+        }
+        .material-thick {
+            background: color-mix(in srgb, var(--bg-elevated) 72%, transparent);
+            backdrop-filter: blur(var(--blur-thick)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--blur-thick)) saturate(180%);
+        }
+
         /* Botón de cambio de tema */
         .theme-switcher {
-            position: static;
+            position: relative;
             margin-left: 0.5rem;
             margin-right: 0.5rem;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: var(--button-bg);
-            color: var(--button-text);
-            border: none;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
+            font-size: 16px;
+            box-shadow: none;
+            transition: background-color var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
             z-index: 1000;
         }
 
         .theme-switcher:hover {
-            background: var(--button-hover);
-            transform: scale(1.1);
+            background: var(--border-color);
+            transform: scale(1.05);
         }
 
-        /* Iconos para el botón */
-        .theme-switcher .sun-icon {
-            display: none;
-        }
-
+        /* Iconos para el botón: cross-fade + rotación sutil, no un salto brusco */
+        .theme-switcher .sun-icon,
         .theme-switcher .moon-icon {
             display: block;
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            transition: opacity var(--dur-base) var(--ease-standard), transform var(--dur-base) var(--ease-standard);
+        }
+        .theme-switcher .sun-icon svg,
+        .theme-switcher .moon-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .theme-switcher .sun-icon {
+            opacity: 0;
+            transform: rotate(-90deg) scale(0.6);
+        }
+        .theme-switcher .moon-icon {
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
         }
 
         [data-theme="dark"] .theme-switcher .sun-icon {
-            display: block;
+            opacity: 1;
+            transform: rotate(0deg) scale(1);
         }
 
         [data-theme="dark"] .theme-switcher .moon-icon {
-            display: none;
+            opacity: 0;
+            transform: rotate(90deg) scale(0.6);
         }
 
         /* Estilos responsive */
@@ -223,6 +377,58 @@
                 width: 100% !important;
             }
         }
+
+        /* Accesibilidad: movimiento, transparencia y contraste reducidos */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.001ms !important;
+                scroll-behavior: auto !important;
+            }
+            .theme-switcher:active,
+            .footer-btn:active,
+            .accion-btn:active,
+            button:active {
+                transform: none !important;
+            }
+        }
+
+        @media (prefers-reduced-transparency: reduce) {
+            .header {
+                backdrop-filter: none !important;
+                background: var(--bg-secondary) !important;
+            }
+            .footer-bar {
+                backdrop-filter: none !important;
+                background: var(--bg-secondary) !important;
+            }
+            .modal-content {
+                backdrop-filter: none !important;
+            }
+            .material-thin, .material-regular, .material-thick {
+                backdrop-filter: none !important;
+                background: var(--bg-secondary) !important;
+            }
+            .landing-nav {
+                backdrop-filter: none !important;
+                background: var(--bg-secondary) !important;
+            }
+        }
+
+        @media (prefers-contrast: more) {
+            :root {
+                --border-color: #7a7a7a;
+                --text-secondary: #4a4a4a;
+            }
+            [data-theme="dark"] {
+                --border-color: #8a8a8a;
+                --text-secondary: #c8c8c8;
+            }
+            .container, .balance-card, .movimiento-item, button {
+                border-width: 1.5px !important;
+            }
+        }
     </style>
     
     <!-- Script para aplicar tema inmediatamente y evitar flash -->
@@ -236,24 +442,10 @@
 <body>
     <!-- Botón de cambio de tema -->
     <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
-        <span class="sun-icon">☀️</span>
-        <span class="moon-icon">🌙</span>
+        <span class="sun-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke-linecap="round"/></svg></span>
+        <span class="moon-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke-linejoin="round"/></svg></span>
     </button>
 
-    <script th:fragment="theme-script">
-        // Función para cambiar tema
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-        }
-        // Cargar tema guardado al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        });
-    </script>
+    <script th:fragment="theme-script" src="/js/theme.js"></script>
 </body>
 </html> 

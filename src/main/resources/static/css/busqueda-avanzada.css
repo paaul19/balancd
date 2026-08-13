@@ -16,9 +16,9 @@ body {
 .container {
   max-width: 600px;
   margin: 40px auto;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   background: var(--bg-secondary, #181818);
-  box-shadow: 0 2px 16px 0 rgba(0,0,0,0.13);
+  box-shadow: var(--shadow);
   padding: 1.2rem 2rem;
 }
 h1 {
@@ -63,9 +63,18 @@ h1 {
 .filtros a {
   margin-left: 0.3rem;
   text-decoration: none;
-  color: #888;
-  font-size: 1.2em;
+  color: var(--text-tertiary);
   align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.filtros a svg {
+  width: 18px;
+  height: 18px;
+}
+.filtros a:hover {
+  color: var(--text-primary);
 }
 .totals {
   margin-bottom: 1.2rem;
@@ -75,16 +84,16 @@ h1 {
 .totals span {
   margin-right: 1.5em;
 }
-.totals .ingresos { color: #090; }
-.totals .gastos { color: #c00; }
-.totals .balance-pos { color: #090; }
-.totals .balance-neg { color: #c00; }
+.totals .ingresos { color: var(--accent); }
+.totals .gastos { color: var(--danger); }
+.totals .balance-pos { color: var(--accent); }
+.totals .balance-neg { color: var(--danger); }
 .resumen-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1.2rem;
   background: var(--bg-primary, #222);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   font-size: 1rem;
 }
@@ -188,7 +197,6 @@ h1 {
     min-width: 36px;
     max-width: 48px;
     text-align: center;
-    font-size: 1.3rem;
     color: var(--button-text, #fff);
     background: none;
     border: none;

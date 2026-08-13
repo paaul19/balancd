@@ -13,7 +13,7 @@ body {
 .container {
   max-width: 800px;
   margin: 40px auto;
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   padding: 2rem;
 }
 
@@ -36,12 +36,15 @@ body {
   color: var(--button-text);
   padding: 0.8rem 1.5rem;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.2s ease;
   font-weight: 500;
 }
 
@@ -51,12 +54,12 @@ body {
 }
 
 .btn-danger {
-  background: #dc3545;
+  background: var(--danger);
   color: white;
 }
 
 .btn-danger:hover {
-  background: #c82333;
+  filter: brightness(0.9);
 }
 
 .btn-sm {
@@ -71,18 +74,18 @@ body {
 }
 
 .recurrente-item {
-  background: var(--card-bg);
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 0.7rem;
   margin-bottom: 0.6rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard);
+  box-shadow: var(--shadow-sm);
 }
 
 .recurrente-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow);
 }
 
 .recurrente-header {
@@ -110,11 +113,11 @@ body {
 }
 
 .cantidad-ingreso {
-  color: #28a745;
+  color: var(--accent);
 }
 
 .cantidad-gasto {
-  color: #dc3545;
+  color: var(--text-primary);
 }
 
 .recurrente-details {
@@ -159,13 +162,13 @@ body {
 }
 
 .estado-activo.activo {
-  background: #d4edda;
-  color: #155724;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .estado-activo.inactivo {
-  background: #f8d7da;
-  color: #721c24;
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .frecuencia-badge {
@@ -173,9 +176,9 @@ body {
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
   font-size: 0.8rem;
-  font-weight: 500;
-  background: var(--accent-color);
-  color: white;
+  font-weight: 600;
+  background: var(--info-soft);
+  color: var(--info);
 }
 
 .empty-state {
@@ -385,8 +388,9 @@ body {
   }
 
   .recurrente-header {
-    flex-direction: column;
-    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.6rem;
   }
 
   .recurrente-details {
@@ -401,7 +405,6 @@ body {
 
   .recurrente-actions .btn {
     flex: 1;
-    text-align: center;
   }
 }
 

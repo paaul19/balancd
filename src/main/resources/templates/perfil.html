@@ -2,118 +2,88 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Perfil</title>
-    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
-    <link rel="apple-touch-icon" href="/images/logo-app.png">
-    <meta name="theme-color" content="#2D2D2D">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
 
     <!-- Estilos globales y de fragmentos -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <style th:replace="~{fragments/header :: header-styles}"></style>
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/perfil.css">
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
-    <style>
-        .main-content {
-            flex: 1;
-            padding-top: calc(80px + env(safe-area-inset-top, 0px));
-            padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .mensaje-mantenimiento {
-            background: var(--bg-secondary, #181818);
-            border-radius: 12px;
-            padding: 2.5rem 2rem;
-            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.13);
-            text-align: center;
-            max-width: 350px;
-            margin: 0 auto;
-        }
-        .mensaje-mantenimiento h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-        .mensaje-mantenimiento p {
-            font-size: 1.1rem;
-            color: #e57373;
-        }
-    </style>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
     <!-- Header -->
     <div th:replace="~{fragments/header :: header}"></div>
-    <div class="main-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh;">
-        <div style="width:100%; max-width:1100px; display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:2.5rem;">
-            <h1 style="font-size:2.5rem; font-weight:800; color:var(--text-primary); margin:0;">Bienvenido, <span th:text="${nombre}"></span></h1>
-            <a href="/ajustes" class="btn-ajustes" style="font-size:1.1rem; padding:0.7rem 1.5rem; border-radius:8px; background:#1976d2; color:#fff; font-weight:600; text-decoration:none; box-shadow:0 2px 8px #1976d222; transition:background 0.18s;">Ajustes ⚙️</a>
-        </div>
-        <!-- Carrusel de gráficos -->
-        <div class="perfil-meses-graficos" style="margin:0 auto 1.5rem auto; max-width:420px; width:100%;">
-            <h2 style="text-align:center; margin-bottom:1.2rem;">Aquí tienes tus meses y gastos por categoría</h2>
-            <div id="carrusel-grafico-mes" style="position:relative; display:flex; flex-direction:column; align-items:center; min-height:420px;">
-                <button id="btnMesAnterior" class="carrusel-flecha" style="left:18px;" title="Mes anterior">
+    <div class="main-content">
+        <div class="perfil-wrap">
+            <div class="perfil-header">
+                <h1>Bienvenido, <span th:text="${nombre}"></span></h1>
+                <a href="/ajustes" class="btn-ajustes">
+                    Ajustes
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+
+            <!-- Carrusel de gráficos -->
+            <h2 class="perfil-section-title">Tus meses y gastos por categoría</h2>
+            <div class="carrusel-grafico-mes" id="carrusel-grafico-mes">
+                <button id="btnMesAnterior" class="carrusel-flecha carrusel-flecha--prev" title="Mes anterior">
                     <span>&#8592;</span>
                 </button>
-                <div id="grafico-mes-contenedor" style="min-width:260px; max-width:320px; background:var(--bg-secondary); border-radius:16px; box-shadow:0 1px 8px #0002; padding:1.2rem 1rem 2.2rem 1rem; margin-bottom:1.5rem; width:100%; display:flex; flex-direction:column; align-items:center; transition:box-shadow 0.2s;">
-                    <h4 id="titulo-mes-grafico" style="text-align:center; margin-bottom:1rem; color:var(--text-primary); font-size:1.25rem;"></h4>
-                    <canvas id="grafico-categorias-carrusel" width="220" height="220" style="display:block; margin:0 auto 0.7rem auto;"></canvas>
-                    <div style="text-align:center; font-size:0.98em; color:#888;">Gastos por categoría</div>
+                <div id="grafico-mes-contenedor" class="grafico-mes-contenedor">
+                    <h4 id="titulo-mes-grafico" class="grafico-mes-titulo"></h4>
+                    <canvas id="grafico-categorias-carrusel" width="220" height="220"></canvas>
+                    <div class="grafico-mes-subtitulo">Gastos por categoría</div>
                 </div>
-                <button id="btnMesSiguiente" class="carrusel-flecha" style="right:18px;" title="Mes siguiente">
+                <button id="btnMesSiguiente" class="carrusel-flecha carrusel-flecha--next" title="Mes siguiente">
                     <span>&#8594;</span>
                 </button>
-                <div id="carrusel-indicadores" style="margin-top:0.7rem; display:flex; gap:0.5rem; justify-content:center;"></div>
+                <div id="carrusel-indicadores"></div>
             </div>
-            <div th:if="${mesesConMovimientos == null || mesesConMovimientos.isEmpty()}" style="text-align:center; color:#888;">No tienes movimientos registrados aún.</div>
-            <style>
-                .carrusel-flecha {
-                    position: absolute;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    background: rgba(40,40,40,0.7);
-                    border: none;
-                    border-radius: 50%;
-                    width: 44px;
-                    height: 44px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 2rem;
-                    color: #fff;
-                    box-shadow: 0 2px 8px #0002;
-                    cursor: pointer;
-                    z-index: 2;
-                    transition: background 0.18s, box-shadow 0.18s;
-                }
-                .carrusel-flecha:hover {
-                    background: #1976d2;
-                    color: #fff;
-                    box-shadow: 0 4px 16px #1976d255;
-                }
-                #carrusel-indicadores {
-                    margin-top: 0.7rem;
-                }
-                .carrusel-punto {
-                    width: 12px;
-                    height: 12px;
-                    border-radius: 50%;
-                    background: #888;
-                    opacity: 0.4;
-                    transition: background 0.2s, opacity 0.2s;
-                }
-                .carrusel-punto.activo {
-                    background: #1976d2;
-                    opacity: 1;
-                }
-                .btn-ajustes:hover {
-                    background: #1251a3;
-                }
-            </style>
+            <div th:if="${mesesConMovimientos == null || mesesConMovimientos.isEmpty()}" class="perfil-empty">No tienes movimientos registrados aún.</div>
+
+            <!-- Resumen de cuenta -->
+            <div class="resumen-wrap">
+                <div class="resumen-balance-card">
+                    <span class="resumen-balance-label">Balance total</span>
+                    <div class="resumen-balance-amount" th:text="${#numbers.formatDecimal(balanceTotalReal, 1, 2)} + ' €'"></div>
+                </div>
+                <div class="resumen-stats">
+                    <div class="resumen-stat">
+                        <div class="resumen-stat-label">Movimientos</div>
+                        <div class="resumen-stat-value" th:text="${totalMovimientos}"></div>
+                    </div>
+                    <div class="resumen-stat">
+                        <div class="resumen-stat-label">Ingresos totales</div>
+                        <div class="resumen-stat-value positive" th:text="${#numbers.formatDecimal(totalIngresosHistorico, 1, 2)} + ' €'"></div>
+                    </div>
+                    <div class="resumen-stat">
+                        <div class="resumen-stat-label">Gastos totales</div>
+                        <div class="resumen-stat-value" th:text="${#numbers.formatDecimal(totalGastosHistorico, 1, 2)} + ' €'"></div>
+                    </div>
+                </div>
+                <div th:if="${categoriaTop != null}" class="resumen-categoria-top">
+                    <span class="resumen-categoria-top-label">Tu categoría con más gasto</span>
+                    <span class="resumen-categoria-top-value">
+                        <span class="resumen-categoria-top-icon" th:insert="~{fragments/category-icons :: icon(${categoriaTop})}"></span>
+                        <span th:switch="${categoriaTop}">
+                            <span th:case="'TRANSPORTE'">Transporte</span>
+                            <span th:case="'COMIDA'">Comida</span>
+                            <span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span>
+                            <span th:case="'HOGAR'">Hogar</span>
+                            <span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span>
+                            <span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span>
+                            <span th:case="'COMPRAS'">Compras</span>
+                            <span th:case="'COMPRAS_ONLINE'">Compras Online</span>
+                            <span th:case="'SUSCRIPCION'">Suscripción</span>
+                            <span th:case="*">[[${categoriaTop}]]</span>
+                        </span>
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -129,4 +99,4 @@
         window.gastosPorCategoriaPorMes = [[${gastosPorCategoriaPorMes}]];
     </script>
 </body>
-</html> 
+</html>

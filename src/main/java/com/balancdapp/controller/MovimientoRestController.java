@@ -51,7 +51,8 @@ public class MovimientoRestController {
             LocalDate fecha = LocalDate.parse(fechaStr, DateTimeFormatter.ISO_DATE);
             int mesAsignado = Integer.parseInt(payload.get("mesAsignado").toString());
             int anioAsignado = Integer.parseInt(payload.get("anioAsignado").toString());
-            encryptedMovimientoService.createMovimiento(user, cantidad, ingreso, asunto, fecha, mesAsignado, anioAsignado, null);
+            String categoria = payload.get("categoria") != null ? payload.get("categoria").toString() : null;
+            encryptedMovimientoService.createMovimiento(user, cantidad, ingreso, asunto, fecha, mesAsignado, anioAsignado, categoria);
             return ResponseEntity.ok(Map.of("success", true));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));

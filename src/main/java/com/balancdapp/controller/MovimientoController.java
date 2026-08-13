@@ -54,6 +54,12 @@ public class MovimientoController {
         // Usar el servicio cifrado para obtener movimientos
         List<EncryptedMovimientoService.MovimientoDTO> todos = encryptedMovimientoService.getMovimientosByUserId(user.getId());
 
+        // Balance total real: se calcula a partir de todos los movimientos del usuario
+        // (en vez de depender del contador incremental user.balanceTotal, que puede desincronizarse)
+        double balanceTotalReal = todos.stream()
+                .mapToDouble(m -> m.isIngreso() ? m.getCantidad() : -m.getCantidad())
+                .sum();
+
         // Filtrar por búsqueda de asunto si se proporciona
         if (busqueda != null && !busqueda.trim().isEmpty()) {
             String busquedaLower = busqueda.trim().toLowerCase();
@@ -107,6 +113,7 @@ public class MovimientoController {
         model.addAttribute("totalIngresos", totalIngresos);
         model.addAttribute("totalGastos", totalGastos);
         model.addAttribute("balance", balance);
+        model.addAttribute("balanceTotalReal", balanceTotalReal);
         model.addAttribute("nuevoMovimiento", new Movimiento());
         model.addAttribute("mesesDisponibles", mesesDisponibles);
         model.addAttribute("mesSeleccionado", seleccionado);

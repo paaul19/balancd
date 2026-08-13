@@ -23,7 +23,7 @@ public class AuthController {
         if (user != null) {
             return "redirect:/movimientos";
         } else {
-            return "redirect:/login";
+            return "landing";
         }
     }
 
@@ -74,33 +74,15 @@ public class AuthController {
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
-        return "redirect:/acceso";
-    }
-
-    @GetMapping("/acceso")
-    public String accesoForm(Model model) {
-        model.addAttribute("error", "");
-        return "auth/acceso";
-    }
-
-    @PostMapping("/acceso")
-    public String accesoSubmit(@RequestParam("password") String password, Model model, HttpSession session) {
-        String passwordCorrecta = "1234"; // Cambia esto por la contraseña que quieras
-        if (passwordCorrecta.equals(password)) {
-            session.setAttribute("accesoPermitido", true);
-            return "redirect:/login";
-        } else {
-            model.addAttribute("error", "Contraseña incorrecta");
-            return "auth/acceso";
-        }
+        return "redirect:/";
     }
 
     @GetMapping("/verify")
-    public String verifyEmail(@RequestParam("token") String token, Model model) {
+    public String verifyEmail(@RequestParam("token") String token, Model model, RedirectAttributes redirectAttributes) {
         boolean verified = userService.verifyUser(token);
         if (verified) {
-            model.addAttribute("message", "¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.");
-            return "auth/login";
+            redirectAttributes.addFlashAttribute("success", "Cuenta verificada correctamente.");
+            return "redirect:/login";
         } else {
             model.addAttribute("error", "Token de verificación inválido o expirado.");
             return "error";
@@ -131,9 +113,14 @@ public class AuthController {
     @PostMapping("/reset-password")
     public String processResetPassword(@RequestParam("token") String token,
                                        @RequestParam("password") String password,
-                                       Model model) {
+                                       Model model,
+                                       RedirectAttributes redirectAttributes) {
         boolean success = userService.resetPassword(token, password);
-        model.addAttribute("success", success);
+        if (success) {
+            redirectAttributes.addFlashAttribute("success", "Contraseña cambiada correctamente.");
+            return "redirect:/login";
+        }
+        model.addAttribute("success", false);
         return "auth/reset-password-confirm";
     }
 }

@@ -1,18 +1,4 @@
-// Función para cambiar tema
-function toggleTheme() {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-}
-
-// Cargar tema guardado al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-
     const loginForm = document.querySelector('.login-form');
     const registerForm = document.querySelector('.register-form');
     const showRegisterBtn = document.getElementById('showRegister');

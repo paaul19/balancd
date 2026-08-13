@@ -2,118 +2,95 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Perfil</title>
-    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
-    <link rel="apple-touch-icon" href="/images/logo-app.png">
-    <meta name="theme-color" content="#2D2D2D">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Ajustes</title>
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
 
     <!-- Estilos globales y de fragmentos -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <style th:replace="~{fragments/header :: header-styles}"></style>
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/ajustes.css">
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
-    <style>
-        .main-content {
-            flex: 1;
-            padding-top: calc(80px + env(safe-area-inset-top, 0px));
-            padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .mensaje-mantenimiento {
-            background: var(--bg-secondary, #181818);
-            border-radius: 12px;
-            padding: 2.5rem 2rem;
-            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.13);
-            text-align: center;
-            max-width: 350px;
-            margin: 0 auto;
-        }
-        .mensaje-mantenimiento h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-        .mensaje-mantenimiento p {
-            font-size: 1.1rem;
-            color: #e57373;
-        }
-    </style>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
 <!-- Header -->
 <div th:replace="~{fragments/header :: header}"></div>
 
 <div class="main-content">
-    <div class="perfil-container" style="border-radius: 12px; background: var(--bg-secondary); box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 2.5rem 2rem; min-width:320px; max-width:370px; width:100%; margin:0 auto; display:flex; flex-direction:column; align-items:center;">
-        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
-            <img src="/images/logo-app.png" alt="Perfil" style="width:60px; height:60px; border-radius:50%; margin-bottom:1.2rem; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-            <h2 style="text-align:center; margin-bottom:1.2rem; font-size:1.6rem; letter-spacing:0.5px;">Mi Perfil</h2>
-        </div>
+    <div class="ajustes-container">
+        <img src="/images/logo-app.png" alt="Perfil" class="ajustes-avatar">
+        <h2 class="ajustes-title">Ajustes de cuenta</h2>
+
         <!-- Mensajes de error/éxito -->
-        <div th:if="${error}" class="error" th:text="${error}" style="color:#c00; margin-bottom:1rem; text-align:center;"></div>
-        <div th:if="${success}" class="success" th:text="${success}" style="color:#090; margin-bottom:1rem; text-align:center;"></div>
+        <div th:if="${error}" class="ajustes-message error" th:text="${error}"></div>
+        <div th:if="${success}" class="ajustes-message success" th:text="${success}"></div>
 
         <!-- Formulario para cambiar nombre de usuario -->
-        <form th:action="@{/perfil/cambiar-usuario}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
-                <span style="font-size:1.3em;">👤</span>
-                <label for="nuevoUsername" style="font-weight:600; font-size:1.05em;">Nombre de usuario</label>
+        <form th:action="@{/perfil/cambiar-usuario}" method="post" class="ajustes-card">
+            <div class="ajustes-card-label">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke-linecap="round"/></svg></span>
+                <label for="nuevoUsername">Nombre de usuario</label>
             </div>
-            <input type="text" id="nuevoUsername" name="nuevoUsername" th:value="${user.username}" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
-            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar nombre de usuario</button>
+            <input type="text" id="nuevoUsername" name="nuevoUsername" th:value="${user.username}" required>
+            <button type="submit">Actualizar nombre de usuario</button>
         </form>
 
         <!-- Formulario para cambiar email -->
-        <form th:action="@{/perfil/cambiar-email}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
-                <span style="font-size:1.3em;">📧</span>
-                <label for="nuevoEmail" style="font-weight:600; font-size:1.05em;">Correo electrónico</label>
+        <form th:action="@{/perfil/cambiar-email}" method="post" class="ajustes-card">
+            <div class="ajustes-card-label">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <label for="nuevoEmail">Correo electrónico</label>
             </div>
-            <input type="email" id="nuevoEmail" name="nuevoEmail" th:value="${user.email}" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
-            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar correo electrónico</button>
+            <input type="email" id="nuevoEmail" name="nuevoEmail" th:value="${user.email}" required>
+            <button type="submit">Actualizar correo electrónico</button>
         </form>
 
         <!-- Formulario para cambiar contraseña -->
-        <form th:action="@{/perfil/cambiar-password}" method="post" style="width:100%; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
-                <span style="font-size:1.3em;">🔒</span>
-                <label for="passwordActual" style="font-weight:600; font-size:1.05em;">Contraseña actual</label>
+        <form th:action="@{/perfil/cambiar-password}" method="post" class="ajustes-card">
+            <div class="ajustes-card-label">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg></span>
+                <label for="passwordActual">Contraseña actual</label>
             </div>
-            <input type="password" id="passwordActual" name="passwordActual" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
-            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem; margin-top:0.7rem;">
-                <span style="font-size:1.3em;">✨</span>
-                <label for="nuevoPassword" style="font-weight:600; font-size:1.05em;">Nueva contraseña</label>
+            <input type="password" id="passwordActual" name="passwordActual" required>
+            <div class="ajustes-card-label">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="15" r="4"/><path d="M10.5 12.5L20 3M17 6l3 3M14 9l2 2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <label for="nuevoPassword">Nueva contraseña</label>
             </div>
-            <input type="password" id="nuevoPassword" name="nuevoPassword" required style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
-            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar contraseña</button>
+            <input type="password" id="nuevoPassword" name="nuevoPassword" required>
+            <button type="submit">Actualizar contraseña</button>
         </form>
 
         <!-- Sección de balance total -->
-        <form th:action="@{/perfil/cambiar-balance}" method="post" style="width:100%; margin-bottom:2.2rem; background:rgba(0,0,0,0.01); border-radius:8px; padding:1.2rem 0.5rem 1rem 0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); display:flex; flex-direction:column; align-items:center; gap:0.5rem;">
-            <div style="width:100%; display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem;">
-                <span style="font-size:1.3em;">💰</span>
-                <label for="nuevoBalance" style="font-weight:600; font-size:1.05em;">Balance total</label>
+        <form th:action="@{/perfil/cambiar-balance}" method="post" class="ajustes-card">
+            <div class="ajustes-card-label">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14.5" r="1.3" fill="currentColor" stroke="none"/></svg></span>
+                <label for="nuevoBalance">Ajustar saldo total</label>
             </div>
-            <input type="number" step="0.01" id="nuevoBalance" name="nuevoBalance" th:value="${user.balanceTotal}" style="width:100%; padding:0.7rem 1rem; border-radius:5px; border:1px solid var(--input-border); font-size:1rem; margin-bottom:0.7rem; background:var(--bg-primary);">
-            <button type="submit" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:var(--button-bg); color:var(--button-text); border:none; margin-top:0.2rem; transition:background 0.2s;">Actualizar balance total</button>
+            <p class="ajustes-hint">Si tu saldo real no coincide con el que ves en la app, corrígelo aquí. Se creará un movimiento de ajuste automático para cuadrar la diferencia, sin tocar tu historial.</p>
+            <input type="number" step="0.01" id="nuevoBalance" name="nuevoBalance" th:value="${#numbers.formatDecimal(balanceTotalReal, 1, 2)}">
+            <button type="submit">Ajustar saldo</button>
         </form>
 
+        <!-- Exportar datos -->
+        <a th:href="@{/perfil/exportar-csv}" class="ajustes-export">
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19h16" stroke-linecap="round"/></svg></span>
+            <span>Exportar mis movimientos (CSV)</span>
+        </a>
+
         <!-- Botón para eliminar cuenta -->
-        <form th:action="@{/perfil/eliminar-cuenta}" method="post" id="formEliminarCuenta" style="width:100%; margin-top:2.2rem; display:flex; flex-direction:column; align-items:center;">
-            <button type="button" id="btnEliminarCuenta" style="width:100%; border-radius:5px; padding:0.7rem 1.2rem; font-size:1rem; background:#e53935; color:#fff; border:none; margin-top:0.2rem; transition:background 0.2s; font-weight:600;">Eliminar cuenta</button>
+        <form th:action="@{/perfil/eliminar-cuenta}" method="post" id="formEliminarCuenta" class="ajustes-danger-zone">
+            <span class="ajustes-danger-zone-label">Zona de peligro</span>
+            <button type="button" id="btnEliminarCuenta">Eliminar cuenta</button>
         </form>
         <!-- Modal de confirmación -->
-        <div id="modalConfirmarEliminar" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center;">
-            <div style="background:var(--bg-secondary,#fff); border-radius:12px; box-shadow:0 2px 16px rgba(0,0,0,0.18); padding:2rem 1.5rem; max-width:340px; margin:auto; text-align:center;">
-                <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres eliminar tu cuenta? Esta acción <b>no se puede deshacer</b> y se borrarán todos tus datos.</div>
-                <div style="display:flex; gap:1rem; justify-content:flex-end;">
-                    <button type="button" id="cancelarEliminar" style="background:var(--border-color); color:var(--text-primary); border-radius:5px; padding:0.6rem 1.2rem;">Cancelar</button>
-                    <button type="button" id="confirmarEliminar" style="background:#e53935; color:#fff; border-radius:5px; padding:0.6rem 1.2rem;">Eliminar</button>
+        <div id="modalConfirmarEliminar" class="ajustes-modal-overlay">
+            <div class="ajustes-modal">
+                <p>¿Seguro que quieres eliminar tu cuenta? Esta acción <b>no se puede deshacer</b> y se borrarán todos tus datos.</p>
+                <div class="ajustes-modal-actions">
+                    <button type="button" id="cancelarEliminar" class="btn-cancel">Cancelar</button>
+                    <button type="button" id="confirmarEliminar" class="btn-danger">Eliminar</button>
                 </div>
             </div>
         </div>
@@ -122,8 +99,8 @@
             const modal = document.getElementById('modalConfirmarEliminar');
             const cancelar = document.getElementById('cancelarEliminar');
             const confirmar = document.getElementById('confirmarEliminar');
-            btnEliminarCuenta.addEventListener('click', () => { modal.style.display = 'flex'; });
-            cancelar.addEventListener('click', () => { modal.style.display = 'none'; });
+            btnEliminarCuenta.addEventListener('click', () => { modal.classList.add('show'); });
+            cancelar.addEventListener('click', () => { modal.classList.remove('show'); });
             confirmar.addEventListener('click', () => { document.getElementById('formEliminarCuenta').submit(); });
         </script>
     </div>

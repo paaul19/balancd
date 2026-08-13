@@ -2,18 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Error</title>
-  <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
-  <link rel="apple-touch-icon" href="/images/logo-app.png">
-  <meta name="theme-color" content="#1e1e1e">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
   <!-- Incluir estilos del tema -->
   <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
   <style th:replace="~{fragments/header :: header-styles}"></style>
   <style th:replace="~{fragments/footer :: footer-styles}"></style>
   <!-- Script para aplicar tema inmediatamente -->
+  <script src="/js/spring.js"></script>
   <script src="/js/footer-modals.js"></script>
   <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
   <style>
@@ -44,7 +40,7 @@
       text-align: center;
     }
     .error-box h1 {
-      color: #c00;
+      color: var(--danger);
       margin-bottom: 1.5rem;
     }
     .error-box p {

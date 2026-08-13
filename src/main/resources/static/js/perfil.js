@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (!data || data.length === 0) {
             ctx.font = '16px sans-serif';
-            ctx.fillStyle = '#888';
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-tertiary').trim() || '#888';
             ctx.textAlign = 'center';
             ctx.fillText('Sin datos', canvas.width / 2, canvas.height / 2);
             return;

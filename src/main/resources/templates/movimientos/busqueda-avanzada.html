@@ -3,22 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Búsqueda avanzada de movimientos</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
-    <link rel="apple-touch-icon" href="/images/logo-app.png">
-    <meta name="theme-color" content="#2D2D2D">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="balanc*d">
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <!-- Incluir estilos del header y footer -->
     <style th:replace="~{fragments/header :: header-styles}"></style>
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <link rel="stylesheet" href="/css/busqueda-avanzada.css">
-    <script src="/js/busqueda-avanzada.js"></script>
+    <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
 
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
 <!-- Header -->
@@ -44,7 +39,9 @@
             </select>
             <div class="filtros-row-boton">
                 <button type="submit">Buscar</button>
-                <a th:href="@{/movimientos/busqueda-avanzada}">✖</a>
+                <a th:href="@{/movimientos/busqueda-avanzada}" title="Limpiar filtros">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+                </a>
             </div>
         </form>
         <div th:if="${busqueda != null and #strings.trim(busqueda) != ''}">
@@ -65,9 +62,9 @@
                 <tbody>
                     <tr th:each="mes : ${resumen}">
                         <td th:text="${#temporals.format(mes.mes, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></td>
-                        <td th:text="${#numbers.formatDecimal(mes.ingresos, 1, 2)} + ' €'" style="color:#090; font-weight:500;"></td>
-                        <td th:text="${#numbers.formatDecimal(mes.gastos, 1, 2)} + ' €'" style="color:#c00; font-weight:500;"></td>
-                        <td th:text="${#numbers.formatDecimal(mes.balance, 1, 2)} + ' €'" th:style="${mes.balance >= 0 ? 'color:#090; font-weight:500;' : 'color:#c00; font-weight:500;'}"></td>
+                        <td th:text="${#numbers.formatDecimal(mes.ingresos, 1, 2)} + ' €'" style="color:var(--accent); font-weight:500;"></td>
+                        <td th:text="${#numbers.formatDecimal(mes.gastos, 1, 2)} + ' €'" style="color:var(--danger); font-weight:500;"></td>
+                        <td th:text="${#numbers.formatDecimal(mes.balance, 1, 2)} + ' €'" th:style="${mes.balance >= 0 ? 'color:var(--accent); font-weight:500;' : 'color:var(--danger); font-weight:500;'}"></td>
                     </tr>
                     <tr th:if="${resumen.size()} == 0">
                         <td colspan="4">No hay movimientos que coincidan con la búsqueda.</td>

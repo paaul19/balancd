@@ -15,12 +15,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.List;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.PrintWriter;
 
 @Controller
 public class PerfilController {
@@ -88,6 +91,31 @@ public class PerfilController {
             gastosPorCategoriaPorMes.put(mesKey, arr);
         }
         model.addAttribute("gastosPorCategoriaPorMes", gastosPorCategoriaPorMes);
+
+        // Balance total real (calculado a partir de todos los movimientos, nunca desincronizado)
+        double balanceTotalReal = encryptedMovimientoService.getBalanceTotal(user);
+        model.addAttribute("balanceTotalReal", balanceTotalReal);
+
+        // Estadísticas rápidas
+        List<EncryptedMovimientoService.MovimientoDTO> todosMovimientos = encryptedMovimientoService.getMovimientosByUserId(user.getId());
+        model.addAttribute("totalMovimientos", todosMovimientos.size());
+        double totalIngresosHistorico = todosMovimientos.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+        double totalGastosHistorico = todosMovimientos.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+        model.addAttribute("totalIngresosHistorico", totalIngresosHistorico);
+        model.addAttribute("totalGastosHistorico", totalGastosHistorico);
+        // Categoría con más gasto acumulado
+        Map<String, Double> gastoPorCategoriaTotal = new HashMap<>();
+        for (EncryptedMovimientoService.MovimientoDTO mov : todosMovimientos) {
+            if (!mov.isIngreso() && mov.getCategoria() != null) {
+                gastoPorCategoriaTotal.merge(mov.getCategoria(), mov.getCantidad(), Double::sum);
+            }
+        }
+        String categoriaTop = gastoPorCategoriaTotal.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+        model.addAttribute("categoriaTop", categoriaTop);
+
         return "perfil";
     }
 
@@ -99,7 +127,36 @@ public class PerfilController {
             return "redirect:/login";
         }
         model.addAttribute("user", user);
+        model.addAttribute("balanceTotalReal", encryptedMovimientoService.getBalanceTotal(user));
         return "ajustes";
+    }
+
+    @GetMapping("/perfil/exportar-csv")
+    public void exportarCsv(HttpSession session, HttpServletResponse response) throws java.io.IOException {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            response.sendRedirect("/login");
+            return;
+        }
+        List<EncryptedMovimientoService.MovimientoDTO> movimientos = encryptedMovimientoService.getMovimientosByUserId(user.getId());
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"balancd-movimientos.csv\"");
+        PrintWriter writer = response.getWriter();
+        writer.write('﻿'); // BOM para que Excel detecte UTF-8
+        writer.println("Fecha;Tipo;Cantidad;Asunto;Categoria;Mes;Anio");
+        for (EncryptedMovimientoService.MovimientoDTO mov : movimientos) {
+            String asunto = mov.getAsunto() == null ? "" : mov.getAsunto().replace(";", ",");
+            String categoria = mov.getCategoria() == null ? "" : mov.getCategoria();
+            writer.printf("%s;%s;%s;%s;%s;%d;%d%n",
+                    mov.getFecha(),
+                    mov.isIngreso() ? "Ingreso" : "Gasto",
+                    String.format(java.util.Locale.forLanguageTag("es"), "%.2f", mov.getCantidad()),
+                    asunto,
+                    categoria,
+                    mov.getMesAsignado(),
+                    mov.getAnioAsignado());
+        }
+        writer.flush();
     }
 
     @PostMapping("/perfil/cambiar-usuario")
@@ -177,11 +234,17 @@ public class PerfilController {
             return "redirect:/login";
         }
         try {
-            BigDecimal balance = new BigDecimal(nuevoBalance.replace(",", "."));
-            user.setBalanceTotal(balance);
-            User actualizado = userService.updateUser(user);
-            // Refrescar user en sesión
-            actualizado = userService.getUserById(user.getId()).orElse(actualizado);
+            double balanceDeseado = new BigDecimal(nuevoBalance.replace(",", ".")).doubleValue();
+            double balanceActual = encryptedMovimientoService.getBalanceTotal(user);
+            double diferencia = balanceDeseado - balanceActual;
+            // Solo crear un movimiento de ajuste si hay una diferencia real (evita ruido por redondeos)
+            if (Math.abs(diferencia) >= 0.01) {
+                boolean ingreso = diferencia > 0;
+                LocalDate hoy = LocalDate.now();
+                encryptedMovimientoService.createMovimiento(user, Math.abs(diferencia), ingreso, "Ajuste de saldo",
+                        hoy, hoy.getMonthValue(), hoy.getYear(), null);
+            }
+            User actualizado = userService.getUserById(user.getId()).orElse(user);
             session.setAttribute("user", actualizado);
             redirectAttributes.addFlashAttribute("success", "Balance total actualizado correctamente.");
         } catch (Exception e) {

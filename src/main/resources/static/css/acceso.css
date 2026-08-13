@@ -7,79 +7,9 @@ body {
   align-items: center;
   justify-content: center;
 }
-.acceso-box {
-  border-radius: 10px;
-  padding: 2.5rem 2rem 2rem 2rem;
-  min-width: 320px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-.acceso-box h2 {
-  margin-bottom: 1.5rem;
-}
-.acceso-box input[type="password"] {
-  padding: 0.7rem 1rem;
-  border-radius: 5px;
-  margin-bottom: 1.2rem;
-  width: 100%;
-  font-size: 1rem;
-}
-.acceso-box button {
-  border-radius: 5px;
-  padding: 0.7rem 1.5rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  align-self: flex-start;
-}
 .error {
-  color: #c00;
+  color: var(--danger);
   margin-bottom: 1rem;
-}
-
-/* Estilos responsive para acceso */
-@media (max-width: 768px) {
-  .acceso-box {
-    min-width: 280px;
-    padding: 2rem 1.5rem 1.5rem 1.5rem;
-  }
-
-  .acceso-box h2 {
-    font-size: 1.5rem;
-  }
-
-  .acceso-box input[type="password"] {
-    padding: 0.8rem;
-    font-size: 16px;
-  }
-
-  .acceso-box button {
-    padding: 0.8rem 1.2rem;
-    font-size: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .acceso-box {
-    min-width: 260px;
-    padding: 1.5rem 1rem 1rem 1rem;
-  }
-
-  .acceso-box h2 {
-    font-size: 1.3rem;
-  }
-
-  .acceso-box input[type="password"] {
-    padding: 0.7rem;
-    font-size: 16px;
-  }
-
-  .acceso-box button {
-    padding: 0.7rem 1rem;
-    font-size: 0.85rem;
-  }
 }
 
 @media (max-width: 600px) {
@@ -92,12 +22,13 @@ body {
 .check-email-box {
     max-width: 400px;
     margin: 60px auto;
-    background: #2d2d2d;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
     padding: 36px 28px;
     text-align: center;
-    animation: fadeIn 0.6s ease-out;
+    animation: fadeIn var(--dur-slow, 0.4s) var(--ease-standard);
 }
 
 .check-email-box img {
@@ -106,37 +37,70 @@ body {
 }
 
 .check-email-box h2 {
-    color: #f4f4f4;
+    color: var(--text-primary);
     font-size: 1.5em;
     margin-bottom: 12px;
+    letter-spacing: var(--tracking-title);
 }
 
 .check-email-box p {
-    color: #cbd5e0;
-    font-size: 1.1em;
+    color: var(--text-secondary);
+    font-size: 1.05em;
     line-height: 1.6;
 }
 
 .check-email-box .email {
-    color: #63b3ed;
+    color: var(--text-primary);
     font-weight: bold;
     word-break: break-all;
 }
 
 .check-email-box .success {
-    color: #38a169;
+    color: var(--accent);
     font-weight: bold;
 }
 
 .check-email-box .error {
-    color: #e53e3e;
+    color: var(--danger);
     font-weight: bold;
     margin-bottom: 12px;
 }
 
 .check-email-box a {
-    color: #63b3ed;
+    color: var(--link-color);
     text-decoration: underline;
+}
+
+.check-email-box form input {
+    width: 90%;
+    padding: 0.75rem 1rem;
+    margin: 12px 0;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--input-border);
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.check-email-box form button,
+.check-email-box .btn-volver {
+    display: inline-block;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 1.75rem;
+    font-size: 1.05em;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease-standard);
+}
+.check-email-box form button:hover,
+.check-email-box .btn-volver:hover {
+    background: var(--button-hover);
 }
 
 @keyframes fadeIn {

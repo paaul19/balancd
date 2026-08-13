@@ -58,7 +58,7 @@
 - Bootstrap
 
 ### Servicios
-- SendGrid (envío de emails)
+- Resend (envío de emails)
 - JWT (tokens)
 - BCrypt (cifrado de contraseñas)
 - AES-256 (cifrado de datos sensibles)

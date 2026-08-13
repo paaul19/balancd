@@ -3,27 +3,34 @@
 <head>
     <style th:fragment="footer-styles">
         :root {
-            --footer-bg: var(--bg-secondary);
-            --footer-icon: #bfc9d1;
-            --footer-icon-active: #00e676;
-            --footer-border: #232b34;
+            --footer-bg: color-mix(in srgb, var(--bg-elevated) 78%, transparent);
+            --footer-icon: var(--text-tertiary);
+            --footer-icon-active: var(--text-primary);
+            --footer-border: var(--border-color);
         }
         .footer-bar {
             position: fixed;
-            left: 0;
-            bottom: 0;
-            width: 100vw;
+            left: 50%;
+            bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+            transform: translateX(-50%);
+            width: calc(100vw - 32px);
+            max-width: 420px;
             background: var(--footer-bg);
+            backdrop-filter: blur(var(--blur-regular, 20px)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--blur-regular, 20px)) saturate(180%);
             display: flex;
             flex-direction: row;
             justify-content: space-around;
             align-items: center;
-            height: 58px;
-            border-top: 1.5px solid var(--footer-border);
+            height: 64px;
+            border: 1px solid var(--footer-border);
+            border-top-color: color-mix(in srgb, var(--footer-border) 60%, white 20%);
+            border-radius: 24px;
             z-index: 1000;
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.18);
+            box-shadow: var(--shadow-lg);
             flex-wrap: nowrap;
-            padding: 0;
+            padding: 0 4px;
+            transition: transform var(--dur-fast, 180ms) var(--ease-standard, ease);
         }
         .footer-btn {
             background: none;
@@ -35,54 +42,63 @@
             color: var(--footer-icon);
             font-size: 13px;
             cursor: pointer;
-            transition: color 0.18s, background 0.18s;
+            transition: color var(--dur-fast, 180ms) var(--ease-standard), background var(--dur-fast, 180ms) var(--ease-standard);
             padding: 0 2px;
-            border-radius: 12px;
+            border-radius: 14px;
             width: 44px;
             height: 44px;
             border: none;
             min-width: 0;
             min-height: 0;
+            text-decoration: none;
         }
         .footer-btn svg {
             margin-bottom: 1px;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             display: block;
         }
         .footer-btn.center {
-            background: none;
-            width: 44px;
-            height: 44px;
+            background: var(--accent);
+            width: 46px;
+            height: 46px;
             margin-top: 0;
-            box-shadow: none;
-            color: var(--footer-icon-active);
+            box-shadow: 0 6px 18px var(--accent-soft);
+            color: #06120a;
             border: none;
-            transition: background 0.18s;
+            transition: transform var(--dur-instant, 100ms) var(--ease-standard), box-shadow var(--dur-fast, 180ms) var(--ease-standard);
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 50%;
+        }
+        .footer-btn.center svg circle,
+        .footer-btn.center svg line {
+            stroke: currentColor !important;
+        }
+        .footer-btn.center:hover {
+            transform: scale(1.06);
         }
         .footer-btn.active, .footer-btn:hover {
             color: var(--footer-icon-active);
-            background: rgba(0,230,118,0.08);
+            background: var(--border-color);
         }
         @media (max-width: 600px) {
             .footer-bar {
-                height: 64px;
-                padding-bottom: env(safe-area-inset-bottom, 22px);
+                height: 62px;
+                width: calc(100vw - 24px);
             }
             .footer-btn, .footer-btn.center {
-                width: 48px;
-                height: 48px;
+                width: 46px;
+                height: 46px;
             }
             .footer-btn.center {
                 padding: 4px !important;
                 box-sizing: border-box;
             }
             .footer-btn svg {
-                width: 26px;
-                height: 26px;
+                width: 22px;
+                height: 22px;
             }
             .footer-btn.center svg {
                 width: 22px;
@@ -103,7 +119,7 @@
         </a>
         <!-- Botón central (+) -->
         <button class="footer-btn center" title="Añadir" data-intro="Añade un ingreso o gasto nuevo." data-step="3" data-position="top">
-            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" stroke="#00e676" stroke-width="2.5"/><line x1="12" y1="8" x2="12" y2="16" stroke="#00e676" stroke-width="2.5" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="#00e676" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" stroke="var(--accent)" stroke-width="2.5"/><line x1="12" y1="8" x2="12" y2="16" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/></svg>
         </button>
         <!-- Movimientos recurrentes -->
         <a href="/movimientos/recurrentes" class="footer-btn" title="Recurrentes" data-intro="Gestiona tus movimientos recurrentes." data-step="4" data-position="top">

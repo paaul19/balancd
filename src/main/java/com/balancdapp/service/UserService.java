@@ -110,7 +110,7 @@ public class UserService {
         verificationToken.setToken(token);
         verificationToken.setUser(savedUser);
         verificationTokenRepository.save(verificationToken);
-        String verificationUrl = "https://balancd.site/verify?token=" + token;
+        String verificationUrl = "https://balancd.isnotart.es/verify?token=" + token;
         try {
             emailService.sendVerificationEmail(savedUser.getEmail(), verificationUrl);
         } catch (Exception e) {
@@ -143,7 +143,7 @@ public class UserService {
         resetToken.setToken(token);
         resetToken.setUser(user);
         verificationTokenRepository.save(resetToken);
-        String resetUrl = "https://balancd.site/reset-password?token=" + token;
+        String resetUrl = "https://balancd.isnotart.es/reset-password?token=" + token;
         try {
             emailService.sendPasswordResetEmail(user.getEmail(), resetUrl);
         } catch (Exception e) {

@@ -2,26 +2,22 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Movimientos Recurrentes</title>
-    <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
-    <link rel="apple-touch-icon" href="/images/logo-app.png">
-    <meta name="theme-color" content="#2D2D2D">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="balanc*d">
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
 
     <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <!-- Incluir estilos del header y footer -->
     <style th:replace="~{fragments/header :: header-styles}"></style>
     <link rel="stylesheet" href="/css/recurrentes.css">
-    <script src="/js/recurrentes.js"></script>
+    <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
 
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <!-- Script para aplicar tema inmediatamente -->
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+    <script src="/js/recurrentes.js"></script>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
     <!-- Header -->
@@ -34,7 +30,7 @@
             <div th:if="${#lists.isEmpty(recurrentes)}" class="empty-state">
                 <h3>No hay movimientos recurrentes</h3>
                 <p>Aún no has creado ningún movimiento recurrente. Los movimientos recurrentes te permiten automatizar gastos e ingresos que se repiten regularmente.</p>
-                <a th:href="@{/movimientos}" class="btn">Crear mi primer recurrente</a>
+                <button type="button" id="btnCrearPrimerRecurrente" class="btn">Crear mi primer recurrente</button>
             </div>
             
             <ul class="recurrentes-list" th:if="${!#lists.isEmpty(recurrentes)}">
@@ -183,7 +179,7 @@
             <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres borrar este movimiento recurrente?</div>
             <div style="display:flex; gap:1rem; justify-content:flex-end;">
                 <button id="cancelarEliminarRecurrente" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
-                <button id="confirmarEliminarRecurrente" style="background:#e53935; color:#fff;">Eliminar</button>
+                <button id="confirmarEliminarRecurrente" style="background:var(--danger); color:#fff;">Eliminar</button>
             </div>
         </div>
     </div>

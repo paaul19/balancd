@@ -56,10 +56,11 @@ public class MovimientoService {
         User user = movimiento.getUser();
         Double cantidadDescifrada = dataEncryptionService.decryptNumber(movimiento.getCantidadCifrada());
         BigDecimal cantidad = cantidadDescifrada == null ? BigDecimal.ZERO : BigDecimal.valueOf(cantidadDescifrada);
+        BigDecimal balanceActual = user.getBalanceTotal() == null ? BigDecimal.ZERO : user.getBalanceTotal();
         if (movimiento.isIngreso()) {
-            user.setBalanceTotal(user.getBalanceTotal().add(cantidad));
+            user.setBalanceTotal(balanceActual.add(cantidad));
         } else {
-            user.setBalanceTotal(user.getBalanceTotal().subtract(cantidad));
+            user.setBalanceTotal(balanceActual.subtract(cantidad));
         }
         userRepository.save(user);
         return saved;
