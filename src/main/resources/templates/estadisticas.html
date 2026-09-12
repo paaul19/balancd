@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Estadísticas</title>
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
+
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/estadisticas.css">
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="main-content">
+    <div class="estadisticas-wrap">
+        <div class="estadisticas-topbar">
+            <a href="/perfil" class="estadisticas-back-btn" title="Volver a Perfil">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h1 class="estadisticas-titulo">Estadísticas</h1>
+        </div>
+
+        <div class="month-nav">
+            <a th:href="@{/estadisticas(mes=${mesAnterior.monthValue},anio=${mesAnterior.year})}" class="month-nav-arrow" title="Mes anterior">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <span class="current-month" th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
+            <a th:href="@{/estadisticas(mes=${mesSiguiente.monthValue},anio=${mesSiguiente.year})}" class="month-nav-arrow" title="Mes siguiente">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </div>
+
+        <div th:if="${totalGastado > 0}">
+            <div class="pie-wrap">
+                <div class="pie-chart" th:style="'background: conic-gradient(' + ${gradiente} + ');'">
+                    <div class="pie-chart-hole">
+                        <span class="pie-chart-total-label">Gastado</span>
+                        <span class="pie-chart-total-value js-money" th:text="${moneyFormatter.format(totalGastado)}"></span>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="categoria-legend">
+                <li th:each="s : ${segmentos}">
+                    <span class="categoria-legend-dot" th:style="'background:' + ${s.color} + ';'"></span>
+                    <span class="categoria-legend-icon" th:insert="~{fragments/category-icons :: icon(${s.icono})}"></span>
+                    <span class="categoria-legend-nombre" th:text="${s.nombre}"></span>
+                    <span class="categoria-legend-pct" th:text="${#numbers.formatDecimal(s.porcentaje, 1, 1)} + '%'"></span>
+                    <span class="categoria-legend-monto js-money" th:text="${moneyFormatter.format(s.monto)}"></span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="estadisticas-empty" th:if="${totalGastado == 0}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12A9 9 0 1 1 12 3" stroke-linecap="round"/><path d="M21 12A9 9 0 0 0 12 3v9z" stroke-linejoin="round"/></svg>
+            <p>No tienes gastos registrados este mes.</p>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:replace="~{fragments/header :: header-script}"></script>
+<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+</body>
+</html>

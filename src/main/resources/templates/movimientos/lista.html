@@ -29,10 +29,16 @@
     <div class="main-content">
         <div class="dashboard-wrap">
 
+            <!-- Saludo según la hora local del dispositivo (lo rellena lista.js) -->
+            <div class="saludo-usuario" id="saludoUsuario" th:attr="data-username=${user.username}"></div>
+
             <!-- Tarjeta de balance principal -->
             <div class="balance-card">
                 <div class="balance-card-top">
-                    <span class="balance-label">Balance total</span>
+                    <a href="/cuentas" class="balance-label-link">
+                        <span class="balance-label">Balance total</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
                     <div class="acciones-mes">
                         <form th:action="@{/movimientos}" method="get">
                             <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
@@ -60,7 +66,7 @@
                         </form>
                     </div>
                 </div>
-                <div class="balance-amount" th:classappend="${balanceTotalReal < 0} ? 'negative'" th:text="${#numbers.formatDecimal(balanceTotalReal, 1, 2)} + ' €'"></div>
+                <div class="balance-amount js-money" th:classappend="${balanceTotalReal < 0} ? 'negative'" th:text="${moneyFormatter.format(balanceTotalReal)}"></div>
 
                 <!-- Navegación de meses -->
                 <div class="month-nav">
@@ -91,15 +97,15 @@
                 <div class="stat-chips">
                     <div class="stat-chip">
                         <span class="stat-chip-label">Ingresos</span>
-                        <span class="stat-chip-value positive" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span>
+                        <span class="stat-chip-value positive js-money" th:text="${moneyFormatter.format(totalIngresos)}"></span>
                     </div>
                     <div class="stat-chip">
                         <span class="stat-chip-label">Gastos</span>
-                        <span class="stat-chip-value negative" th:text="${#numbers.formatDecimal(totalGastos, 1, 2)} + ' €'"></span>
+                        <span class="stat-chip-value negative js-money" th:text="${moneyFormatter.format(totalGastos)}"></span>
                     </div>
                     <div class="stat-chip">
                         <span class="stat-chip-label">Balance</span>
-                        <span class="stat-chip-value" th:classappend="${balance >= 0 ? 'positive' : 'negative'}" th:text="${#numbers.formatDecimal(balance, 1, 2)} + ' €'"></span>
+                        <span class="stat-chip-value js-money" th:classappend="${balance >= 0 ? 'positive' : 'negative'}" th:text="${moneyFormatter.format(balance)}"></span>
                     </div>
                 </div>
             </div>
@@ -117,28 +123,43 @@
                 </form>
             </div>
 
+            <!-- Filtro por cuenta -->
+            <form th:if="${!#lists.isEmpty(cuentas)}" th:action="@{/movimientos}" method="get" class="cuenta-filter-bar">
+                <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
+                <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
+                <input type="hidden" name="busqueda" th:value="${busqueda}" />
+                <select name="cuenta" onchange="this.form.submit()">
+                    <option value="" th:selected="${cuentaSeleccionada == null}">Todas las cuentas</option>
+                    <option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${cuentaSeleccionada != null and cuentaSeleccionada == c.id}"></option>
+                </select>
+            </form>
+
             <h2 class="section-title">Actividad reciente</h2>
 
             <ul id="movimientos-list">
-                <li class="movimiento-item" th:each="mov,iter : ${movimientos}" th:data-index="${iter.index}" th:data-id="${mov.id}" th:data-fecha="${#temporals.format(mov.fecha, 'yyyy-MM-dd')}" th:attr="data-asunto=${mov.asunto},data-categoria=${mov.categoria}" style="display:none;">
+                <li class="movimiento-item" th:each="mov,iter : ${movimientos}" th:data-index="${iter.index}" th:data-id="${mov.id}" th:data-fecha="${#temporals.format(mov.fecha, 'yyyy-MM-dd')}" th:attr="data-asunto=${mov.asunto},data-categoria-id=${mov.categoriaId},data-subcategoria-id=${mov.subcategoriaId},data-cuenta-id=${mov.cuentaId}" style="display:none;">
                     <div class="movimiento-info">
                         <span class="mov-icon" th:classappend="${mov.ingreso} ? 'mov-icon-ingreso' : 'mov-icon-gasto'">
                             <svg th:if="${mov.ingreso}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M6 11l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            <th:block th:if="${!mov.ingreso}" th:replace="~{fragments/category-icons :: icon(${mov.categoria})}"></th:block>
+                            <th:block th:if="${!mov.ingreso}" th:replace="~{fragments/category-icons :: icon(${mov.categoriaIcono})}"></th:block>
                         </span>
                         <div class="mov-details">
                             <span class="mov-title" th:text="${mov.asunto != null and mov.asunto != ''} ? ${mov.asunto} : 'Sin descripción'"></span>
                             <span class="mov-subtitle">
-                                <span th:if="${mov.categoria != null}" th:switch="${mov.categoria}"><span th:case="'TRANSPORTE'">Transporte</span><span th:case="'COMIDA'">Comida</span><span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span><span th:case="'HOGAR'">Hogar</span><span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span><span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span><span th:case="'COMPRAS'">Compras</span><span th:case="'COMPRAS_ONLINE'">Compras Online</span><span th:case="'SUSCRIPCION'">Suscripción</span><span th:case="*">[[${mov.categoria}]]</span></span>
-                                <span th:if="${mov.categoria == null}">Sin categoría</span>
+                                <span th:if="${mov.categoriaNombre != null}" th:text="${mov.subcategoriaNombre != null} ? (${mov.categoriaNombre} + ' · ' + ${mov.subcategoriaNombre}) : ${mov.categoriaNombre}"></span>
+                                <span th:if="${mov.categoriaNombre == null}">Sin categoría</span>
                                 <span> · </span>
                                 <span th:text="${#temporals.format(mov.fecha, 'dd/MM/yyyy')}"></span>
+                                <th:block th:if="${mov.cuentaNombre != null}">
+                                    <span> · </span>
+                                    <span th:text="${mov.cuentaNombre}"></span>
+                                </th:block>
                             </span>
                         </div>
                     </div>
                     <div class="movimiento-actions">
                         <span class="mov-amount">
-                            <span class="mov-sign" th:text="${mov.ingreso} ? '+' : '-'"></span><span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'"><span th:text="${#numbers.formatDecimal(mov.cantidad, 1, 2)} + ' €'"></span></span>
+                            <span class="mov-sign" th:text="${mov.ingreso} ? '+' : '-'"></span><span th:classappend="${mov.ingreso} ? 'cantidad-ingreso' : 'cantidad-gasto'"><span class="js-money" th:text="${moneyFormatter.format(mov.cantidad)}"></span></span>
                         </span>
                         <div class="movimiento-menu">
                             <button class="menu-trigger">
@@ -155,6 +176,31 @@
             </ul>
             <div id="carousel-controls" style="display:grid; grid-template-columns: 1fr auto 1fr; justify-items:center; align-items:center; gap:0.7rem; margin-top:0.7rem; min-height:28px; width:100%;"></div>
 
+            <!-- Transferencias del mes: no cuentan como ingreso/gasto, se muestran aparte -->
+            <div th:if="${!#lists.isEmpty(transferenciasMes)}" class="transferencias-mes">
+                <h2 class="section-title">Transferencias</h2>
+                <ul class="transferencias-list">
+                    <li class="transferencia-item" th:each="t : ${transferenciasMes}">
+                        <span class="transferencia-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 7h13l-4-4M17 17H4l4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <div class="transferencia-info">
+                            <span class="transferencia-cuentas" th:text="${t.cuentaOrigenNombre} + ' → ' + ${t.cuentaDestinoNombre}"></span>
+                            <span class="transferencia-subtitle">
+                                <span th:if="${t.descripcion != null and t.descripcion != ''}" th:text="${t.descripcion} + ' · '"></span>
+                                <span th:text="${#temporals.format(t.fecha, 'dd/MM/yyyy')}"></span>
+                            </span>
+                        </div>
+                        <span class="transferencia-importe js-money" th:text="${moneyFormatter.format(t.importe)}"></span>
+                        <form th:action="@{'/movimientos/transferencias/delete/' + ${t.id}}" method="post" style="margin:0;">
+                            <button type="submit" class="transferencia-delete" title="Eliminar transferencia">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+
             <!-- Modal para editar movimiento -->
             <div id="editModal" class="modal">
                 <div class="modal-content">
@@ -163,8 +209,12 @@
                     </div>
                     <form id="editForm" class="modal-form" method="post">
                         <div class="form-group">
-                            <label for="editCantidad">Cantidad (€)</label>
+                            <label for="editCantidad">Cantidad (<span th:text="${moneyFormatter.simbolo}">€</span>)</label>
                             <input type="number" id="editCantidad" name="cantidad" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCuenta">Cuenta</label>
+                            <select id="editCuenta" name="cuentaId" required></select>
                         </div>
                         <div class="form-group">
                             <label for="editAsunto">Asunto (opcional)</label>
@@ -183,18 +233,11 @@
                         </div>
                         <div class="form-group">
                             <label for="editCategoria">Categoría</label>
-                            <select id="editCategoria" name="categoria">
-                                <option value="" selected>Sin categoría</option>
-                                <option value="TRANSPORTE">Transporte</option>
-                                <option value="COMIDA">Comida</option>
-                                <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
-                                <option value="HOGAR">Hogar</option>
-                                <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
-                                <option value="EDUCACION_CURSOS">Educación y Cursos</option>
-                                <option value="COMPRAS">Compras</option>
-                                <option value="COMPRAS_ONLINE">Compras Online</option>
-                                <option value="SUSCRIPCION">Suscripción</option>
-                            </select>
+                            <select id="editCategoria" name="categoriaId" data-tipo="gasto"></select>
+                        </div>
+                        <div class="form-group" id="editSubcategoriaGroup" style="display:none;">
+                            <label for="editSubcategoria">Subcategoría</label>
+                            <select id="editSubcategoria" name="subcategoriaId"></select>
                         </div>
                         <div class="modal-actions">
                             <button type="button" class="btn-cancel" id="btnCancelar">Cancelar</button>
@@ -235,8 +278,11 @@
     <script th:replace="~{fragments/header :: header-script}"></script>
 <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
 <script src="/js/tutorial.js"></script>
-<script>
+<script th:inline="javascript">
     window.tutorialVisto = [[${tutorialVisto}]];
+    window.cuentasUsuario = /*[[${cuentas}]]*/ [];
+    window.categoriasGasto = /*[[${categoriasGasto}]]*/ [];
+    window.categoriasIngreso = /*[[${categoriasIngreso}]]*/ [];
 </script>
 </body>
 </html>

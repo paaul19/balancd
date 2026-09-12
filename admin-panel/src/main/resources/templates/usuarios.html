@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios · Panel de administración</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="topbar">
+        <span class="topbar-title">balanc*d · Administración</span>
+        <form th:action="@{/logout}" method="post" style="margin:0;">
+            <button type="submit" class="topbar-logout" style="background:none;">Cerrar sesión</button>
+        </form>
+    </div>
+
+    <div class="main">
+        <div th:if="${success}" class="message success" th:text="${success}"></div>
+        <div th:if="${error}" class="message error" th:text="${error}"></div>
+
+        <form th:action="@{/usuarios}" method="get" class="search-form">
+            <input type="text" name="q" th:value="${q}" placeholder="Buscar por usuario o email...">
+            <button type="submit">Buscar</button>
+        </form>
+
+        <div class="users-table-wrap">
+            <table th:if="${!usuarios.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Email</th>
+                        <th>Verificado</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u : ${usuarios}" th:classappend="${u.baneado} ? 'baneado' : ''">
+                        <td th:text="${u.id}"></td>
+                        <td th:text="${u.username}"></td>
+                        <td th:text="${u.email}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${u.verified} ? 'ok' : 'no'" th:text="${u.verified} ? 'Sí' : 'No'"></span>
+                        </td>
+                        <td>
+                            <span class="badge baneado" th:if="${u.baneado}">Baneado</span>
+                            <span class="badge ok" th:unless="${u.baneado}">Activo</span>
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                <form th:action="@{'/usuarios/' + ${u.id} + '/verificar'}" method="post">
+                                    <input type="hidden" name="q" th:value="${q}">
+                                    <button type="submit" th:text="${u.verified} ? 'Desverificar' : 'Verificar'"></button>
+                                </form>
+                                <form th:action="@{'/usuarios/' + ${u.id} + '/banear'}" method="post">
+                                    <input type="hidden" name="q" th:value="${q}">
+                                    <button type="submit" class="danger" th:text="${u.baneado} ? 'Desbanear' : 'Banear'"></button>
+                                </form>
+                                <form th:action="@{'/usuarios/' + ${u.id} + '/eliminar'}" method="post"
+                                      onsubmit="return confirm('¿Eliminar la cuenta de ' + this.dataset.username + ' de forma permanente? Se borrarán también todos sus movimientos, cuentas y datos. Esta acción no se puede deshacer.');"
+                                      th:data-username="${u.username}">
+                                    <input type="hidden" name="q" th:value="${q}">
+                                    <button type="submit" class="danger delete-btn">Eliminar</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="empty-state" th:if="${usuarios.isEmpty()}">No hay usuarios que coincidan con la búsqueda.</div>
+        </div>
+    </div>
+</body>
+</html>

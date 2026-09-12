@@ -1,8 +1,14 @@
 package com.balancdapp.service;
 
+import com.balancdapp.model.Categoria;
+import com.balancdapp.model.Cuenta;
 import com.balancdapp.model.MovimientoRecurrente;
+import com.balancdapp.model.Subcategoria;
+import com.balancdapp.model.TipoCategoria;
 import com.balancdapp.model.User;
+import com.balancdapp.repository.CategoriaRepository;
 import com.balancdapp.repository.MovimientoRecurrenteRepository;
+import com.balancdapp.repository.SubcategoriaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +25,41 @@ public class EncryptedMovimientoRecurrenteService {
     @Autowired
     private DataEncryptionService encryptionService;
 
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private SubcategoriaRepository subcategoriaRepository;
+
+    private record CategoriaResuelta(Categoria categoria, Subcategoria subcategoria) {}
+
+    private CategoriaResuelta resolverCategoria(boolean ingreso, Long categoriaId, Long subcategoriaId, User user) {
+        if (categoriaId == null) {
+            return new CategoriaResuelta(null, null);
+        }
+        Categoria categoria = categoriaRepository.findById(categoriaId).orElse(null);
+        TipoCategoria tipoEsperado = ingreso ? TipoCategoria.INCOME : TipoCategoria.EXPENSE;
+        boolean pertenece = categoria != null && (categoria.getUser() == null || categoria.getUser().getId().equals(user.getId()));
+        if (categoria == null || categoria.getTipo() != tipoEsperado || !pertenece) {
+            return new CategoriaResuelta(null, null);
+        }
+        Subcategoria sub = null;
+        if (subcategoriaId != null) {
+            Subcategoria candidata = subcategoriaRepository.findById(subcategoriaId).orElse(null);
+            if (candidata != null && candidata.getCategoria().getId().equals(categoria.getId())) {
+                sub = candidata;
+            }
+        }
+        return new CategoriaResuelta(categoria, sub);
+    }
+
     /**
      * Crea un movimiento recurrente con datos cifrados
      */
-    public MovimientoRecurrente createMovimientoRecurrente(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, LocalDate fechaFin, String categoria) {
+    public MovimientoRecurrente createMovimientoRecurrente(User user, Cuenta cuenta, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, LocalDate fechaFin, Long categoriaId, Long subcategoriaId) {
         MovimientoRecurrente recurrente = new MovimientoRecurrente();
         recurrente.setUser(user);
+        recurrente.setCuenta(cuenta);
         recurrente.setIngreso(ingreso);
         recurrente.setFechaInicio(fechaInicio);
         recurrente.setFrecuencia(frecuencia);
@@ -35,16 +70,9 @@ public class EncryptedMovimientoRecurrenteService {
         // Cifrar datos sensibles
         recurrente.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         recurrente.setAsuntoCifrado(encryptionService.encrypt(asunto));
-        // Asignar categoría si viene
-        if (categoria != null && !categoria.isBlank()) {
-            try {
-                recurrente.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
-            } catch (IllegalArgumentException e) {
-                recurrente.setCategoria(null);
-            }
-        } else {
-            recurrente.setCategoria(null);
-        }
+        CategoriaResuelta resuelta = resolverCategoria(ingreso, categoriaId, subcategoriaId, user);
+        recurrente.setCategoria(resuelta.categoria());
+        recurrente.setSubcategoria(resuelta.subcategoria());
         return movimientoRecurrenteRepository.save(recurrente);
     }
 
@@ -71,22 +99,16 @@ public class EncryptedMovimientoRecurrenteService {
     /**
      * Actualiza un movimiento recurrente con datos cifrados
      */
-    public void updateMovimientoRecurrente(MovimientoRecurrente recurrente, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia, String categoria) {
+    public void updateMovimientoRecurrente(MovimientoRecurrente recurrente, Cuenta cuenta, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia, Long categoriaId, Long subcategoriaId) {
+        recurrente.setCuenta(cuenta);
         recurrente.setIngreso(ingreso);
         recurrente.setFechaInicio(fechaInicio);
         recurrente.setFrecuencia(frecuencia);
         recurrente.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         recurrente.setAsuntoCifrado(encryptionService.encrypt(asunto));
-        // Actualizar categoría
-        if (categoria != null && !categoria.isBlank()) {
-            try {
-                recurrente.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
-            } catch (IllegalArgumentException e) {
-                recurrente.setCategoria(null);
-            }
-        } else {
-            recurrente.setCategoria(null);
-        }
+        CategoriaResuelta resuelta = resolverCategoria(ingreso, categoriaId, subcategoriaId, recurrente.getUser());
+        recurrente.setCategoria(resuelta.categoria());
+        recurrente.setSubcategoria(resuelta.subcategoria());
         movimientoRecurrenteRepository.save(recurrente);
     }
 
@@ -115,7 +137,19 @@ public class EncryptedMovimientoRecurrenteService {
         dto.setFechaFin(recurrente.getFechaFin());
         dto.setActivo(recurrente.isActivo());
         dto.setUltimaFechaEjecutada(recurrente.getUltimaFechaEjecutada());
-        dto.setCategoria(recurrente.getCategoria() != null ? recurrente.getCategoria().name() : null);
+        if (recurrente.getCategoria() != null) {
+            dto.setCategoriaId(recurrente.getCategoria().getId());
+            dto.setCategoriaNombre(recurrente.getCategoria().getNombre());
+            dto.setCategoriaIcono(recurrente.getCategoria().getIcono());
+        }
+        if (recurrente.getSubcategoria() != null) {
+            dto.setSubcategoriaId(recurrente.getSubcategoria().getId());
+            dto.setSubcategoriaNombre(recurrente.getSubcategoria().getNombre());
+        }
+        if (recurrente.getCuenta() != null) {
+            dto.setCuentaId(recurrente.getCuenta().getId());
+            dto.setCuentaNombre(recurrente.getCuenta().getNombre());
+        }
         return dto;
     }
 
@@ -133,7 +167,13 @@ public class EncryptedMovimientoRecurrenteService {
         private LocalDate fechaFin;
         private boolean activo;
         private LocalDate ultimaFechaEjecutada;
-        private String categoria;
+        private Long categoriaId;
+        private String categoriaNombre;
+        private String categoriaIcono;
+        private Long subcategoriaId;
+        private String subcategoriaNombre;
+        private Long cuentaId;
+        private String cuentaNombre;
 
         // Getters y setters
         public Long getId() { return id; }
@@ -166,8 +206,26 @@ public class EncryptedMovimientoRecurrenteService {
         public LocalDate getUltimaFechaEjecutada() { return ultimaFechaEjecutada; }
         public void setUltimaFechaEjecutada(LocalDate ultimaFechaEjecutada) { this.ultimaFechaEjecutada = ultimaFechaEjecutada; }
 
-        public String getCategoria() { return categoria; }
-        public void setCategoria(String categoria) { this.categoria = categoria; }
+        public Long getCategoriaId() { return categoriaId; }
+        public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+
+        public String getCategoriaNombre() { return categoriaNombre; }
+        public void setCategoriaNombre(String categoriaNombre) { this.categoriaNombre = categoriaNombre; }
+
+        public String getCategoriaIcono() { return categoriaIcono; }
+        public void setCategoriaIcono(String categoriaIcono) { this.categoriaIcono = categoriaIcono; }
+
+        public Long getSubcategoriaId() { return subcategoriaId; }
+        public void setSubcategoriaId(Long subcategoriaId) { this.subcategoriaId = subcategoriaId; }
+
+        public String getSubcategoriaNombre() { return subcategoriaNombre; }
+        public void setSubcategoriaNombre(String subcategoriaNombre) { this.subcategoriaNombre = subcategoriaNombre; }
+
+        public Long getCuentaId() { return cuentaId; }
+        public void setCuentaId(Long cuentaId) { this.cuentaId = cuentaId; }
+
+        public String getCuentaNombre() { return cuentaNombre; }
+        public void setCuentaNombre(String cuentaNombre) { this.cuentaNombre = cuentaNombre; }
     }
 
     /**
@@ -197,14 +255,4 @@ public class EncryptedMovimientoRecurrenteService {
             movimientoRecurrenteRepository.delete(recurrente);
         }
     }
-
-    /**
-     * Modifica un movimiento recurrente
-     */
-    public void modificarMovimientoRecurrente(Long id, User user, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia) {
-        MovimientoRecurrente recurrente = movimientoRecurrenteRepository.findById(id).orElse(null);
-        if (recurrente != null && recurrente.getUser().getId().equals(user.getId())) {
-            updateMovimientoRecurrente(recurrente, cantidad, asunto, ingreso, fechaInicio, frecuencia, null);
-        }
-    }
-} 
+}

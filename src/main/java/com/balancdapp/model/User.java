@@ -35,6 +35,14 @@ public class User {
     @Column(name = "balance_total", nullable = true)
     private BigDecimal balanceTotal;
 
+    /** Divisa preferida del usuario (solo preferencia visual guardada; no recalcula importes). */
+    @Column(name = "moneda", nullable = false)
+    private String moneda = "EUR";
+
+    /** Gestionado desde el panel de administración externo (puerto 9093). */
+    @Column(name = "baneado", nullable = false)
+    private boolean baneado = false;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Movimiento> movimientos;
 
@@ -59,6 +67,12 @@ public class User {
 
     public BigDecimal getBalanceTotal() { return balanceTotal; }
     public void setBalanceTotal(BigDecimal balanceTotal) { this.balanceTotal = balanceTotal; }
+
+    public String getMoneda() { return moneda; }
+    public void setMoneda(String moneda) { this.moneda = moneda; }
+
+    public boolean isBaneado() { return baneado; }
+    public void setBaneado(boolean baneado) { this.baneado = baneado; }
 
     public List<Movimiento> getMovimientos() { return movimientos; }
     public void setMovimientos(List<Movimiento> movimientos) { this.movimientos = movimientos; }

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Objetivos y presupuestos</title>
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
+
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/objetivos.css">
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/spring.js"></script>
+    <script src="/js/footer-modals.js"></script>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="main-content">
+        <div class="objetivos-wrap">
+            <div th:if="${error}" class="objetivos-message error" th:text="${error}"></div>
+            <div th:if="${success}" class="objetivos-message success" th:text="${success}"></div>
+
+            <!-- ===== Presupuestos mensuales ===== -->
+            <div class="objetivos-section-header">
+                <h1>Presupuestos</h1>
+                <button type="button" class="btn-nuevo" id="btnNuevoPresupuesto">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+                    Nuevo presupuesto
+                </button>
+            </div>
+            <p class="objetivos-section-sub">Límite de gasto mensual por categoría, subcategoría y/o un concepto de texto (p. ej. "perfumes"). Se aplica cada mes automáticamente.</p>
+
+            <ul class="presupuestos-list" th:if="${!#lists.isEmpty(presupuestos)}">
+                <li th:each="p : ${presupuestos}" class="presupuesto-card" th:classappend="${p.excedido} ? 'excedido'">
+                    <div class="presupuesto-top">
+                        <span class="presupuesto-icon" th:insert="~{fragments/category-icons :: icon(${p.categoriaIcono})}"></span>
+                        <div class="presupuesto-info">
+                            <span class="presupuesto-nombre" th:text="${p.etiqueta}"></span>
+                            <span class="presupuesto-cifras">
+                                <span class="js-money" th:text="${moneyFormatter.format(p.gastado)}"></span>
+                                <span class="presupuesto-de"> de </span>
+                                <span class="js-money" th:text="${moneyFormatter.format(p.limite)}"></span>
+                            </span>
+                        </div>
+                        <div class="presupuesto-actions">
+                            <button type="button" class="btn-editar-presupuesto"
+                                    th:data-id="${p.id}"
+                                    th:data-categoria-id="${p.categoriaId}"
+                                    th:data-subcategoria-id="${p.subcategoriaId}"
+                                    th:data-concepto="${p.concepto}"
+                                    th:data-limite="${p.limite}"
+                                    title="Editar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button type="button" class="btn-eliminar-presupuesto"
+                                    th:data-action="@{'/objetivos/presupuestos/' + ${p.id} + '/eliminar'}"
+                                    title="Eliminar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-8 0v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="progreso-track">
+                        <div class="progreso-fill" th:style="'width:' + ${p.porcentaje} + '%'"></div>
+                    </div>
+                    <span class="presupuesto-restante" th:if="${!p.excedido}">
+                        Te quedan <span class="js-money" th:text="${moneyFormatter.format(p.restante)}"></span> este mes
+                    </span>
+                    <span class="presupuesto-restante excedido-texto" th:if="${p.excedido}">
+                        Te has pasado en <span class="js-money" th:text="${moneyFormatter.format(-p.restante)}"></span>
+                    </span>
+                </li>
+            </ul>
+            <div th:if="${#lists.isEmpty(presupuestos)}" class="objetivos-empty">
+                No tienes presupuestos activos. Crea uno para controlar cuánto gastas cada mes en una categoría.
+            </div>
+
+            <!-- ===== Objetivos de ahorro ===== -->
+            <div class="objetivos-section-header objetivos-section-header--metas">
+                <h1>Objetivos de ahorro</h1>
+                <button type="button" class="btn-nuevo" id="btnNuevoObjetivo" th:disabled="${#lists.isEmpty(cuentas)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+                    Nuevo objetivo
+                </button>
+            </div>
+            <p class="objetivos-section-sub">El progreso se calcula con el saldo real de la cuenta que elijas.</p>
+
+            <ul class="metas-list" th:if="${!#lists.isEmpty(objetivos)}">
+                <li th:each="o : ${objetivos}" class="meta-card" th:classappend="${o.completado} ? 'completado'">
+                    <div class="meta-top">
+                        <div class="meta-info">
+                            <span class="meta-nombre" th:text="${o.nombre}"></span>
+                            <span class="meta-cuenta" th:text="${o.cuentaNombre} + (${o.fechaLimite != null} ? ' · antes del ' + ${#temporals.format(o.fechaLimite, 'dd/MM/yyyy')} : '')"></span>
+                        </div>
+                        <div class="meta-actions">
+                            <button type="button" class="btn-editar-meta"
+                                    th:data-id="${o.id}"
+                                    th:data-nombre="${o.nombre}"
+                                    th:data-cuenta-id="${o.cuentaId}"
+                                    th:data-objetivo="${o.objetivo}"
+                                    th:data-fecha-limite="${o.fechaLimite}"
+                                    title="Editar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                            <button type="button" class="btn-eliminar-meta"
+                                    th:data-action="@{'/objetivos/metas/' + ${o.id} + '/eliminar'}"
+                                    title="Eliminar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2m-8 0v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="progreso-track">
+                        <div class="progreso-fill progreso-fill--meta" th:style="'width:' + ${o.porcentaje} + '%'"></div>
+                    </div>
+                    <span class="meta-cifras">
+                        <span class="js-money" th:text="${moneyFormatter.format(o.saldoActual)}"></span>
+                        <span class="presupuesto-de"> de </span>
+                        <span class="js-money" th:text="${moneyFormatter.format(o.objetivo)}"></span>
+                        <span th:if="${o.completado}" class="meta-badge-completado">¡Conseguido!</span>
+                    </span>
+                </li>
+            </ul>
+            <div th:if="${#lists.isEmpty(objetivos)}" class="objetivos-empty">
+                No tienes objetivos de ahorro. Crea uno para hacer seguimiento de una meta ligada a una de tus cuentas.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal crear presupuesto -->
+    <div id="presupuestoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="presupuestoModalTitle">Nuevo presupuesto</h3>
+                <button type="button" class="modal-close" id="closePresupuestoModal" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="presupuestoForm" class="modal-form" th:action="@{/objetivos/presupuestos}" method="post">
+                <p class="modal-hint">Indica una categoría, un concepto, o ambos a la vez.</p>
+                <div class="form-group">
+                    <label for="presupuestoCategoria">Categoría (opcional)</label>
+                    <select id="presupuestoCategoria" name="categoriaId" data-tipo="gasto"></select>
+                </div>
+                <div class="form-group" id="presupuestoSubcategoriaGroup" style="display:none;">
+                    <label for="presupuestoSubcategoria">Subcategoría</label>
+                    <select id="presupuestoSubcategoria" name="subcategoriaId"></select>
+                </div>
+                <div class="form-group">
+                    <label for="presupuestoConcepto">Concepto (opcional)</label>
+                    <input type="text" id="presupuestoConcepto" name="concepto" maxlength="50" placeholder="Ej. perfumes">
+                </div>
+                <div class="form-group">
+                    <label for="presupuestoLimite">Límite mensual (<span th:text="${moneyFormatter.simbolo}">€</span>)</label>
+                    <input type="number" id="presupuestoLimite" name="limite" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="btnCancelarPresupuesto">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal crear/editar objetivo -->
+    <div id="objetivoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="objetivoModalTitle">Nuevo objetivo</h3>
+                <button type="button" class="modal-close" id="closeObjetivoModal" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="objetivoForm" class="modal-form" th:action="@{/objetivos/metas}" method="post">
+                <div class="form-group">
+                    <label for="objetivoNombre">Nombre del objetivo</label>
+                    <input type="text" id="objetivoNombre" name="nombre" maxlength="100" required placeholder="Ej. Viaje a Japón">
+                </div>
+                <div class="form-group">
+                    <label for="objetivoCuenta">Cuenta</label>
+                    <select id="objetivoCuenta" name="cuentaId" required>
+                        <option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.nombre}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="objetivoImporte">Cantidad objetivo (<span th:text="${moneyFormatter.simbolo}">€</span>)</label>
+                    <input type="number" id="objetivoImporte" name="objetivo" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="objetivoFechaLimite">Fecha límite (opcional)</label>
+                    <input type="date" id="objetivoFechaLimite" name="fechaLimite">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="btnCancelarObjetivo">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal confirmación de eliminación (compartido) -->
+    <div id="modalConfirmarEliminarObjetivos" class="modal">
+        <div class="modal-content" style="max-width:340px;">
+            <p style="margin:0 0 1.2rem;">¿Seguro que quieres eliminarlo?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelarEliminarObjetivos">Cancelar</button>
+                <button type="button" class="btn-danger" id="confirmarEliminarObjetivos">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:replace="~{fragments/header :: header-script}"></script>
+    <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+    <script th:inline="javascript">
+        window.categoriasGasto = /*[[${categoriasGasto}]]*/ [];
+    </script>
+    <script src="/js/objetivos.js"></script>
+</body>
+</html>

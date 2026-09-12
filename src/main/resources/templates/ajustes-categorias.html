@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Categorías • Ajustes</title>
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
+
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/ajustes.css">
+    <link rel="stylesheet" href="/css/categorias.css">
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/footer-modals.js"></script>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="main-content">
+    <div class="ajustes-wrap">
+        <div class="ajustes-topbar">
+            <a href="/ajustes" class="ajustes-back-btn" title="Volver a Ajustes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h1 class="ajustes-titulo">Categorías</h1>
+        </div>
+
+        <div th:if="${error}" class="ajustes-message error" th:text="${error}"></div>
+        <div th:if="${success}" class="ajustes-message success" th:text="${success}"></div>
+
+        <p class="ajustes-hint">Desactiva las categorías o subcategorías que no uses para que dejen de aparecer al añadir un movimiento, toca la flecha para ver sus subcategorías, o crea las tuyas propias.</p>
+
+        <div class="categorias-section-label">Gastos</div>
+        <div class="categorias-list" th:replace="~{this :: listaCategorias(${categoriasGasto})}"></div>
+
+        <div class="categorias-section-label">Ingresos</div>
+        <div class="categorias-list" th:replace="~{this :: listaCategorias(${categoriasIngreso})}"></div>
+
+        <button type="button" class="categoria-crear-btn" id="btnCrearCategoria">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            Crear categoría propia
+        </button>
+    </div>
+</div>
+
+<!-- Fragmento reutilizado para Gastos e Ingresos: la fila de cada categoría + su modal de
+     edición (solo para las propias) van juntos, ya que el modal necesita los mismos datos "c". -->
+<div class="categorias-list" th:fragment="listaCategorias(categorias)">
+    <th:block th:each="c : ${categorias}">
+        <div class="categoria-row" th:classappend="${!c.activa} ? 'categoria-row--inactiva' : ''">
+            <div class="categoria-row-main">
+                <span class="categoria-row-icon" th:insert="~{fragments/category-icons :: icon(${c.icono})}"></span>
+                <span class="categoria-row-nombre" th:text="${c.nombre}"></span>
+                <span class="categoria-row-badge" th:if="${c.personalizada}">PROPIA</span>
+                <button type="button" class="categoria-row-expand-btn" th:if="${!#lists.isEmpty(c.subcategorias)}" title="Ver subcategorías">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="categoria-row-edit-btn" th:if="${c.personalizada}" th:attr="data-modal-target='modalEditar' + ${c.id}" title="Editar categoría">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button type="button" class="categoria-row-delete-btn js-eliminar-categoria" th:if="${c.personalizada}"
+                        th:attr="data-action=@{'/ajustes/categorias/' + ${c.id} + '/eliminar'}" th:data-nombre="${c.nombre}" title="Eliminar categoría">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <form th:action="@{'/ajustes/categorias/' + ${c.id} + '/toggle'}" method="post">
+                    <button type="submit" class="toggle-switch" th:classappend="${c.activa} ? 'toggle-switch--on' : ''" th:aria-label="'Activar o desactivar ' + ${c.nombre}">
+                        <span class="toggle-switch-thumb"></span>
+                    </button>
+                </form>
+            </div>
+            <div class="subcategorias-wrap" th:if="${!#lists.isEmpty(c.subcategorias)}">
+                <div class="subcategoria-row" th:each="s : ${c.subcategorias}">
+                    <span class="subcategoria-row-nombre" th:text="${s.nombre}"></span>
+                    <form th:action="@{'/ajustes/subcategorias/' + ${s.id} + '/toggle'}" method="post">
+                        <button type="submit" class="toggle-switch toggle-switch--sm" th:classappend="${s.activa} ? 'toggle-switch--on' : ''" th:aria-label="'Activar o desactivar ' + ${s.nombre}">
+                            <span class="toggle-switch-thumb"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: editar categoría propia -->
+        <div th:if="${c.personalizada}" th:id="'modalEditar' + ${c.id}" class="modal">
+            <div class="modal-content" style="max-width:420px; width:92%;">
+                <div class="modal-header">
+                    <h3 class="modal-title">Editar categoría</h3>
+                    <button type="button" class="modal-close" data-modal-close aria-label="Cerrar">&times;</button>
+                </div>
+                <form class="modal-form" th:action="@{'/ajustes/categorias/' + ${c.id} + '/editar'}" method="post">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre" maxlength="100" th:value="${c.nombre}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Icono</label>
+                        <div class="categoria-icono-grid">
+                            <label class="categoria-icono-opcion" th:each="icono : ${iconosDisponibles}">
+                                <input type="radio" name="icono" th:value="${icono}" th:checked="${icono == c.icono}">
+                                <span class="categoria-icono-preview" th:insert="~{fragments/category-icons :: icon(${icono})}"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" th:if="${!#lists.isEmpty(c.subcategorias)}">
+                        <label>Subcategorías actuales</label>
+                        <p class="categoria-subs-actuales">
+                            <span th:each="s, iter : ${c.subcategorias}" th:text="${s.nombre} + (${iter.last} ? '' : ', ')"></span>
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Añadir subcategorías <span class="ajustes-hint" style="display:inline; font-size:0.78rem;">(opcional)</span></label>
+                        <div class="categoria-subs-inputs js-subs-inputs">
+                            <input type="text" name="subcategorias" maxlength="100" placeholder="p. ej. Comida rápida">
+                        </div>
+                        <button type="button" class="categoria-add-sub-btn js-add-sub">+ Añadir subcategoría</button>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" data-modal-close>Cancelar</button>
+                        <button type="submit" class="btn-save">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </th:block>
+</div>
+
+<!-- Modal: crear categoría propia -->
+<div id="modalCrearCategoria" class="modal">
+    <div class="modal-content" style="max-width:420px; width:92%;">
+        <div class="modal-header">
+            <h3 class="modal-title">Nueva categoría</h3>
+            <button type="button" class="modal-close" id="closeCrearCategoria" aria-label="Cerrar">&times;</button>
+        </div>
+        <form id="formCrearCategoria" class="modal-form" th:action="@{/ajustes/categorias}" method="post">
+            <div class="form-group">
+                <label for="categoriaNombre">Nombre</label>
+                <input type="text" id="categoriaNombre" name="nombre" maxlength="100" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tipo</label>
+                <div class="categoria-tipo-selector">
+                    <label class="categoria-tipo-opcion">
+                        <input type="radio" name="tipo" value="EXPENSE" checked>
+                        <span>Gasto</span>
+                    </label>
+                    <label class="categoria-tipo-opcion">
+                        <input type="radio" name="tipo" value="INCOME">
+                        <span>Ingreso</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Icono</label>
+                <div class="categoria-icono-grid">
+                    <label class="categoria-icono-opcion" th:each="icono, iter : ${iconosDisponibles}">
+                        <input type="radio" name="icono" th:value="${icono}" th:checked="${iter.index == 0}">
+                        <span class="categoria-icono-preview" th:insert="~{fragments/category-icons :: icon(${icono})}"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Subcategorías <span class="ajustes-hint" style="display:inline; font-size:0.78rem;">(opcional)</span></label>
+                <div id="subcategoriasInputs" class="categoria-subs-inputs js-subs-inputs">
+                    <input type="text" name="subcategorias" maxlength="100" placeholder="p. ej. Comida rápida">
+                </div>
+                <button type="button" id="btnAnadirSubcategoria" class="categoria-add-sub-btn js-add-sub">+ Añadir subcategoría</button>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelarCrearCategoria">Cancelar</button>
+                <button type="submit" class="btn-save">Crear</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: confirmar eliminación de categoría propia -->
+<div id="modalConfirmarEliminarCategoria" class="modal">
+    <div class="modal-content" style="max-width:340px;">
+        <p id="textoConfirmarEliminarCategoria" style="margin:1.6rem 1.5rem 0.4rem; color:var(--text-primary);">¿Eliminar esta categoría?</p>
+        <p style="margin:0 1.5rem 1.2rem; font-size:0.85rem; color:var(--text-secondary);">Solo se puede si no tiene movimientos asociados.</p>
+        <div class="modal-actions" style="padding:0 1.5rem 1.5rem;">
+            <button type="button" class="btn-cancel" id="cancelarEliminarCategoria">Cancelar</button>
+            <button type="button" class="btn-save" style="background:var(--danger); color:#fff;" id="confirmarEliminarCategoria">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:replace="~{fragments/header :: header-script}"></script>
+<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+<script src="/js/categorias.js"></script>
+</body>
+</html>

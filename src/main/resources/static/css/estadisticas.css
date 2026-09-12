@@ -1,0 +1,215 @@
+.main-content {
+  flex: 1;
+  padding-top: calc(var(--header-h, 60px) + env(safe-area-inset-top, 0px) + 16px);
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.estadisticas-wrap {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.estadisticas-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.5rem 0 1.4rem;
+}
+.estadisticas-back-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+.estadisticas-back-btn:hover { background: var(--border-color); }
+.estadisticas-back-btn svg { width: 17px; height: 17px; }
+.estadisticas-titulo {
+  flex: 1 1 auto;
+  text-align: center;
+  margin: 0;
+  margin-right: 36px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  color: var(--text-primary);
+}
+
+/* Navegación de mes (mismo lenguaje visual que el dashboard) */
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  margin: 0 0 1.6rem;
+}
+.month-nav-arrow {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.month-nav-arrow svg { width: 16px; height: 16px; }
+.month-nav-arrow:hover { color: var(--text-primary); background: var(--border-color); }
+.current-month {
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--text-primary);
+  min-width: 130px;
+  text-align: center;
+}
+
+/* Gráfico circular */
+.pie-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.6rem;
+}
+.pie-chart {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+}
+.pie-chart-hole {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  box-shadow: inset 0 0 0 1px var(--border-color);
+}
+.pie-chart-total-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  color: var(--text-tertiary);
+}
+.pie-chart-total-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: var(--tracking-title);
+}
+
+/* Leyenda de categorías */
+.categoria-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.categoria-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.categoria-legend li:last-child { border-bottom: none; }
+.categoria-legend-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.categoria-legend-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: var(--text-secondary);
+  display: flex;
+}
+.categoria-legend-icon svg { width: 100%; height: 100%; }
+.categoria-legend-nombre {
+  flex: 1 1 auto;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.categoria-legend-pct {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  min-width: 2.6rem;
+  text-align: right;
+}
+.categoria-legend-monto {
+  flex-shrink: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 4.5rem;
+  text-align: right;
+}
+
+/* Estado vacío */
+.estadisticas-empty {
+  text-align: center;
+  padding: 3.2rem 1rem;
+  color: var(--text-secondary);
+}
+.estadisticas-empty svg {
+  width: 40px;
+  height: 40px;
+  color: var(--text-tertiary);
+  margin-bottom: 0.8rem;
+}
+.estadisticas-empty p {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 480px) {
+  .estadisticas-titulo { font-size: 1.15rem; }
+  .pie-chart { width: 180px; height: 180px; }
+  .categoria-legend-monto { min-width: 4rem; font-size: 0.84rem; }
+
+  /* Contrarresta la regla global "li { flex-direction:column !important; padding:0.8rem 0 !important }"
+     de theme-switcher.html (pensada para listas de acciones tipo formulario), que apilaría el
+     punto de color, el icono, el nombre y el importe en vertical. Mismo patrón defensivo ya usado
+     en ajustes.css/objetivos.css/cuentas.css para sus propios <li>. */
+  .categoria-legend li {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+    padding: 0.85rem 1.1rem !important;
+  }
+}

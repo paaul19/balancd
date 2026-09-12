@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Atajos • Ajustes</title>
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
+
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/ajustes.css">
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="main-content">
+    <div class="ajustes-wrap">
+        <div class="ajustes-topbar">
+            <a href="/ajustes" class="ajustes-back-btn" title="Volver a Ajustes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h1 class="ajustes-titulo">Atajos</h1>
+        </div>
+
+        <p class="ajustes-hint">Añade estos atajos de la app Atajos de iPhone para registrar movimientos en balanc*d sin abrir la app.</p>
+
+        <div class="ajustes-options">
+            <a href="https://www.icloud.com/shortcuts/e8c1570e0cbc4729b6a799b6edf2b663" class="ajustes-option" target="_blank" rel="noopener">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="ajustes-option-label">Añadir gasto rápido</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="https://www.icloud.com/shortcuts/32e782780849491fbd957c37d489cd11" class="ajustes-option" target="_blank" rel="noopener">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="ajustes-option-label">Añadir ingreso rápido</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </div>
+
+        <div class="ajustes-section-label">Configuración</div>
+        <p class="ajustes-hint">Una vez hayas añadido el atajo a tu iPhone, tienes que indicarle tus credenciales de balanc*d para que pueda identificarte. Solo hace falta hacerlo una vez.</p>
+
+        <ol class="automatizacion-pasos">
+            <li>
+                <strong>Abre la app Atajos</strong> en tu iPhone.
+                <!-- TODO: foto del paso 1 -->
+            </li>
+            <li>
+                Localiza el atajo que acabas de añadir y toca los <strong>tres puntos (•••)</strong> sobre él para editarlo.
+                <img src="/images/atajos-1.png" alt="Los atajos &quot;Añadir Gasto&quot; y &quot;Añadir Ingreso&quot;, con el botón de tres puntos señalado en cada uno" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                <strong>Despliega el primer bloque</strong> de la acción, donde se piden tus datos de acceso.
+                <img src="/images/atajos-2.png" alt="Primer bloque del atajo, &quot;Obtener contenido de https://balancd.es/api/login&quot;, con la flecha para desplegarlo señalada" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                En el campo <strong>"username"</strong> introduce tu nombre de usuario de balanc*d, y en el campo <strong>"password"</strong> tu contraseña.
+                <img src="/images/atajos-3.png" alt="Bloque desplegado con los campos &quot;username&quot; y &quot;password&quot; señalados, listos para rellenar" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                Guarda los cambios. A partir de ahora el atajo ya puede identificarte solo, sin que tengas que hacer nada más.
+                <!-- TODO: foto del paso 5 -->
+            </li>
+        </ol>
+
+        <p class="ajustes-hint">El atajo usa tus credenciales exactamente igual que cuando inicias sesión en la app: solo para identificarte. Quedan guardadas únicamente dentro del propio atajo, en tu iPhone.</p>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:replace="~{fragments/header :: header-script}"></script>
+<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+</body>
+</html>

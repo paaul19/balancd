@@ -1,7 +1,13 @@
 package com.balancdapp.service;
 
+import com.balancdapp.model.Categoria;
+import com.balancdapp.model.Cuenta;
 import com.balancdapp.model.Movimiento;
+import com.balancdapp.model.Subcategoria;
+import com.balancdapp.model.TipoCategoria;
 import com.balancdapp.model.User;
+import com.balancdapp.repository.CategoriaRepository;
+import com.balancdapp.repository.SubcategoriaRepository;
 import com.balancdapp.repository.MovimientoRepository;
 import com.balancdapp.repository.UserRepository;
 import com.balancdapp.repository.MovimientoRecurrenteRepository;
@@ -39,14 +45,52 @@ public class EncryptedMovimientoService {
     @Autowired
     private MovimientoService movimientoService;
 
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private SubcategoriaRepository subcategoriaRepository;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    /**
+     * Resuelve categoría/subcategoría a partir de sus ids, validando que la categoría
+     * sea del tipo correcto (INCOME/EXPENSE según el movimiento) y que la subcategoría
+     * pertenezca realmente a esa categoría. Si algo no encaja, se ignora (queda sin categoría)
+     * en vez de asignar un valor incoherente.
+     */
+    private CategoriaResuelta resolverCategoria(boolean ingreso, Long categoriaId, Long subcategoriaId, User user) {
+        if (categoriaId == null) {
+            return new CategoriaResuelta(null, null);
+        }
+        Categoria categoria = categoriaRepository.findById(categoriaId).orElse(null);
+        TipoCategoria tipoEsperado = ingreso ? TipoCategoria.INCOME : TipoCategoria.EXPENSE;
+        // Una categoría propia de otro usuario nunca se resuelve aquí, ni aunque el tipo coincida:
+        // evita que alguien etiquete su movimiento con la categoría personalizada de otra cuenta
+        // manipulando el categoriaId del formulario.
+        boolean pertenece = categoria != null && (categoria.getUser() == null || categoria.getUser().getId().equals(user.getId()));
+        if (categoria == null || categoria.getTipo() != tipoEsperado || !pertenece) {
+            return new CategoriaResuelta(null, null);
+        }
+        Subcategoria sub = null;
+        if (subcategoriaId != null) {
+            Subcategoria candidata = subcategoriaRepository.findById(subcategoriaId).orElse(null);
+            if (candidata != null && candidata.getCategoria().getId().equals(categoria.getId())) {
+                sub = candidata;
+            }
+        }
+        return new CategoriaResuelta(categoria, sub);
+    }
+
+    private record CategoriaResuelta(Categoria categoria, Subcategoria subcategoria) {}
 
     /**
      * Crea un movimiento con datos cifrados
      */
-    public Movimiento createMovimiento(User user, double cantidad, boolean ingreso, String asunto, LocalDate fecha, int mesAsignado, int anioAsignado, String categoria) {
+    public Movimiento createMovimiento(User user, Cuenta cuenta, double cantidad, boolean ingreso, String asunto, LocalDate fecha, int mesAsignado, int anioAsignado, Long categoriaId, Long subcategoriaId) {
         Movimiento movimiento = new Movimiento();
         movimiento.setUser(user);
+        movimiento.setCuenta(cuenta);
         movimiento.setIngreso(ingreso);
         movimiento.setMesAsignado(mesAsignado);
         movimiento.setAnioAsignado(anioAsignado);
@@ -56,16 +100,9 @@ public class EncryptedMovimientoService {
         movimiento.setAsuntoCifrado(encryptionService.encrypt(asunto));
         movimiento.setFechaCifrada(encryptionService.encrypt(fecha.format(DATE_FORMATTER)));
 
-        // Asignar categoría si viene
-        if (categoria != null && !categoria.isBlank()) {
-            try {
-                movimiento.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
-            } catch (IllegalArgumentException e) {
-                movimiento.setCategoria(null); // Si no es válida, no asignar
-            }
-        } else {
-            movimiento.setCategoria(null);
-        }
+        CategoriaResuelta resuelta = resolverCategoria(ingreso, categoriaId, subcategoriaId, user);
+        movimiento.setCategoria(resuelta.categoria());
+        movimiento.setSubcategoria(resuelta.subcategoria());
 
         // Usar MovimientoService para que se actualice el balanceTotal
         return movimientoService.addMovimiento(movimiento);
@@ -105,23 +142,17 @@ public class EncryptedMovimientoService {
     /**
      * Actualiza un movimiento con datos cifrados
      */
-    public void updateMovimiento(Movimiento movimiento, double cantidad, String asunto, boolean ingreso, LocalDate fecha, String categoria) {
+    public void updateMovimiento(Movimiento movimiento, Cuenta cuenta, double cantidad, String asunto, boolean ingreso, LocalDate fecha, Long categoriaId, Long subcategoriaId) {
+        movimiento.setCuenta(cuenta);
         movimiento.setIngreso(ingreso);
         movimiento.setCantidadCifrada(encryptionService.encryptNumber(cantidad));
         movimiento.setAsuntoCifrado(encryptionService.encrypt(asunto));
         movimiento.setFechaCifrada(encryptionService.encrypt(fecha.toString()));
         movimiento.setMesAsignado(fecha.getMonthValue());
         movimiento.setAnioAsignado(fecha.getYear());
-        // Actualizar categoría
-        if (categoria != null && !categoria.isBlank()) {
-            try {
-                movimiento.setCategoria(com.balancdapp.model.CategoriaMovimiento.valueOf(categoria));
-            } catch (IllegalArgumentException e) {
-                movimiento.setCategoria(null);
-            }
-        } else {
-            movimiento.setCategoria(null);
-        }
+        CategoriaResuelta resuelta = resolverCategoria(ingreso, categoriaId, subcategoriaId, movimiento.getUser());
+        movimiento.setCategoria(resuelta.categoria());
+        movimiento.setSubcategoria(resuelta.subcategoria());
         // Usar MovimientoService para que se actualice el balanceTotal
         movimientoService.updateMovimiento(movimiento);
     }
@@ -153,7 +184,19 @@ public class EncryptedMovimientoService {
         dto.setFecha(getFecha(movimiento));
         dto.setMesAsignado(movimiento.getMesAsignado());
         dto.setAnioAsignado(movimiento.getAnioAsignado());
-        dto.setCategoria(movimiento.getCategoria() != null ? movimiento.getCategoria().name() : null);
+        if (movimiento.getCategoria() != null) {
+            dto.setCategoriaId(movimiento.getCategoria().getId());
+            dto.setCategoriaNombre(movimiento.getCategoria().getNombre());
+            dto.setCategoriaIcono(movimiento.getCategoria().getIcono());
+        }
+        if (movimiento.getSubcategoria() != null) {
+            dto.setSubcategoriaId(movimiento.getSubcategoria().getId());
+            dto.setSubcategoriaNombre(movimiento.getSubcategoria().getNombre());
+        }
+        if (movimiento.getCuenta() != null) {
+            dto.setCuentaId(movimiento.getCuenta().getId());
+            dto.setCuentaNombre(movimiento.getCuenta().getNombre());
+        }
         return dto;
     }
 
@@ -169,7 +212,13 @@ public class EncryptedMovimientoService {
         private LocalDate fecha;
         private int mesAsignado;
         private int anioAsignado;
-        private String categoria;
+        private Long categoriaId;
+        private String categoriaNombre;
+        private String categoriaIcono;
+        private Long subcategoriaId;
+        private String subcategoriaNombre;
+        private Long cuentaId;
+        private String cuentaNombre;
 
         // Getters y setters
         public Long getId() { return id; }
@@ -196,45 +245,34 @@ public class EncryptedMovimientoService {
         public int getAnioAsignado() { return anioAsignado; }
         public void setAnioAsignado(int anioAsignado) { this.anioAsignado = anioAsignado; }
 
-        public String getCategoria() { return categoria; }
-        public void setCategoria(String categoria) { this.categoria = categoria; }
+        public Long getCategoriaId() { return categoriaId; }
+        public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+
+        public String getCategoriaNombre() { return categoriaNombre; }
+        public void setCategoriaNombre(String categoriaNombre) { this.categoriaNombre = categoriaNombre; }
+
+        public String getCategoriaIcono() { return categoriaIcono; }
+        public void setCategoriaIcono(String categoriaIcono) { this.categoriaIcono = categoriaIcono; }
+
+        public Long getSubcategoriaId() { return subcategoriaId; }
+        public void setSubcategoriaId(Long subcategoriaId) { this.subcategoriaId = subcategoriaId; }
+
+        public String getSubcategoriaNombre() { return subcategoriaNombre; }
+        public void setSubcategoriaNombre(String subcategoriaNombre) { this.subcategoriaNombre = subcategoriaNombre; }
+
+        public Long getCuentaId() { return cuentaId; }
+        public void setCuentaId(Long cuentaId) { this.cuentaId = cuentaId; }
+
+        public String getCuentaNombre() { return cuentaNombre; }
+        public void setCuentaNombre(String cuentaNombre) { this.cuentaNombre = cuentaNombre; }
     }
 
-    /**
-     * Crea movimientos recurrentes según frecuencia
-     */
-    public void createMovimientosRecurrentes(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, int repeticiones) {
-        LocalDate fecha = fechaInicio;
-        for (int i = 0; i < repeticiones; i++) {
-            createMovimiento(user, cantidad, ingreso, asunto, fecha, fecha.getMonthValue(), fecha.getYear(), null);
-            switch (frecuencia) {
-                case "semanal":
-                    fecha = fecha.plusWeeks(1);
-                    break;
-                case "bi-semanal":
-                    fecha = fecha.plusWeeks(2);
-                    break;
-                case "mensual":
-                    fecha = fecha.plusMonths(1);
-                    break;
-                case "bi-mensual":
-                    fecha = fecha.plusMonths(2);
-                    break;
-                case "anual":
-                    fecha = fecha.plusYears(1);
-                    break;
-                default:
-                    fecha = fecha.plusMonths(1);
-            }
-        }
-    }
-
-    public void crearMovimientoRecurrente(User user, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, Integer repeticiones, LocalDate fechaFin, String categoria) {
-        com.balancdapp.model.MovimientoRecurrente rec = encryptedRecurrenteService.createMovimientoRecurrente(user, cantidad, ingreso, asunto, fechaInicio, frecuencia, fechaFin, categoria);
+    public void crearMovimientoRecurrente(User user, Cuenta cuenta, double cantidad, boolean ingreso, String asunto, LocalDate fechaInicio, String frecuencia, Integer repeticiones, LocalDate fechaFin, Long categoriaId, Long subcategoriaId) {
+        com.balancdapp.model.MovimientoRecurrente rec = encryptedRecurrenteService.createMovimientoRecurrente(user, cuenta, cantidad, ingreso, asunto, fechaInicio, frecuencia, fechaFin, categoriaId, subcategoriaId);
         // Si la fecha de inicio es hoy, crear el movimiento real ya
         LocalDate hoy = LocalDate.now(java.time.ZoneId.of("Europe/Madrid"));
         if (fechaInicio.equals(hoy)) {
-            createMovimiento(user, cantidad, ingreso, asunto, hoy, hoy.getMonthValue(), hoy.getYear(), categoria);
+            createMovimiento(user, cuenta, cantidad, ingreso, asunto, hoy, hoy.getMonthValue(), hoy.getYear(), categoriaId, subcategoriaId);
             rec.setUltimaFechaEjecutada(hoy);
             movimientoRecurrenteRepository.save(rec);
         }
@@ -267,7 +305,9 @@ public class EncryptedMovimientoService {
                         rec.getUser(), hoy.getMonthValue(), hoy.getYear(), cantidadCifrada, rec.isIngreso(), asuntoCifrado, fechaCifrada);
 
                 if (!existe) {
-                    createMovimiento(rec.getUser(), cantidad, rec.isIngreso(), asunto, hoy, hoy.getMonthValue(), hoy.getYear(), null);
+                    Long categoriaId = rec.getCategoria() != null ? rec.getCategoria().getId() : null;
+                    Long subcategoriaId = rec.getSubcategoria() != null ? rec.getSubcategoria().getId() : null;
+                    createMovimiento(rec.getUser(), rec.getCuenta(), cantidad, rec.isIngreso(), asunto, hoy, hoy.getMonthValue(), hoy.getYear(), categoriaId, subcategoriaId);
                     rec.setUltimaFechaEjecutada(hoy);
                     movimientoRecurrenteRepository.save(rec);
                 }
@@ -332,10 +372,10 @@ public class EncryptedMovimientoService {
     /**
      * Modifica un movimiento recurrente
      */
-    public void modificarMovimientoRecurrente(Long id, User user, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia, String categoria) {
+    public void modificarMovimientoRecurrente(Long id, User user, Cuenta cuenta, double cantidad, String asunto, boolean ingreso, LocalDate fechaInicio, String frecuencia, Long categoriaId, Long subcategoriaId) {
         MovimientoRecurrente recurrente = movimientoRecurrenteRepository.findById(id).orElse(null);
         if (recurrente != null && recurrente.getUser().getId().equals(user.getId())) {
-            encryptedRecurrenteService.updateMovimientoRecurrente(recurrente, cantidad, asunto, ingreso, fechaInicio, frecuencia, categoria);
+            encryptedRecurrenteService.updateMovimientoRecurrente(recurrente, cuenta, cantidad, asunto, ingreso, fechaInicio, frecuencia, categoriaId, subcategoriaId);
         }
     }
 

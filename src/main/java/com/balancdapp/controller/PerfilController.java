@@ -3,6 +3,7 @@ package com.balancdapp.controller;
 import com.balancdapp.model.User;
 import com.balancdapp.service.UserService;
 import com.balancdapp.service.PasswordService;
+import com.balancdapp.service.EncryptedCuentaService;
 import com.balancdapp.service.EncryptedMovimientoService;
 import com.balancdapp.repository.UserRepository;
 import com.balancdapp.repository.MovimientoRepository;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.Map;
@@ -37,6 +37,8 @@ public class PerfilController {
     private EncryptedMovimientoService encryptedMovimientoService;
     @Autowired
     private MovimientoRepository movimientoRepository;
+    @Autowired
+    private EncryptedCuentaService encryptedCuentaService;
 
     @GetMapping("/perfil")
     public String perfil(HttpSession session, Model model) {
@@ -46,76 +48,11 @@ public class PerfilController {
         }
         model.addAttribute("user", user);
         model.addAttribute("nombre", user.getUsername());
-        // Obtener meses con movimientos
-        List<Object[]> anioMeses = movimientoRepository.findDistinctYearMonthsByUser(user);
-        Set<YearMonth> mesesConMovimientos = new java.util.TreeSet<>(java.util.Comparator.reverseOrder());
-        for (Object[] anioMes : anioMeses) {
-            Integer anio = (Integer) anioMes[0];
-            Integer mes = (Integer) anioMes[1];
-            mesesConMovimientos.add(YearMonth.of(anio, mes));
-        }
-        model.addAttribute("mesesConMovimientos", mesesConMovimientos);
-        // Para cada mes, obtener movimientos descifrados y agrupar gastos por categoría
-        Map<String, List<Map<String, Object>>> gastosPorCategoriaPorMes = new HashMap<>();
-        for (YearMonth ym : mesesConMovimientos) {
-            List<EncryptedMovimientoService.MovimientoDTO> lista = encryptedMovimientoService.getMovimientosByUserAndMesAnio(user.getId(), ym.getMonthValue(), ym.getYear());
-            Map<String, Double> sumaPorCategoria = new HashMap<>();
-            for (EncryptedMovimientoService.MovimientoDTO mov : lista) {
-                if (!mov.isIngreso() && mov.getCategoria() != null) {
-                    sumaPorCategoria.put(mov.getCategoria(), sumaPorCategoria.getOrDefault(mov.getCategoria(), 0.0) + mov.getCantidad());
-                }
-            }
-            List<Map<String, Object>> arr = new java.util.ArrayList<>();
-            for (Map.Entry<String, Double> entry : sumaPorCategoria.entrySet()) {
-                String cat = entry.getKey();
-                String nombreBonito;
-                switch(cat) {
-                    case "TRANSPORTE": nombreBonito = "Transporte"; break;
-                    case "COMIDA": nombreBonito = "Comida"; break;
-                    case "OCIO_ENTRETENIMIENTO": nombreBonito = "Ocio y Entretenimiento"; break;
-                    case "HOGAR": nombreBonito = "Hogar"; break;
-                    case "SALUD_BIENESTAR": nombreBonito = "Salud y Bienestar"; break;
-                    case "EDUCACION_CURSOS": nombreBonito = "Educación y Cursos"; break;
-                    case "COMPRAS": nombreBonito = "Compras"; break;
-                    case "COMPRAS_ONLINE": nombreBonito = "Compras Online"; break;
-                    case "SUSCRIPCION": nombreBonito = "Suscripción"; break;
-                    default: nombreBonito = cat;
-                }
-                Map<String, Object> obj = new HashMap<>();
-                obj.put("categoria", cat);
-                obj.put("categoriaBonita", nombreBonito);
-                obj.put("total", entry.getValue());
-                arr.add(obj);
-            }
-            String mesKey = ym.getYear() + "-" + ym.getMonthValue();
-            gastosPorCategoriaPorMes.put(mesKey, arr);
-        }
-        model.addAttribute("gastosPorCategoriaPorMes", gastosPorCategoriaPorMes);
-
-        // Balance total real (calculado a partir de todos los movimientos, nunca desincronizado)
-        double balanceTotalReal = encryptedMovimientoService.getBalanceTotal(user);
-        model.addAttribute("balanceTotalReal", balanceTotalReal);
-
-        // Estadísticas rápidas
-        List<EncryptedMovimientoService.MovimientoDTO> todosMovimientos = encryptedMovimientoService.getMovimientosByUserId(user.getId());
-        model.addAttribute("totalMovimientos", todosMovimientos.size());
-        double totalIngresosHistorico = todosMovimientos.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
-        double totalGastosHistorico = todosMovimientos.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
-        model.addAttribute("totalIngresosHistorico", totalIngresosHistorico);
-        model.addAttribute("totalGastosHistorico", totalGastosHistorico);
-        // Categoría con más gasto acumulado
-        Map<String, Double> gastoPorCategoriaTotal = new HashMap<>();
-        for (EncryptedMovimientoService.MovimientoDTO mov : todosMovimientos) {
-            if (!mov.isIngreso() && mov.getCategoria() != null) {
-                gastoPorCategoriaTotal.merge(mov.getCategoria(), mov.getCantidad(), Double::sum);
-            }
-        }
-        String categoriaTop = gastoPorCategoriaTotal.entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
-        model.addAttribute("categoriaTop", categoriaTop);
-
+        String username = user.getUsername();
+        String iniciales = username.length() >= 2
+                ? username.substring(0, 2).toUpperCase()
+                : username.substring(0, 1).toUpperCase();
+        model.addAttribute("iniciales", iniciales);
         return "perfil";
     }
 
@@ -127,8 +64,43 @@ public class PerfilController {
             return "redirect:/login";
         }
         model.addAttribute("user", user);
-        model.addAttribute("balanceTotalReal", encryptedMovimientoService.getBalanceTotal(user));
         return "ajustes";
+    }
+
+    @GetMapping("/ajustes/atajos")
+    public String ajustesAtajos(HttpSession session) {
+        if (session.getAttribute("user") == null) {
+            return "redirect:/login";
+        }
+        return "ajustes-atajos";
+    }
+
+    @GetMapping("/ajustes/automatizacion")
+    public String ajustesAutomatizacion(HttpSession session) {
+        if (session.getAttribute("user") == null) {
+            return "redirect:/login";
+        }
+        return "ajustes-automatizacion";
+    }
+
+    @PostMapping("/ajustes/cambiar-moneda")
+    public String cambiarMoneda(@RequestParam("moneda") String moneda,
+                                HttpSession session,
+                                RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        Set<String> monedasValidas = Set.of("EUR", "USD", "GBP");
+        if (!monedasValidas.contains(moneda)) {
+            redirectAttributes.addFlashAttribute("error", "Divisa no válida.");
+            return "redirect:/ajustes";
+        }
+        user.setMoneda(moneda);
+        userService.updateUser(user);
+        session.setAttribute("user", user);
+        redirectAttributes.addFlashAttribute("success", "Divisa preferida actualizada.");
+        return "redirect:/ajustes";
     }
 
     @GetMapping("/perfil/exportar-csv")
@@ -143,18 +115,18 @@ public class PerfilController {
         response.setHeader("Content-Disposition", "attachment; filename=\"balancd-movimientos.csv\"");
         PrintWriter writer = response.getWriter();
         writer.write('﻿'); // BOM para que Excel detecte UTF-8
-        writer.println("Fecha;Tipo;Cantidad;Asunto;Categoria;Mes;Anio");
+        writer.println("Fecha;Tipo;Cantidad;Asunto;Categoria;Subcategoria");
         for (EncryptedMovimientoService.MovimientoDTO mov : movimientos) {
             String asunto = mov.getAsunto() == null ? "" : mov.getAsunto().replace(";", ",");
-            String categoria = mov.getCategoria() == null ? "" : mov.getCategoria();
-            writer.printf("%s;%s;%s;%s;%s;%d;%d%n",
+            String categoria = mov.getCategoriaNombre() == null ? "" : mov.getCategoriaNombre();
+            String subcategoria = mov.getSubcategoriaNombre() == null ? "" : mov.getSubcategoriaNombre();
+            writer.printf("%s;%s;%s;%s;%s;%s%n",
                     mov.getFecha(),
                     mov.isIngreso() ? "Ingreso" : "Gasto",
                     String.format(java.util.Locale.forLanguageTag("es"), "%.2f", mov.getCantidad()),
                     asunto,
                     categoria,
-                    mov.getMesAsignado(),
-                    mov.getAnioAsignado());
+                    subcategoria);
         }
         writer.flush();
     }
@@ -169,13 +141,18 @@ public class PerfilController {
         }
         try {
             user.setUsername(nuevoUsername);
-            User actualizado = userService.updateUser(user);
-            session.setAttribute("user", actualizado);
-            redirectAttributes.addFlashAttribute("success", "Nombre de usuario actualizado correctamente.");
+            userService.updateUser(user);
+            // Hallazgo M4: se invalida la sesión actual tras cambiar una credencial de acceso
+            // y se obliga a iniciar sesión de nuevo. Si alguien hubiese robado esta sesión
+            // (misma JSESSIONID), queda desconectado en el mismo momento en que el dueño
+            // legítimo hace el cambio.
+            session.invalidate();
+            redirectAttributes.addFlashAttribute("success", "Nombre de usuario actualizado. Inicia sesión de nuevo.");
+            return "redirect:/login";
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/perfil";
         }
-        return "redirect:/perfil";
     }
 
     @PostMapping("/perfil/cambiar-password")
@@ -191,64 +168,88 @@ public class PerfilController {
             redirectAttributes.addFlashAttribute("error", "La contraseña actual es incorrecta.");
             return "redirect:/perfil";
         }
-        if (nuevoPassword == null || nuevoPassword.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "La nueva contraseña no puede estar vacía.");
+        try {
+            userService.validatePassword(nuevoPassword); // hallazgo M2
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/perfil";
         }
         user.setPassword(nuevoPassword);
-        User actualizado = userService.updateUser(user);
-        session.setAttribute("user", actualizado);
-        redirectAttributes.addFlashAttribute("success", "Contraseña actualizada correctamente.");
-        return "redirect:/perfil";
+        userService.updateUser(user);
+        // Hallazgo M4: igual que en cambiarUsuario - cambiar la contraseña invalida la sesión
+        // actual y exige volver a iniciar sesión con la contraseña nueva.
+        session.invalidate();
+        redirectAttributes.addFlashAttribute("success", "Contraseña actualizada. Inicia sesión de nuevo.");
+        return "redirect:/login";
     }
 
     @PostMapping("/perfil/cambiar-email")
-    public String cambiarEmail(@RequestParam("nuevoEmail") String nuevoEmail,
+    public String cambiarEmail(@RequestParam("passwordActual") String passwordActual,
+                               @RequestParam("nuevoEmail") String nuevoEmail,
                                HttpSession session,
                                RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
-        if (nuevoEmail == null || nuevoEmail.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "El correo electrónico no puede estar vacío.");
+        // Hallazgo M5: cambiar el email ahora exige la contraseña actual (antes no se pedía),
+        // y no se aplica al instante - ver requestEmailChange().
+        if (!passwordService.matches(passwordActual, user.getPassword())) {
+            redirectAttributes.addFlashAttribute("error", "La contraseña actual es incorrecta.");
             return "redirect:/perfil";
         }
-        if (userService.getUserByEmail(nuevoEmail).isPresent()) {
-            redirectAttributes.addFlashAttribute("error", "Ese correo electrónico ya está en uso.");
-            return "redirect:/perfil";
+        try {
+            userService.requestEmailChange(user, nuevoEmail);
+            redirectAttributes.addFlashAttribute("success",
+                    "Te hemos enviado un enlace de confirmación a " + nuevoEmail + ". Tu correo actual seguirá siendo válido hasta que lo confirmes.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        user.setEmail(nuevoEmail);
-        User actualizado = userService.updateUser(user);
-        session.setAttribute("user", actualizado);
-        redirectAttributes.addFlashAttribute("success", "Correo electrónico actualizado correctamente.");
         return "redirect:/perfil";
     }
 
-    @PostMapping("/perfil/cambiar-balance")
-    public String cambiarBalance(@RequestParam("nuevoBalance") String nuevoBalance,
-                                 HttpSession session,
-                                 RedirectAttributes redirectAttributes) {
+    /**
+     * Modal "Editar perfil" de /perfil: cambia nombre y/o correo en una sola acción.
+     * Reutiliza las mismas reglas que /perfil/cambiar-usuario y /perfil/cambiar-email
+     * (contraseña actual obligatoria, el correo pasa por confirmación) pero en un único
+     * envío, para no encadenar dos formularios cuando el usuario edita ambos campos a la vez.
+     */
+    @PostMapping("/perfil/actualizar-identidad")
+    public String actualizarIdentidad(@RequestParam("nombre") String nuevoUsername,
+                                      @RequestParam("email") String nuevoEmail,
+                                      @RequestParam("passwordActual") String passwordActual,
+                                      HttpSession session,
+                                      RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+        if (!passwordService.matches(passwordActual, user.getPassword())) {
+            redirectAttributes.addFlashAttribute("error", "La contraseña actual es incorrecta.");
+            return "redirect:/perfil";
+        }
+        boolean usernameChanged = nuevoUsername != null && !nuevoUsername.equals(user.getUsername());
+        boolean emailChanged = nuevoEmail != null && !nuevoEmail.equals(user.getEmail());
         try {
-            double balanceDeseado = new BigDecimal(nuevoBalance.replace(",", ".")).doubleValue();
-            double balanceActual = encryptedMovimientoService.getBalanceTotal(user);
-            double diferencia = balanceDeseado - balanceActual;
-            // Solo crear un movimiento de ajuste si hay una diferencia real (evita ruido por redondeos)
-            if (Math.abs(diferencia) >= 0.01) {
-                boolean ingreso = diferencia > 0;
-                LocalDate hoy = LocalDate.now();
-                encryptedMovimientoService.createMovimiento(user, Math.abs(diferencia), ingreso, "Ajuste de saldo",
-                        hoy, hoy.getMonthValue(), hoy.getYear(), null);
+            if (emailChanged) {
+                userService.requestEmailChange(user, nuevoEmail);
             }
-            User actualizado = userService.getUserById(user.getId()).orElse(user);
-            session.setAttribute("user", actualizado);
-            redirectAttributes.addFlashAttribute("success", "Balance total actualizado correctamente.");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar el balance: " + e.getMessage());
+            if (usernameChanged) {
+                user.setUsername(nuevoUsername);
+                userService.updateUser(user);
+                // Cambiar el username invalida la sesión (hallazgo M4) - se hace al final para
+                // que la petición de cambio de email (si también la hay) ya se haya guardado.
+                session.invalidate();
+                redirectAttributes.addFlashAttribute("success", emailChanged
+                        ? "Nombre actualizado y enlace de confirmación enviado al nuevo correo. Inicia sesión de nuevo."
+                        : "Nombre de usuario actualizado. Inicia sesión de nuevo.");
+                return "redirect:/login";
+            }
+            redirectAttributes.addFlashAttribute("success", emailChanged
+                    ? "Te hemos enviado un enlace de confirmación a " + nuevoEmail + "."
+                    : "No había cambios que guardar.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/perfil";
     }

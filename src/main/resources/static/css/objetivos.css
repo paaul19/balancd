@@ -1,0 +1,403 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.main-content {
+  flex: 1;
+  padding-top: calc(var(--header-h, 60px) + env(safe-area-inset-top, 0px) + 10px);
+  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+}
+
+.objetivos-wrap {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 1rem 1rem 0;
+}
+
+.objetivos-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+.objetivos-section-header--metas {
+  margin-top: 2rem;
+}
+.objetivos-section-header h1 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  margin: 0;
+}
+.objetivos-section-sub {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin: 0 0 1rem;
+}
+
+.btn-nuevo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.55rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard), transform var(--dur-instant) var(--ease-standard);
+}
+.btn-nuevo:hover { background: var(--button-hover); }
+.btn-nuevo:active { transform: scale(0.96); }
+.btn-nuevo:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-nuevo svg { width: 15px; height: 15px; }
+
+.objetivos-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 1.6rem 1rem;
+  font-size: 0.9rem;
+}
+
+.objetivos-message {
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.objetivos-message.error { color: var(--danger); }
+.objetivos-message.success { color: var(--accent); }
+
+/* --- Tarjetas de presupuesto --- */
+.presupuestos-list, .metas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.presupuesto-card, .meta-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.presupuesto-card.excedido {
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border-color));
+}
+.meta-card.completado {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+}
+
+.presupuesto-top, .meta-top {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.presupuesto-icon {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.presupuesto-icon svg { width: 19px; height: 19px; }
+.presupuesto-card.excedido .presupuesto-icon {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.presupuesto-info, .meta-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.presupuesto-nombre, .meta-nombre {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.meta-cuenta {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.presupuesto-cifras {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.presupuesto-de { color: var(--text-tertiary); }
+
+.presupuesto-actions, .meta-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.2rem;
+}
+.presupuesto-actions button, .meta-actions button {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.presupuesto-actions button:hover, .meta-actions button:hover {
+  color: var(--text-primary);
+  background: var(--border-color);
+}
+.presupuesto-actions button svg, .meta-actions button svg { width: 15px; height: 15px; }
+.btn-eliminar-presupuesto:hover, .btn-eliminar-meta:hover {
+  color: var(--danger) !important;
+  background: var(--danger-soft) !important;
+}
+
+.progreso-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border-color);
+  overflow: hidden;
+}
+.progreso-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width var(--dur-base, 0.3s) var(--ease-standard, ease);
+}
+.presupuesto-card.excedido .progreso-fill {
+  background: var(--danger);
+}
+.progreso-fill--meta {
+  background: var(--info, var(--accent));
+}
+.meta-card.completado .progreso-fill--meta {
+  background: var(--accent);
+}
+
+.presupuesto-restante {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+}
+.presupuesto-restante.excedido-texto {
+  color: var(--danger);
+  font-weight: 600;
+}
+.meta-cifras {
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.meta-badge-completado {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+
+/* --- Modales --- */
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(8,9,12,0.5);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-standard), visibility var(--dur-base), backdrop-filter var(--dur-base) var(--ease-standard);
+}
+.modal.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow);
+  transform: scale(0.94) translateY(10px);
+  opacity: 0;
+  transition: transform var(--dur-base) var(--ease-standard), opacity var(--dur-fast) var(--ease-standard);
+}
+.modal.show .modal-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.modal-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+}
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.form-group input,
+.form-group select {
+  padding: 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+.modal-hint {
+  margin: -0.4rem 0 0;
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+}
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.modal-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-cancel {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+.btn-save {
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* --- Responsive móvil ---
+   theme-switcher.html trae una regla global heredada de la versión antigua de la app
+   ("li { flex-direction: column !important }", "button { padding: 0.8rem 1rem !important }"
+   y "li form button { width: 100% !important }" a <=480px) pensada para listas que ya no
+   existen. Como las tarjetas de aquí son <li>, se reafirma el layout con la misma
+   especificidad, igual que ya hacen cuentas.css/lista.css. */
+@media (max-width: 600px) {
+  .objetivos-wrap {
+    padding: 0.85rem 0.85rem 0;
+  }
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+    width: auto;
+    padding: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .objetivos-section-header {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .presupuesto-card, .meta-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.55rem !important;
+    padding: 0.8rem !important;
+  }
+  .presupuesto-top, .meta-top {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+  }
+  .presupuesto-info, .meta-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .presupuesto-actions, .meta-actions {
+    flex-direction: row !important;
+  }
+  .presupuesto-actions button, .meta-actions button {
+    padding: 0.3rem !important;
+    width: 30px !important;
+    height: 30px !important;
+  }
+  .btn-nuevo {
+    padding: 0.5rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+}

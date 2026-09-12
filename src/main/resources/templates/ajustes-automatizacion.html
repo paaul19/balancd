@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Automatización de gastos • Ajustes</title>
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
+
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <style th:replace="~{fragments/header :: header-styles}"></style>
+    <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/ajustes.css">
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+</head>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="main-content">
+    <div class="ajustes-wrap">
+        <div class="ajustes-topbar">
+            <a href="/ajustes" class="ajustes-back-btn" title="Volver a Ajustes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h1 class="ajustes-titulo">Automatización</h1>
+        </div>
+
+        <p class="ajustes-hint">Crea una automatización personal en la app Atajos de iPhone para que balanc*d registre tus gastos solo, sin que tengas que abrir la app. Este es un ejemplo real: registrar un gasto automáticamente al acercar una tarjeta de pago al iPhone, pero el disparador puede ser cualquier otro (una hora concreta, una ubicación...).</p>
+
+        <div class="ajustes-options ajustes-options--single" style="margin-bottom: 1.3rem;">
+            <a href="https://www.youtube.com/watch?v=fFTUSlE86NM" class="ajustes-option" target="_blank" rel="noopener">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M10 9l5 3-5 3V9z" fill="currentColor" stroke="none"/></svg>
+                </span>
+                <span class="ajustes-option-label">Ver tutorial en vídeo</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </div>
+
+        <ol class="automatizacion-pasos">
+            <li>
+                <strong>Abre la app Atajos</strong>, ve a la pestaña <em>Automatización</em> y toca el botón <strong>"+"</strong> de arriba a la derecha para crear una nueva automatización personal.
+                <img src="/images/auto1.png" alt="Pestaña Automatización de la app Atajos, con el botón + de crear nueva automatización señalado" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                Como condición, elige <strong>"Cartera"</strong> → <strong>"Cuando toque una tarjeta o un pase de la app Cartera"</strong>.
+                <img src="/images/auto2.png" alt="Lista de disparadores de automatización, con la opción Cartera señalada" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                Selecciona las <strong>tarjetas de pago</strong> con las que quieres que se dispare la automatización (puedes marcar una o varias) y toca "Añadir".
+            </li>
+            <li>
+                Toca <strong>"Crear nuevo atajo"</strong> para empezar a añadir las acciones. Activa <strong>"Notificar cuando se ejecute"</strong> si quieres saber que el gasto se ha registrado.
+                <img src="/images/auto3.png" alt="Pantalla tras elegir las tarjetas, con el botón Crear nuevo atajo señalado" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                Añade la acción <strong>"Obtener contenido de URL"</strong> apuntando a
+                <code>https://balancd.es/api/login</code>, método <code>POST</code>, con la cabecera <code>Content-Type: application/json</code> y este cuerpo JSON:
+                <pre>{"username": "tu_usuario", "password": "tu_contraseña"}</pre>
+                <img src="/images/auto4.jpeg" alt="Acción Obtener contenido de https://balancd.es/api/login, método POST, con los campos username y password del cuerpo JSON" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                Debajo, añade <strong>"Definir variable"</strong> (llámala <code>loginresponse</code>) con el resultado del paso anterior. Después añade <strong>"Obtener valor"</strong> de la clave <code>token</code> dentro de <code>loginresponse</code>, y guárdalo con otra <strong>"Definir variable"</strong> llamada <code>token</code>.
+                <img src="/images/auto6.jpeg" alt="Tres acciones seguidas: Definir variable loginresponse, Obtener Valor para token en loginresponse, y Definir variable token a Valor del diccionario" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                Añade una segunda <strong>"Obtener contenido de URL"</strong>, esta vez a
+                <code>https://balancd.es/api/movimientos</code>, método <code>POST</code>, con las cabeceras
+                <code>Content-Type: application/json</code> y <code>Authorization: Bearer</code> seguido de la variable <code>token</code>, y este cuerpo JSON (usa las variables que te ofrezca el disparador de Cartera, como el importe o el nombre de la tarjeta):
+                <pre>{"cantidad": Importe, "ingreso": false, "asunto": Nombre, "cuenta": "Tarjeta"}</pre>
+                <img src="/images/auto5.jpeg" alt="Acción Obtener contenido de https://balancd.es/api/movimientos, método POST, con la cabecera Authorization Bearer token y el cuerpo JSON cantidad, ingreso, asunto y cuenta" class="paso-imagen" loading="lazy">
+            </li>
+            <li>
+                <strong>Guarda la automatización.</strong> A partir de ahora, cada vez que acerques una de esas tarjetas, balanc*d registrará el movimiento solo, sin que tengas que hacer nada más.
+            </li>
+        </ol>
+
+        <p class="ajustes-hint">La cantidad es el único campo obligatorio. El asunto y la cuenta son opcionales — si no indicas cuenta y solo tienes una activa, se usa esa automáticamente.</p>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:replace="~{fragments/header :: header-script}"></script>
+<script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+</body>
+</html>

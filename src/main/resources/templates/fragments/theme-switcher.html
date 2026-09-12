@@ -429,13 +429,43 @@
                 border-width: 1.5px !important;
             }
         }
+
+        /* Modo secreto: oculta cualquier cifra marcada con .js-money. Primer intento
+           (-webkit-text-security con un punto por carácter, acotado a un ancho fijo) se
+           cortaba a mitad de un punto en móvil en cuanto el importe real tenía más
+           caracteres de los que cabían en ese ancho — un punto literalmente partido por
+           la mitad. Esta versión no depende en absoluto de cuántos caracteres tenga el
+           número: el texto real se hace transparente (así la caja conserva exactamente el
+           ancho que ya sabíamos que cabía, porque es el mismo con el que se pintó el
+           importe real) y encima se dibuja un puñado fijo de puntos que nunca cambia de
+           tamaño ni se corta, tenga el importe 1 dígito o 6. Funciona igual en cualquier
+           navegador, sin prefijos ni fallback aparte. */
+        html[data-privacy="on"] .js-money {
+            color: transparent !important;
+            position: relative;
+            display: inline-block;
+        }
+        html[data-privacy="on"] .js-money::after {
+            content: '••••';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            letter-spacing: 1px;
+        }
     </style>
-    
-    <!-- Script para aplicar tema inmediatamente y evitar flash -->
+
+    <!-- Script para aplicar tema y modo secreto inmediatamente y evitar flash -->
     <script th:fragment="theme-script-immediate" th:inline="javascript">
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            const resolvedTheme = savedTheme === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : savedTheme;
+            document.documentElement.setAttribute('data-theme', resolvedTheme);
+            const savedPrivacy = localStorage.getItem('privacyMode') || 'off';
+            document.documentElement.setAttribute('data-privacy', savedPrivacy);
         })();
     </script>
 </head>
@@ -446,6 +476,10 @@
         <span class="moon-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke-linejoin="round"/></svg></span>
     </button>
 
-    <script th:fragment="theme-script" src="/js/theme.js"></script>
+    <th:block th:fragment="theme-script">
+        <script src="/js/csrf.js"></script>
+        <script src="/js/theme.js"></script>
+        <script src="/js/privacy.js"></script>
+    </th:block>
 </body>
 </html> 

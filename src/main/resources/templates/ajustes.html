@@ -11,7 +11,6 @@
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <link rel="stylesheet" href="/css/ajustes.css">
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
-    <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
@@ -19,64 +18,91 @@
 <div th:replace="~{fragments/header :: header}"></div>
 
 <div class="main-content">
-    <div class="ajustes-container">
-        <img src="/images/logo-app.png" alt="Perfil" class="ajustes-avatar">
-        <h2 class="ajustes-title">Ajustes de cuenta</h2>
+    <div class="ajustes-wrap">
+        <div class="ajustes-topbar">
+            <a href="/perfil" class="ajustes-back-btn" title="Volver a Perfil">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h1 class="ajustes-titulo">Ajustes</h1>
+        </div>
 
-        <!-- Mensajes de error/éxito -->
         <div th:if="${error}" class="ajustes-message error" th:text="${error}"></div>
         <div th:if="${success}" class="ajustes-message success" th:text="${success}"></div>
 
-        <!-- Formulario para cambiar nombre de usuario -->
-        <form th:action="@{/perfil/cambiar-usuario}" method="post" class="ajustes-card">
-            <div class="ajustes-card-label">
-                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke-linecap="round"/></svg></span>
-                <label for="nuevoUsername">Nombre de usuario</label>
-            </div>
-            <input type="text" id="nuevoUsername" name="nuevoUsername" th:value="${user.username}" required>
-            <button type="submit">Actualizar nombre de usuario</button>
-        </form>
+        <!-- Preferencias -->
+        <div class="ajustes-section-label">Preferencias</div>
+        <div class="ajustes-options">
+            <button type="button" class="ajustes-option" id="btnIdioma">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" stroke-linecap="round"/></svg>
+                </span>
+                <span class="ajustes-option-label">Idioma</span>
+                <span class="ajustes-option-value">Español</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="ajustes-option" id="btnDivisa">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 8.5a3 2.2 0 0 1 3-1.8c1.66 0 3 1 3 2.3 0 2.3-4 1.8-4 4.1 0 1.3 1.34 2.3 3 2.3a3 2.2 0 0 0 3-1.8M12 5.5v13" stroke-linecap="round"/></svg>
+                </span>
+                <span class="ajustes-option-label">Divisa preferida</span>
+                <span class="ajustes-option-value" id="divisaActualLabel" th:text="${user.moneda}">EUR</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <a href="/ajustes/atajos" class="ajustes-option">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="ajustes-option-label">Atajos</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="/ajustes/automatizacion" class="ajustes-option">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8" stroke-linecap="round"/><circle cx="12" cy="12" r="3"/></svg>
+                </span>
+                <span class="ajustes-option-label">Automatización de gastos</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <a href="/ajustes/categorias" class="ajustes-option">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h7M4 12h7M4 18h7" stroke-linecap="round"/><circle cx="18" cy="6" r="2.3"/><circle cx="18" cy="12" r="2.3"/><circle cx="18" cy="18" r="2.3"/></svg>
+                </span>
+                <span class="ajustes-option-label">Categorías</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </div>
 
-        <!-- Formulario para cambiar email -->
-        <form th:action="@{/perfil/cambiar-email}" method="post" class="ajustes-card">
-            <div class="ajustes-card-label">
-                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                <label for="nuevoEmail">Correo electrónico</label>
-            </div>
-            <input type="email" id="nuevoEmail" name="nuevoEmail" th:value="${user.email}" required>
-            <button type="submit">Actualizar correo electrónico</button>
-        </form>
-
-        <!-- Formulario para cambiar contraseña -->
-        <form th:action="@{/perfil/cambiar-password}" method="post" class="ajustes-card">
-            <div class="ajustes-card-label">
-                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg></span>
-                <label for="passwordActual">Contraseña actual</label>
-            </div>
-            <input type="password" id="passwordActual" name="passwordActual" required>
-            <div class="ajustes-card-label">
-                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="15" r="4"/><path d="M10.5 12.5L20 3M17 6l3 3M14 9l2 2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                <label for="nuevoPassword">Nueva contraseña</label>
-            </div>
-            <input type="password" id="nuevoPassword" name="nuevoPassword" required>
-            <button type="submit">Actualizar contraseña</button>
-        </form>
-
-        <!-- Sección de balance total -->
-        <form th:action="@{/perfil/cambiar-balance}" method="post" class="ajustes-card">
-            <div class="ajustes-card-label">
-                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="16" cy="14.5" r="1.3" fill="currentColor" stroke="none"/></svg></span>
-                <label for="nuevoBalance">Ajustar saldo total</label>
-            </div>
-            <p class="ajustes-hint">Si tu saldo real no coincide con el que ves en la app, corrígelo aquí. Se creará un movimiento de ajuste automático para cuadrar la diferencia, sin tocar tu historial.</p>
-            <input type="number" step="0.01" id="nuevoBalance" name="nuevoBalance" th:value="${#numbers.formatDecimal(balanceTotalReal, 1, 2)}">
-            <button type="submit">Ajustar saldo</button>
-        </form>
+        <!-- Apariencia -->
+        <div class="ajustes-section-label">Apariencia</div>
+        <div class="tema-selector" id="temaSelector">
+            <button type="button" class="tema-opcion" data-tema="dark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke-linejoin="round"/></svg>
+                <span>Oscuro</span>
+            </button>
+            <button type="button" class="tema-opcion" data-tema="system">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3" stroke-linecap="round"/></svg>
+                <span>Sistema</span>
+            </button>
+            <button type="button" class="tema-opcion" data-tema="light">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke-linecap="round"/></svg>
+                <span>Claro</span>
+            </button>
+        </div>
 
         <!-- Exportar datos -->
-        <a th:href="@{/perfil/exportar-csv}" class="ajustes-export">
-            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19h16" stroke-linecap="round"/></svg></span>
-            <span>Exportar mis movimientos (CSV)</span>
+        <div class="ajustes-options ajustes-options--single">
+            <a th:href="@{/perfil/exportar-csv}" class="ajustes-option">
+                <span class="ajustes-option-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 19h16" stroke-linecap="round"/></svg>
+                </span>
+                <span class="ajustes-option-label">Exportar movimientos (CSV)</span>
+                <svg class="ajustes-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+        </div>
+
+        <!-- Sesión -->
+        <a href="/logout" class="ajustes-logout-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Cerrar sesión</span>
         </a>
 
         <!-- Botón para eliminar cuenta -->
@@ -94,15 +120,48 @@
                 </div>
             </div>
         </div>
-        <script>
-            const btnEliminarCuenta = document.getElementById('btnEliminarCuenta');
-            const modal = document.getElementById('modalConfirmarEliminar');
-            const cancelar = document.getElementById('cancelarEliminar');
-            const confirmar = document.getElementById('confirmarEliminar');
-            btnEliminarCuenta.addEventListener('click', () => { modal.classList.add('show'); });
-            cancelar.addEventListener('click', () => { modal.classList.remove('show'); });
-            confirmar.addEventListener('click', () => { document.getElementById('formEliminarCuenta').submit(); });
-        </script>
+    </div>
+</div>
+
+<!-- Modal: idioma (informativo, solo español disponible) -->
+<div id="modalIdioma" class="modal">
+    <div class="modal-content" style="max-width:340px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Idioma</h3>
+            <button type="button" class="modal-close" id="closeIdioma" aria-label="Cerrar">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="idioma-opcion idioma-opcion--activa">
+                <span>Español</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="ajustes-hint">Próximamente más idiomas.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: divisa preferida -->
+<div id="modalDivisa" class="modal">
+    <div class="modal-content" style="max-width:340px;">
+        <div class="modal-header">
+            <h3 class="modal-title">Divisa preferida</h3>
+            <button type="button" class="modal-close" id="closeDivisa" aria-label="Cerrar">&times;</button>
+        </div>
+        <form th:action="@{/ajustes/cambiar-moneda}" method="post" class="modal-form">
+            <div class="idioma-opcion idioma-opcion--radio">
+                <label><input type="radio" name="moneda" value="EUR" th:checked="${user.moneda == 'EUR'}"> Euro (€)</label>
+            </div>
+            <div class="idioma-opcion idioma-opcion--radio">
+                <label><input type="radio" name="moneda" value="USD" th:checked="${user.moneda == 'USD'}"> Dólar estadounidense ($)</label>
+            </div>
+            <div class="idioma-opcion idioma-opcion--radio">
+                <label><input type="radio" name="moneda" value="GBP" th:checked="${user.moneda == 'GBP'}"> Libra esterlina (£)</label>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" id="cancelarDivisa">Cancelar</button>
+                <button type="submit" class="btn-save">Guardar</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -112,5 +171,6 @@
 <!-- Scripts de header y tema -->
 <script th:replace="~{fragments/header :: header-script}"></script>
 <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+<script src="/js/ajustes.js"></script>
 </body>
 </html>

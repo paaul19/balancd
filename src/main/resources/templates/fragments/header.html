@@ -6,6 +6,7 @@
         body {
             margin: 0;
             padding: 0;
+            --header-h: 60px;
         }
         .header {
             background: color-mix(in srgb, var(--bg-primary) 74%, transparent);
@@ -13,10 +14,12 @@
             -webkit-backdrop-filter: blur(var(--blur-regular, 20px)) saturate(180%);
             border-bottom: none;
             width: 100vw;
-            min-height: 60px;
-            height: 60px;
             margin: 0;
-            padding: 0;
+            /* El notch/Dynamic Island se cubre empujando el contenido hacia abajo con este padding,
+               en vez de una capa aparte pintada encima (eso es lo que dejaba los botones "cortados"
+               por la mitad en el PWA de iPhone: la capa quedaba por encima del propio contenido). */
+            padding: env(safe-area-inset-top, 0px) 0 0 0;
+            box-sizing: border-box;
             position: fixed;
             top: 0;
             left: 0;
@@ -37,7 +40,7 @@
         .header-inner {
             position: relative;
             width: 100vw;
-            height: 100%;
+            height: var(--header-h);
         }
         .header-logo {
             position: absolute;
@@ -72,8 +75,11 @@
             top: 50%;
             transform: translateY(-50%);
             z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        .logout-btn {
+        .ajustes-btn {
             background: var(--bg-elevated);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
@@ -89,21 +95,95 @@
             align-items: center;
             justify-content: center;
         }
-        .logout-btn svg {
-            width: 18px;
-            height: 18px;
+        .ajustes-btn svg {
+            /* Un poco más grande que perfil-btn/privacy-btn (20px en vez de 18px): el trazo del
+               engranaje es más fino y con más detalle, así que al mismo tamaño se percibe más
+               pequeño/débil que los otros dos iconos del header. */
+            width: 20px;
+            height: 20px;
         }
-        .logout-btn span:not(.icon-logout) {
+        .ajustes-btn span:not(.icon-logout) {
             display: none;
         }
-        .logout-btn:hover {
+        .ajustes-btn:hover {
             background: var(--border-color);
             transform: scale(1.05);
         }
+        .perfil-btn {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--dur-fast, 0.2s) var(--ease-standard, ease), transform var(--dur-fast, 0.2s) var(--ease-standard, ease);
+        }
+        .perfil-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        .perfil-btn:hover {
+            background: var(--border-color);
+            transform: scale(1.05);
+        }
+        .privacy-btn {
+            position: relative;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color var(--dur-fast, 0.2s) var(--ease-standard, ease), transform var(--dur-fast, 0.2s) var(--ease-standard, ease);
+        }
+        .privacy-btn:hover {
+            background: var(--border-color);
+            transform: scale(1.05);
+        }
+        .privacy-btn .eye-icon,
+        .privacy-btn .eye-off-icon {
+            display: block;
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            transition: opacity var(--dur-base, 0.3s) var(--ease-standard, ease), transform var(--dur-base, 0.3s) var(--ease-standard, ease);
+        }
+        .privacy-btn .eye-icon svg,
+        .privacy-btn .eye-off-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .privacy-btn .eye-off-icon {
+            opacity: 0;
+            transform: scale(0.6);
+        }
+        .privacy-btn .eye-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+        html[data-privacy="on"] .privacy-btn .eye-icon {
+            opacity: 0;
+            transform: scale(0.6);
+        }
+        html[data-privacy="on"] .privacy-btn .eye-off-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
         @media (max-width: 768px) {
-            .header {
-                min-height: 54px;
-                height: 54px;
+            body {
+                --header-h: 54px;
             }
             .header-logo img {
                 height: 32px;
@@ -114,86 +194,52 @@
             .header-theme-toggle {
                 left: 1rem;
             }
-            .logout-btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
-            }
         }
         @media (max-width: 480px) {
-            .header {
-                min-height: 44px;
-                height: 44px;
+            body {
+                --header-h: 44px;
             }
             .header-logo img {
                 height: 26px;
             }
             .header-actions {
                 right: 0.5rem;
+                gap: 0.4rem;
             }
             .header-theme-toggle {
                 left: 0.5rem;
+                gap: 0.4rem;
             }
-            .logout-btn {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.75rem;
+            .ajustes-btn, .perfil-btn, .privacy-btn {
+                width: 34px;
+                height: 34px;
             }
-        }
-        .header {
-            padding-top: env(safe-area-inset-top, 0px);
-        }
-        .header::before {
-            content: '';
-            display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: env(safe-area-inset-top, 0px);
-            background: var(--bg-secondary) !important;
-            z-index: 2000;
-        }
-        .ios-notch-fix {
-            display: none;
-        }
-        @supports(padding-top: env(safe-area-inset-top)) {
-            .ios-notch-fix {
-                display: block;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: env(safe-area-inset-top, 0px);
-                background: var(--bg-secondary);
-                z-index: 2001;
+            .perfil-btn svg, .privacy-btn .eye-icon, .privacy-btn .eye-off-icon {
+                width: 16px;
+                height: 16px;
+            }
+            .ajustes-btn svg {
+                width: 18px;
+                height: 18px;
             }
         }
-        /* Asegurar que el contenido principal no se superponga con el notch */
-        body {
-            padding-top: env(safe-area-inset-top, 0px);
-        }
+        /* Mismo --header-h que usa .header-inner: así nunca se desincronizan.
+           El +8px extra es aire respirable entre el header y el contenido, no un ajuste fino a ciegas. */
         .main-content {
-            padding-top: calc(64px + env(safe-area-inset-top, 0px));
-        }
-        @media (max-width: 768px) {
-            .main-content {
-                padding-top: calc(54px + env(safe-area-inset-top, 0px));
-            }
-        }
-        @media (max-width: 480px) {
-            .main-content {
-                padding-top: calc(44px + env(safe-area-inset-top, 0px));
-            }
+            padding-top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 8px);
         }
     </style>
 </head>
 <body>
-    <div class="ios-notch-fix"></div>
-    <header class="header" th:fragment="header">
+    <header class="header" th:fragment="header" th:attr="data-money-symbol=${moneyFormatter != null ? moneyFormatter.simbolo : '€'},data-money-code=${moneyFormatter != null ? moneyFormatter.codigo : 'EUR'}">
         <div class="header-inner">
             <div class="header-theme-toggle">
-                <button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
-                    <span class="sun-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke-linecap="round"/></svg></span>
-                    <span class="moon-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke-linejoin="round"/></svg></span>
+                <a href="/perfil" class="perfil-btn" title="Perfil">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7" stroke-linecap="round"/></svg>
+                </a>
+                <button type="button" class="privacy-btn" onclick="togglePrivacy()" title="Ocultar/mostrar cifras">
+                    <span class="eye-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12z" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3"/></svg></span>
+                    <span class="eye-off-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.9 17.9A10.4 10.4 0 0 1 12 19c-7 0-10.5-7-10.5-7a18.9 18.9 0 0 1 4.2-5.2M9.9 4.2A9.7 9.7 0 0 1 12 5c7 0 10.5 7 10.5 7a18.7 18.7 0 0 1-2.2 3.2M14.1 14.1a3 3 0 1 1-4.2-4.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 2l20 20" stroke-linecap="round"/></svg></span>
                 </button>
             </div>
             <div class="header-logo">
@@ -201,12 +247,21 @@
                 <img src="/images/logo-blanco.png" alt="Logo" class="logo-blanco" style="display: none;">
             </div>
             <div class="header-actions">
-                <a href="/logout" class="logout-btn" title="Cerrar sesión">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <a href="/ajustes" class="ajustes-btn" title="Ajustes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </a>
             </div>
         </div>
         <script th:fragment="header-script">
+            // Divisa preferida del usuario, leída del propio <header> (renderizado por el
+            // servidor) para que el JS del cliente pueda formatear importes sin depender de
+            // que cada página exponga su propio inline script con th:inline="javascript".
+            (function() {
+                const headerEl = document.querySelector('.header');
+                window.MONEY_SYMBOL = (headerEl && headerEl.getAttribute('data-money-symbol')) || '€';
+                window.MONEY_CODE = (headerEl && headerEl.getAttribute('data-money-code')) || 'EUR';
+            })();
+
             function updateLogo() {
                 const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
                 const logoNegro = document.querySelector('.logo-negro');

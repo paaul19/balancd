@@ -37,6 +37,13 @@ public class EmailService {
         send(toEmail, subject, htmlContent);
     }
 
+    /** Hallazgo M5: confirmación de cambio de email, enviada a la dirección NUEVA. */
+    public void sendEmailChangeConfirmation(String toEmail, String confirmLink) throws IOException {
+        String subject = "Confirma tu nuevo correo en balanc*d";
+        String htmlContent = loadTemplate("templates/email/email-change.html").replace("${confirmLink}", confirmLink);
+        send(toEmail, subject, htmlContent);
+    }
+
     private void send(String toEmail, String subject, String htmlContent) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(resendApiKey);

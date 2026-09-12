@@ -31,8 +31,28 @@ services:
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY}
+      APP_JWT_SECRET: ${APP_JWT_SECRET}
       RESEND_API_KEY: ${RESEND_API_KEY}
       RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
+      # Poner COOKIE_SECURE=true en el .env de producción (servida por HTTPS). En local sobre
+      # HTTP debe quedarse en false o el navegador nunca reenviará la cookie de sesión.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+
+  admin:
+    build: ./admin-panel
+    container_name: balancd-admin
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${ADMIN_PORT:-9093}:9093"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/finanzas?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Madrid"
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
 
 volumes:
   balancd-mysql-data:

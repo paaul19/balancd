@@ -1,0 +1,363 @@
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.main-content {
+  flex: 1;
+  padding-top: calc(var(--header-h, 60px) + env(safe-area-inset-top, 0px) + 10px);
+  padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
+}
+
+.cuentas-wrap {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 1rem 1rem 0;
+}
+
+.cuentas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.cuentas-header h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  margin: 0;
+}
+.btn-nueva-cuenta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard), transform var(--dur-instant) var(--ease-standard);
+}
+.btn-nueva-cuenta:hover { background: var(--button-hover); }
+.btn-nueva-cuenta:active { transform: scale(0.96); }
+.btn-nueva-cuenta svg { width: 16px; height: 16px; }
+
+.cuentas-total-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1.4rem;
+  margin-bottom: 1.2rem;
+}
+.cuentas-total-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.cuentas-total-amount {
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  margin: 0.15rem 0 0;
+}
+
+.cuentas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cuenta-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem;
+  box-shadow: var(--shadow-sm);
+}
+.cuenta-card.inactiva {
+  opacity: 0.55;
+}
+
+.cuenta-icon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.cuenta-icon svg { width: 21px; height: 21px; }
+
+.cuenta-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cuenta-nombre {
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cuenta-digitos {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.cuenta-badge-inactiva {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caption);
+  color: var(--text-tertiary);
+  background: var(--border-color);
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.cuenta-tipo {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+
+.cuenta-saldo-acciones {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+.cuenta-saldo {
+  font-size: 1.02rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.cuenta-saldo.negative { color: var(--danger); }
+
+.cuenta-actions {
+  display: flex;
+  gap: 0.3rem;
+}
+.cuenta-actions button {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.cuenta-actions button:hover {
+  color: var(--text-primary);
+  background: var(--border-color);
+}
+.cuenta-actions button svg { width: 15px; height: 15px; }
+.cuenta-actions .btn-eliminar-cuenta:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.cuentas-empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 2.5rem 1rem;
+}
+
+/* --- Modales (crear/editar cuenta, confirmar eliminar) --- */
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(8,9,12,0.5);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--dur-base) var(--ease-standard), visibility var(--dur-base), backdrop-filter var(--dur-base) var(--ease-standard);
+}
+.modal.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: var(--shadow);
+  transform: scale(0.94) translateY(10px);
+  opacity: 0;
+  transition: transform var(--dur-base) var(--ease-standard), opacity var(--dur-fast) var(--ease-standard);
+}
+.modal.show .modal-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.modal-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 0;
+}
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.form-group input,
+.form-group select {
+  padding: 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--input-border);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.modal-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-cancel {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+.btn-save {
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.cuentas-message {
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+.cuentas-message.error { color: var(--danger); }
+.cuentas-message.success { color: var(--accent); }
+
+/* --- Responsive móvil ---
+   theme-switcher.html trae una regla global heredada de la versión antigua de la app
+   ("li { flex-direction: column !important }" y "button { padding: 0.8rem 1rem !important }"
+   a <=480px) pensada para listas/formularios que ya no existen. Como las tarjetas de cuenta
+   son <li>, esa regla las apila en columna y agranda los botones de icono; se reafirma aquí
+   el layout deseado con la misma especificidad, igual que ya hacen lista.css/recurrentes.css. */
+@media (max-width: 600px) {
+  .cuentas-wrap {
+    padding: 0.85rem 0.85rem 0;
+  }
+  .cuentas-total-card {
+    padding: 1.1rem;
+  }
+  .modal-content {
+    margin: 1rem;
+    max-width: calc(100% - 2rem);
+    width: auto;
+    padding: 1.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .cuentas-header {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+  .cuenta-card {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+    padding: 0.8rem !important;
+  }
+  .cuenta-saldo-acciones {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+  }
+  .cuenta-actions {
+    flex-direction: row !important;
+  }
+  .cuenta-actions button {
+    padding: 0.3rem !important;
+    width: 30px;
+    height: 30px;
+  }
+  .btn-nueva-cuenta {
+    padding: 0.55rem 0.85rem !important;
+    font-size: 0.85rem !important;
+  }
+}

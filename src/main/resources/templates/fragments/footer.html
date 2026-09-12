@@ -139,10 +139,21 @@
 
 
 
-        <!-- Perfil -->
-        <a href="/perfil" class="footer-btn" title="Perfil" data-intro="Edita tu perfil y contraseña." data-step="5" data-position="top">
-            <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M2 20c0-4 4-7 10-7s10 3 10 7" stroke-linecap="round"/></svg>
+        <!-- Objetivos y presupuestos -->
+        <a href="/objetivos" class="footer-btn" title="Objetivos y presupuestos" data-intro="Consulta tus objetivos y presupuestos." data-step="5" data-position="top">
+            <svg fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
         </a>
+        <!--
+            Solo rellena window.cuentasUsuario si la propia página no lo hizo ya (lista.html y
+            recurrentes.html siguen fijando su propia versión más adelante en el documento, que
+            sobreescribe esta). En el resto de páginas (ajustes, categorías, perfil, búsqueda...)
+            no existía ninguna, así que el botón "+" del footer creía que no tenías cuentas.
+        -->
+        <script th:inline="javascript">
+            if (typeof window.cuentasUsuario === 'undefined') {
+                window.cuentasUsuario = /*[[${cuentasActivasGlobal}]]*/ [];
+            }
+        </script>
     </footer>
 </body>
 </html>

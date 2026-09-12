@@ -17,6 +17,10 @@ public class Movimiento {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cuenta_id")
+    private Cuenta cuenta;
+
     @Column(name = "cantidad_cifrada", nullable = false)
     private String cantidadCifrada; // Cantidad cifrada como string
 
@@ -29,9 +33,13 @@ public class Movimiento {
     @Column(name = "fecha_cifrada", nullable = false)
     private String fechaCifrada; // Fecha cifrada como string
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "categoria", nullable = true)
-    private CategoriaMovimiento categoria;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategoria_id")
+    private Subcategoria subcategoria;
 
     @Column(name = "mes_asignado", nullable = false)
     private int mesAsignado; // mes lógico asignado (1-12) - NO cifrado para consultas
@@ -112,6 +120,12 @@ public class Movimiento {
         this.anioAsignado = anioAsignado;
     }
 
-    public CategoriaMovimiento getCategoria() { return categoria; }
-    public void setCategoria(CategoriaMovimiento categoria) { this.categoria = categoria; }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
+
+    public Subcategoria getSubcategoria() { return subcategoria; }
+    public void setSubcategoria(Subcategoria subcategoria) { this.subcategoria = subcategoria; }
+
+    public Cuenta getCuenta() { return cuenta; }
+    public void setCuenta(Cuenta cuenta) { this.cuenta = cuenta; }
 }

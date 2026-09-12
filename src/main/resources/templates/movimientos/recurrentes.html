@@ -40,7 +40,7 @@
                             <div class="recurrente-asunto" th:text="${rec.asunto}">Asunto</div>
                             <div class="recurrente-cantidad" th:class="${rec.ingreso ? 'cantidad-ingreso' : 'cantidad-gasto'}">
                                 <span th:text="${rec.ingreso ? '+' : '-'}"></span>
-                                <span th:text="${#numbers.formatDecimal(rec.cantidad, 1, 2)} + ' €'"></span>
+                                <span class="js-money" th:text="${moneyFormatter.format(rec.cantidad)}"></span>
                             </div>
                         </div>
                         <div class="estado-activo" th:class="${rec.activo ? 'estado-activo activo' : 'estado-activo inactivo'}" 
@@ -51,6 +51,10 @@
                         <div class="detail-item">
                             <span class="detail-label">Tipo</span>
                             <span class="detail-value" th:text="${rec.ingreso ? 'Ingreso' : 'Gasto'}">Tipo</span>
+                        </div>
+                        <div class="detail-item" th:if="${rec.cuentaNombre != null}">
+                            <span class="detail-label">Cuenta</span>
+                            <span class="detail-value" th:text="${rec.cuentaNombre}">Cuenta</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Fecha de inicio</span>
@@ -72,20 +76,9 @@
                             <span class="detail-label">Última vez ejecutado</span>
                             <span class="detail-value" th:text="${#temporals.format(rec.ultimaFechaEjecutada, 'dd/MM/yyyy')}">Última</span>
                         </div>
-                        <div class="detail-item" th:if="${rec.categoria != null}">
+                        <div class="detail-item" th:if="${rec.categoriaNombre != null}">
                             <span class="detail-label">Categoría</span>
-                            <span class="detail-value" th:switch="${rec.categoria}">
-                                <span th:case="'TRANSPORTE'">Transporte</span>
-                                <span th:case="'COMIDA'">Comida</span>
-                                <span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span>
-                                <span th:case="'HOGAR'">Hogar</span>
-                                <span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span>
-                                <span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span>
-                                <span th:case="'COMPRAS'">Compras</span>
-                                <span th:case="'COMPRAS_ONLINE'">Compras Online</span>
-                                <span th:case="'SUSCRIPCION'">Suscripción</span>
-                                <span th:case="*">[[${rec.categoria}]]</span>
-                            </span>
+                            <span class="detail-value" th:text="${rec.subcategoriaNombre != null} ? (${rec.categoriaNombre} + ' · ' + ${rec.subcategoriaNombre}) : ${rec.categoriaNombre}"></span>
                         </div>
                     </div>
                     
@@ -98,14 +91,14 @@
                                 th:data-ingreso="${rec.ingreso}"
                                 th:data-fecha="${#temporals.format(rec.fechaInicio, 'yyyy-MM-dd')}"
                                 th:data-frecuencia="${rec.frecuencia}"
-                                th:data-categoria="${rec.categoria}">
+                                th:data-categoria-id="${rec.categoriaId}"
+                                th:data-subcategoria-id="${rec.subcategoriaId}"
+                                th:data-cuenta-id="${rec.cuentaId}">
                             Modificar
                         </button>
-                        <a th:href="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" 
-                           class="btn btn-sm btn-danger"
-                           >
-                            Borrar
-                        </a>
+                        <form th:action="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" method="post" style="display:inline; margin:0;">
+                            <button type="submit" class="btn btn-sm btn-danger">Borrar</button>
+                        </form>
                     </div>
                 </li>
             </ul>
@@ -120,8 +113,12 @@
                 <form id="editRecurrenteForm" class="modal-form" method="post">
                     <input type="hidden" id="editRecurrenteId" name="id">
                     <div class="form-group">
-                        <label for="editRecurrenteCantidad">Cantidad (€)</label>
+                        <label for="editRecurrenteCantidad">Cantidad (<span th:text="${moneyFormatter.simbolo}">€</span>)</label>
                         <input type="number" id="editRecurrenteCantidad" name="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRecurrenteCuenta">Cuenta</label>
+                        <select id="editRecurrenteCuenta" name="cuentaId" required></select>
                     </div>
                     <div class="form-group">
                         <label for="editRecurrenteAsunto">Asunto</label>
@@ -149,20 +146,14 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="categoriaRecurrente">Categoría</label>
-                        <select id="categoriaRecurrente" name="categoria">
-                            <option value="" selected>Sin categoría</option>
-                            <option value="TRANSPORTE">Transporte</option>
-                            <option value="COMIDA">Comida</option>
-                            <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
-                            <option value="HOGAR">Hogar</option>
-                            <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
-                            <option value="EDUCACION_CURSOS">Educación y Cursos</option>
-                            <option value="COMPRAS">Compras</option>
-                            <option value="COMPRAS_ONLINE">Compras Online</option>
-                            <option value="SUSCRIPCION">Suscripción</option>
-                        </select>
+                        <label for="editRecurrenteCategoria">Categoría</label>
+                        <select id="editRecurrenteCategoria" name="categoriaId" data-tipo="ingreso"></select>
                     </div>
+                    <div class="form-group" id="editRecurrenteSubcategoriaGroup" style="display:none;">
+                        <label for="editRecurrenteSubcategoria">Subcategoría</label>
+                        <select id="editRecurrenteSubcategoria" name="subcategoriaId"></select>
+                    </div>
+                    <p id="editRecurrenteError" class="form-error-message" style="display:none;"></p>
                     <div class="modal-actions">
                         <button type="button" class="btn-cancel" id="btnCancelarRecurrente">Cancelar</button>
                         <button type="submit" class="btn-save">Guardar</button>
@@ -189,6 +180,11 @@
     
     <!-- Script del header -->
     <script th:replace="~{fragments/header :: header-script}"></script>
+    <script th:inline="javascript">
+        window.cuentasUsuario = /*[[${cuentas}]]*/ [];
+        window.categoriasGasto = /*[[${categoriasGasto}]]*/ [];
+        window.categoriasIngreso = /*[[${categoriasIngreso}]]*/ [];
+    </script>
 
 </body>
 </html> 

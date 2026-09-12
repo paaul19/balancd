@@ -1,9 +1,14 @@
 package com.balancdapp.controller;
 
+import com.balancdapp.model.Cuenta;
 import com.balancdapp.model.Movimiento;
+import com.balancdapp.model.TipoCategoria;
 import com.balancdapp.model.User;
+import com.balancdapp.service.CategoriaService;
+import com.balancdapp.service.EncryptedCuentaService;
 import com.balancdapp.service.EncryptedMovimientoRecurrenteService;
 import com.balancdapp.service.EncryptedMovimientoService;
+import com.balancdapp.service.EncryptedTransferenciaService;
 import com.balancdapp.service.MovimientoService;
 import com.balancdapp.service.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -32,10 +37,35 @@ public class MovimientoController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EncryptedCuentaService encryptedCuentaService;
+
+    @Autowired
+    private EncryptedTransferenciaService encryptedTransferenciaService;
+
+    @Autowired
+    private CategoriaService categoriaService;
+
+    /**
+     * Resuelve una cuenta por id y verifica que pertenece al usuario de sesión.
+     * Nunca se confía en el id recibido del formulario sin esta comprobación.
+     */
+    private Cuenta requireOwnedCuenta(Long cuentaId, User user) {
+        if (cuentaId == null) {
+            return null;
+        }
+        Cuenta cuenta = encryptedCuentaService.getCuentaById(cuentaId);
+        if (cuenta == null || cuenta.getUser() == null || !cuenta.getUser().getId().equals(user.getId())) {
+            return null;
+        }
+        return cuenta;
+    }
+
     @GetMapping("/movimientos")
     public String verMovimientos(@RequestParam(value = "mes", required = false) Integer mes,
                                  @RequestParam(value = "anio", required = false) Integer anio,
                                  @RequestParam(value = "busqueda", required = false) String busqueda,
+                                 @RequestParam(value = "cuenta", required = false) Long cuentaFiltro,
                                  @RequestParam(value = "tutorialVisto", required = false) Integer tutorialVisto,
                                  Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -54,17 +84,23 @@ public class MovimientoController {
         // Usar el servicio cifrado para obtener movimientos
         List<EncryptedMovimientoService.MovimientoDTO> todos = encryptedMovimientoService.getMovimientosByUserId(user.getId());
 
-        // Balance total real: se calcula a partir de todos los movimientos del usuario
-        // (en vez de depender del contador incremental user.balanceTotal, que puede desincronizarse)
-        double balanceTotalReal = todos.stream()
-                .mapToDouble(m -> m.isIngreso() ? m.getCantidad() : -m.getCantidad())
-                .sum();
+        // Balance total real: suma del saldo de todas las cuentas activas (saldo inicial +
+        // movimientos +/- transferencias). Para usuarios con una única cuenta migrada con
+        // saldo inicial 0, coincide exactamente con la suma de movimientos de antes.
+        double balanceTotalReal = encryptedCuentaService.getBalanceTotal(user);
+        List<EncryptedCuentaService.CuentaDTO> cuentas = encryptedCuentaService.getCuentasActivasByUser(user);
 
         // Filtrar por búsqueda de asunto si se proporciona
         if (busqueda != null && !busqueda.trim().isEmpty()) {
             String busquedaLower = busqueda.trim().toLowerCase();
             todos = todos.stream()
                     .filter(m -> m.getAsunto() != null && m.getAsunto().toLowerCase().contains(busquedaLower))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        // Filtrar por cuenta si se proporciona
+        if (cuentaFiltro != null) {
+            todos = todos.stream()
+                    .filter(m -> cuentaFiltro.equals(m.getCuentaId()))
                     .collect(java.util.stream.Collectors.toList());
         }
 
@@ -109,11 +145,26 @@ public class MovimientoController {
         double totalGastos = movimientos.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
         double balance = totalIngresos - totalGastos;
 
+        // Transferencias del mes seleccionado: se muestran en la actividad reciente pero
+        // no cuentan como ingreso/gasto.
+        List<EncryptedTransferenciaService.TransferenciaDTO> transferenciasMes =
+                encryptedTransferenciaService.getTransferenciasByUserAndMesAnio(user, seleccionado.getMonthValue(), seleccionado.getYear());
+        if (cuentaFiltro != null) {
+            transferenciasMes = transferenciasMes.stream()
+                    .filter(t -> cuentaFiltro.equals(t.getCuentaOrigenId()) || cuentaFiltro.equals(t.getCuentaDestinoId()))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
         model.addAttribute("movimientos", movimientos);
+        model.addAttribute("transferenciasMes", transferenciasMes);
         model.addAttribute("totalIngresos", totalIngresos);
         model.addAttribute("totalGastos", totalGastos);
         model.addAttribute("balance", balance);
         model.addAttribute("balanceTotalReal", balanceTotalReal);
+        model.addAttribute("cuentas", cuentas);
+        model.addAttribute("cuentaSeleccionada", cuentaFiltro);
+        model.addAttribute("categoriasGasto", categoriaService.getArbolVisibleParaUsuario(user, TipoCategoria.EXPENSE));
+        model.addAttribute("categoriasIngreso", categoriaService.getArbolVisibleParaUsuario(user, TipoCategoria.INCOME));
         model.addAttribute("nuevoMovimiento", new Movimiento());
         model.addAttribute("mesesDisponibles", mesesDisponibles);
         model.addAttribute("mesSeleccionado", seleccionado);
@@ -131,16 +182,24 @@ public class MovimientoController {
                                 @RequestParam String fecha,
                                 @RequestParam(value = "mes", required = false) Integer mes,
                                 @RequestParam(value = "anio", required = false) Integer anio,
-                                @RequestParam(value = "categoria", required = false) String categoria,
-                                HttpSession session) {
+                                @RequestParam(value = "categoriaId", required = false) Long categoriaId,
+                                @RequestParam(value = "subcategoriaId", required = false) Long subcategoriaId,
+                                @RequestParam(value = "cuentaId", required = false) Long cuentaId,
+                                HttpSession session,
+                                org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+        Cuenta cuenta = requireOwnedCuenta(cuentaId, user);
+        if (cuenta == null) {
+            redirectAttributes.addFlashAttribute("error", "Selecciona una cuenta válida para el movimiento.");
+            return "redirect:/movimientos";
+        }
         LocalDate fechaMovimiento = LocalDate.parse(fecha);
         int mesAsignado = (mes != null) ? mes : fechaMovimiento.getMonthValue();
         int anioAsignado = (anio != null) ? anio : fechaMovimiento.getYear();
-        encryptedMovimientoService.createMovimiento(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaMovimiento, mesAsignado, anioAsignado, categoria);
+        encryptedMovimientoService.createMovimiento(user, cuenta, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaMovimiento, mesAsignado, anioAsignado, categoriaId, subcategoriaId);
         // Actualizar user en sesión
         User actualizado = userService.getUserById(user.getId()).orElse(user);
         session.setAttribute("user", actualizado);
@@ -171,8 +230,11 @@ public class MovimientoController {
                                  @RequestParam(required = false) String asunto,
                                  @RequestParam Boolean ingreso,
                                  @RequestParam String fecha,
-                                 @RequestParam(value = "categoria", required = false) String categoria,
-                                 HttpSession session) {
+                                 @RequestParam(value = "categoriaId", required = false) Long categoriaId,
+                                 @RequestParam(value = "subcategoriaId", required = false) Long subcategoriaId,
+                                 @RequestParam(value = "cuentaId", required = false) Long cuentaId,
+                                 HttpSession session,
+                                 org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
@@ -181,8 +243,14 @@ public class MovimientoController {
         if (movimiento == null || !movimiento.getUser().getId().equals(user.getId())) {
             return "redirect:/movimientos";
         }
+        // Si no se envía cuentaId (formularios antiguos en caché) se conserva la cuenta actual del movimiento
+        Cuenta cuenta = cuentaId != null ? requireOwnedCuenta(cuentaId, user) : movimiento.getCuenta();
+        if (cuenta == null) {
+            redirectAttributes.addFlashAttribute("error", "Selecciona una cuenta válida para el movimiento.");
+            return "redirect:/movimientos";
+        }
         LocalDate fechaMovimiento = LocalDate.parse(fecha);
-        encryptedMovimientoService.updateMovimiento(movimiento, cantidad, asunto != null ? asunto.trim() : "", ingreso, fechaMovimiento, categoria);
+        encryptedMovimientoService.updateMovimiento(movimiento, cuenta, cantidad, asunto != null ? asunto.trim() : "", ingreso, fechaMovimiento, categoriaId, subcategoriaId);
         // Actualizar user en sesión
         User actualizado = userService.getUserById(user.getId()).orElse(user);
         session.setAttribute("user", actualizado);
@@ -241,6 +309,9 @@ public class MovimientoController {
     public String busquedaAvanzada(@RequestParam(value = "busqueda", required = false) String busqueda,
                                    @RequestParam(value = "tipo", required = false, defaultValue = "todos") String tipo,
                                    @RequestParam(value = "periodo", required = false, defaultValue = "12") Integer periodo,
+                                   @RequestParam(value = "cuenta", required = false) Long cuentaId,
+                                   @RequestParam(value = "categoria", required = false) Long categoriaId,
+                                   @RequestParam(value = "subcategoria", required = false) Long subcategoriaId,
                                    Model model, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -253,6 +324,23 @@ public class MovimientoController {
             String busquedaLower = busqueda.trim().toLowerCase();
             todos = todos.stream()
                     .filter(m -> m.getAsunto() != null && m.getAsunto().toLowerCase().contains(busquedaLower))
+                    .toList();
+        }
+        // Filtrar por cuenta
+        if (cuentaId != null) {
+            todos = todos.stream()
+                    .filter(m -> cuentaId.equals(m.getCuentaId()))
+                    .toList();
+        }
+        // Filtrar por categoría/subcategoría
+        if (categoriaId != null) {
+            todos = todos.stream()
+                    .filter(m -> categoriaId.equals(m.getCategoriaId()))
+                    .toList();
+        }
+        if (subcategoriaId != null) {
+            todos = todos.stream()
+                    .filter(m -> subcategoriaId.equals(m.getSubcategoriaId()))
                     .toList();
         }
         // Filtrar por periodo
@@ -308,6 +396,12 @@ public class MovimientoController {
         model.addAttribute("busqueda", busqueda);
         model.addAttribute("tipo", tipo);
         model.addAttribute("periodo", periodo);
+        model.addAttribute("cuentaSeleccionada", cuentaId);
+        model.addAttribute("cuentas", encryptedCuentaService.getCuentasByUser(user));
+        model.addAttribute("categoriaSeleccionada", categoriaId);
+        model.addAttribute("subcategoriaSeleccionada", subcategoriaId);
+        model.addAttribute("categoriasGasto", categoriaService.getArbolVisibleParaUsuario(user, TipoCategoria.EXPENSE));
+        model.addAttribute("categoriasIngreso", categoriaService.getArbolVisibleParaUsuario(user, TipoCategoria.INCOME));
         // Calcular totales globales
         double totalIngresos = todos.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
         double totalGastos = todos.stream().filter(m -> !m.isIngreso()).mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
@@ -324,17 +418,25 @@ public class MovimientoController {
                                           @RequestParam Boolean ingreso,
                                           @RequestParam String fecha,
                                           @RequestParam String frecuencia,
-                                          @RequestParam(value = "categoria", required = false) String categoria,
+                                          @RequestParam(value = "categoriaId", required = false) Long categoriaId,
+                                          @RequestParam(value = "subcategoriaId", required = false) Long subcategoriaId,
                                           @RequestParam(required = false) Integer repeticiones,
                                           @RequestParam(required = false) String fechaFin,
-                                          HttpSession session) {
+                                          @RequestParam(value = "cuentaId", required = false) Long cuentaId,
+                                          HttpSession session,
+                                          org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
+        Cuenta cuenta = requireOwnedCuenta(cuentaId, user);
+        if (cuenta == null) {
+            redirectAttributes.addFlashAttribute("error", "Selecciona una cuenta válida para el recurrente.");
+            return "redirect:/movimientos/recurrentes";
+        }
         LocalDate fechaInicio = LocalDate.parse(fecha);
         LocalDate fechaFinParsed = (fechaFin != null && !fechaFin.isEmpty()) ? LocalDate.parse(fechaFin) : null;
-        encryptedMovimientoService.crearMovimientoRecurrente(user, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaInicio, frecuencia, repeticiones, fechaFinParsed, categoria);
+        encryptedMovimientoService.crearMovimientoRecurrente(user, cuenta, cantidad, ingreso, asunto != null ? asunto.trim() : "", fechaInicio, frecuencia, repeticiones, fechaFinParsed, categoriaId, subcategoriaId);
         return "redirect:/movimientos";
     }
 
@@ -346,10 +448,13 @@ public class MovimientoController {
         }
         List<EncryptedMovimientoRecurrenteService.MovimientoRecurrenteDTO> recurrentes = encryptedRecurrenteService.getRecurrentesByUser(user);
         model.addAttribute("recurrentes", recurrentes);
+        model.addAttribute("cuentas", encryptedCuentaService.getCuentasActivasByUser(user));
+        model.addAttribute("categoriasGasto", categoriaService.getArbolVisibleParaUsuario(user, TipoCategoria.EXPENSE));
+        model.addAttribute("categoriasIngreso", categoriaService.getArbolVisibleParaUsuario(user, TipoCategoria.INCOME));
         return "movimientos/recurrentes";
     }
 
-    @GetMapping("/movimientos/recurrentes/terminar/{id}")
+    @PostMapping("/movimientos/recurrentes/terminar/{id}")
     public String terminarRecurrente(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -359,7 +464,7 @@ public class MovimientoController {
         return "redirect:/movimientos/recurrentes";
     }
 
-    @GetMapping("/movimientos/recurrentes/borrar/{id}")
+    @PostMapping("/movimientos/recurrentes/borrar/{id}")
     public String borrarRecurrente(@PathVariable Long id, HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -376,40 +481,27 @@ public class MovimientoController {
                                       @RequestParam Boolean ingreso,
                                       @RequestParam String fechaInicio,
                                       @RequestParam String frecuencia,
-                                      @RequestParam(value = "categoria", required = false) String categoria,
+                                      @RequestParam(value = "categoriaId", required = false) Long categoriaId,
+                                      @RequestParam(value = "subcategoriaId", required = false) Long subcategoriaId,
+                                      @RequestParam(value = "cuentaId", required = false) Long cuentaId,
                                       HttpSession session) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             return "redirect:/login";
         }
 
+        Cuenta cuenta = requireOwnedCuenta(cuentaId, user);
+        if (cuenta == null) {
+            return "redirect:/movimientos/recurrentes";
+        }
         LocalDate fechaInicioParsed = LocalDate.parse(fechaInicio);
-        encryptedMovimientoService.modificarMovimientoRecurrente(id, user, cantidad, asunto, ingreso, fechaInicioParsed, frecuencia, categoria);
+        encryptedMovimientoService.modificarMovimientoRecurrente(id, user, cuenta, cantidad, asunto, ingreso, fechaInicioParsed, frecuencia, categoriaId, subcategoriaId);
 
         return "redirect:/movimientos/recurrentes";
     }
 
-    @GetMapping("/debug/fecha")
-    public String debugFecha(Model model) {
-        LocalDate hoy = LocalDate.now();
-        model.addAttribute("fecha", hoy);
-        model.addAttribute("zonaHoraria", java.time.ZoneId.systemDefault());
-        model.addAttribute("timestamp", java.time.LocalDateTime.now());
-        return "debug/fecha";
-    }
-
-    @GetMapping("/debug/procesar-recurrentes")
-    public String procesarRecurrentesManualmente(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-
-        // Ejecutar el scheduler manualmente
-        encryptedMovimientoService.procesarMovimientosRecurrentes();
-
-        model.addAttribute("mensaje", "Scheduler ejecutado manualmente");
-        model.addAttribute("fecha", LocalDate.now());
-        return "debug/fecha";
-    }
+    // Los endpoints /debug/fecha y /debug/procesar-recurrentes se han eliminado (hallazgo H3):
+    // eran herramientas de desarrollo sin ningún control de rol, alcanzables por cualquier
+    // usuario autenticado, y procesar-recurrentes disparaba el job global de TODOS los
+    // usuarios (el mismo que ya corre solo, programado, en EncryptedMovimientoService).
 }

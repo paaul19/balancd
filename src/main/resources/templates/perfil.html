@@ -11,7 +11,6 @@
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
     <link rel="stylesheet" href="/css/perfil.css">
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
-    <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
 </head>
 <body style="display:flex; flex-direction:column; min-height:100vh; margin:0; padding:0;">
@@ -19,71 +18,107 @@
     <div th:replace="~{fragments/header :: header}"></div>
     <div class="main-content">
         <div class="perfil-wrap">
-            <div class="perfil-header">
-                <h1>Bienvenido, <span th:text="${nombre}"></span></h1>
-                <a href="/ajustes" class="btn-ajustes">
-                    Ajustes
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </a>
+            <h1 class="perfil-titulo">Perfil</h1>
+
+            <div th:if="${error}" class="perfil-message error" th:text="${error}"></div>
+            <div th:if="${success}" class="perfil-message success" th:text="${success}"></div>
+
+            <!-- Tarjeta de identidad -->
+            <div class="identidad-card">
+                <div class="identidad-avatar" th:text="${iniciales}">PA</div>
+                <div class="identidad-info">
+                    <div class="identidad-nombre" th:text="${user.username}"></div>
+                    <div class="identidad-email" th:text="${user.email}"></div>
+                </div>
+                <button type="button" class="identidad-editar-btn" id="btnEditarIdentidad" title="Editar perfil">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
             </div>
 
-            <!-- Carrusel de gráficos -->
-            <h2 class="perfil-section-title">Tus meses y gastos por categoría</h2>
-            <div class="carrusel-grafico-mes" id="carrusel-grafico-mes">
-                <button id="btnMesAnterior" class="carrusel-flecha carrusel-flecha--prev" title="Mes anterior">
-                    <span>&#8592;</span>
-                </button>
-                <div id="grafico-mes-contenedor" class="grafico-mes-contenedor">
-                    <h4 id="titulo-mes-grafico" class="grafico-mes-titulo"></h4>
-                    <canvas id="grafico-categorias-carrusel" width="220" height="220"></canvas>
-                    <div class="grafico-mes-subtitulo">Gastos por categoría</div>
-                </div>
-                <button id="btnMesSiguiente" class="carrusel-flecha carrusel-flecha--next" title="Mes siguiente">
-                    <span>&#8594;</span>
-                </button>
-                <div id="carrusel-indicadores"></div>
-            </div>
-            <div th:if="${mesesConMovimientos == null || mesesConMovimientos.isEmpty()}" class="perfil-empty">No tienes movimientos registrados aún.</div>
-
-            <!-- Resumen de cuenta -->
-            <div class="resumen-wrap">
-                <div class="resumen-balance-card">
-                    <span class="resumen-balance-label">Balance total</span>
-                    <div class="resumen-balance-amount" th:text="${#numbers.formatDecimal(balanceTotalReal, 1, 2)} + ' €'"></div>
-                </div>
-                <div class="resumen-stats">
-                    <div class="resumen-stat">
-                        <div class="resumen-stat-label">Movimientos</div>
-                        <div class="resumen-stat-value" th:text="${totalMovimientos}"></div>
-                    </div>
-                    <div class="resumen-stat">
-                        <div class="resumen-stat-label">Ingresos totales</div>
-                        <div class="resumen-stat-value positive" th:text="${#numbers.formatDecimal(totalIngresosHistorico, 1, 2)} + ' €'"></div>
-                    </div>
-                    <div class="resumen-stat">
-                        <div class="resumen-stat-label">Gastos totales</div>
-                        <div class="resumen-stat-value" th:text="${#numbers.formatDecimal(totalGastosHistorico, 1, 2)} + ' €'"></div>
-                    </div>
-                </div>
-                <div th:if="${categoriaTop != null}" class="resumen-categoria-top">
-                    <span class="resumen-categoria-top-label">Tu categoría con más gasto</span>
-                    <span class="resumen-categoria-top-value">
-                        <span class="resumen-categoria-top-icon" th:insert="~{fragments/category-icons :: icon(${categoriaTop})}"></span>
-                        <span th:switch="${categoriaTop}">
-                            <span th:case="'TRANSPORTE'">Transporte</span>
-                            <span th:case="'COMIDA'">Comida</span>
-                            <span th:case="'OCIO_ENTRETENIMIENTO'">Ocio y Entretenimiento</span>
-                            <span th:case="'HOGAR'">Hogar</span>
-                            <span th:case="'SALUD_BIENESTAR'">Salud y Bienestar</span>
-                            <span th:case="'EDUCACION_CURSOS'">Educación y Cursos</span>
-                            <span th:case="'COMPRAS'">Compras</span>
-                            <span th:case="'COMPRAS_ONLINE'">Compras Online</span>
-                            <span th:case="'SUSCRIPCION'">Suscripción</span>
-                            <span th:case="*">[[${categoriaTop}]]</span>
+            <!-- Sección cuenta -->
+            <div class="cuenta-section">
+                <div class="cuenta-section-label">Cuenta</div>
+                <div class="cuenta-options">
+                    <a href="/estadisticas" class="cuenta-option">
+                        <span class="cuenta-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12A9 9 0 1 1 12 3" stroke-linecap="round"/><path d="M21 12A9 9 0 0 0 12 3v9z" stroke-linejoin="round"/></svg>
                         </span>
-                    </span>
+                        <span class="cuenta-option-label">Estadísticas</span>
+                        <svg class="cuenta-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                    <button type="button" class="cuenta-option" id="btnCambiarPasswordPerfil">
+                        <span class="cuenta-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="cuenta-option-label">Cambiar contraseña</span>
+                        <svg class="cuenta-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <a href="/ajustes" class="cuenta-option">
+                        <span class="cuenta-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="cuenta-option-label">Ajustes</span>
+                        <svg class="cuenta-option-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: editar nombre y correo -->
+    <div id="modalEditarIdentidad" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar perfil</h3>
+                <button type="button" class="modal-close" id="closeEditarIdentidad" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="formEditarIdentidad" class="modal-form" th:action="@{/perfil/actualizar-identidad}" method="post">
+                <div class="form-group">
+                    <label for="identidadNombre">Nombre de usuario</label>
+                    <input type="text" id="identidadNombre" name="nombre" th:value="${user.username}" required>
+                </div>
+                <div class="form-group">
+                    <label for="identidadEmail">Correo electrónico</label>
+                    <input type="email" id="identidadEmail" name="email" th:value="${user.email}" required>
+                </div>
+                <div class="form-group">
+                    <label for="identidadPassword">Contraseña actual</label>
+                    <input type="password" id="identidadPassword" name="passwordActual" placeholder="Necesaria para confirmar los cambios" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelarEditarIdentidad">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: cambiar contraseña -->
+    <div id="modalCambiarPassword" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Cambiar contraseña</h3>
+                <button type="button" class="modal-close" id="closeCambiarPassword" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="formCambiarPassword" class="modal-form" th:action="@{/perfil/cambiar-password}" method="post">
+                <div class="form-group">
+                    <label for="passwordActualPerfil">Contraseña actual</label>
+                    <input type="password" id="passwordActualPerfil" name="passwordActual" required>
+                </div>
+                <div class="form-group">
+                    <label for="passwordNuevaPerfil">Nueva contraseña</label>
+                    <input type="password" id="passwordNuevaPerfil" name="nuevoPassword" minlength="8" required>
+                </div>
+                <div class="form-group">
+                    <label for="passwordRepetirPerfil">Repetir nueva contraseña</label>
+                    <input type="password" id="passwordRepetirPerfil" minlength="8" required>
+                </div>
+                <p id="passwordMismatchError" class="perfil-message error" style="display:none;">Las contraseñas nuevas no coinciden.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelarCambiarPassword">Cancelar</button>
+                    <button type="submit" class="btn-save">Guardar</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -94,9 +129,5 @@
     <script th:replace="~{fragments/header :: header-script}"></script>
     <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
     <script src="/js/perfil.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script th:inline="javascript">
-        window.gastosPorCategoriaPorMes = [[${gastosPorCategoriaPorMes}]];
-    </script>
 </body>
 </html>

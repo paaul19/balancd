@@ -20,10 +20,16 @@
 <div th:replace="~{fragments/header :: header}"></div>
 <div class="main-content">
     <div class="container">
-        <h1>Búsqueda avanzada de movimientos</h1>
-        <form th:action="@{/movimientos/busqueda-avanzada}" method="get" class="filtros">
+        <div class="busqueda-topbar">
+            <a href="/movimientos" class="busqueda-back-btn" title="Volver a Movimientos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <h1>Búsqueda avanzada</h1>
+        </div>
+
+        <form th:action="@{/movimientos/busqueda-avanzada}" method="get" class="filtros-card">
             <div class="filtros-row">
-                <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto..." autocomplete="off" />
+                <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto (opcional)..." autocomplete="off" />
                 <select name="tipo" th:value="${tipo}">
                     <option value="todos" th:selected="${tipo}=='todos'">Todos</option>
                     <option value="ingresos" th:selected="${tipo}=='ingresos'">Ingresos</option>
@@ -31,26 +37,56 @@
                     <option value="balance" th:selected="${tipo}=='balance'">Balance ≠ 0</option>
                 </select>
             </div>
-            <select name="periodo" th:value="${periodo}">
-                <option value="3" th:selected="${periodo}==3">Últimos 3 meses</option>
-                <option value="6" th:selected="${periodo}==6">Últimos 6 meses</option>
-                <option value="12" th:selected="${periodo}==12">Últimos 12 meses</option>
-                <option value="0" th:selected="${periodo}==0">Año actual</option>
-            </select>
+            <div class="filtros-grid">
+                <select name="cuenta" th:if="${!#lists.isEmpty(cuentas)}">
+                    <option value="" th:selected="${cuentaSeleccionada == null}">Todas las cuentas</option>
+                    <option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${cuentaSeleccionada != null and cuentaSeleccionada == c.id}"></option>
+                </select>
+                <select name="periodo" th:value="${periodo}">
+                    <option value="3" th:selected="${periodo}==3">Últimos 3 meses</option>
+                    <option value="6" th:selected="${periodo}==6">Últimos 6 meses</option>
+                    <option value="12" th:selected="${periodo}==12">Últimos 12 meses</option>
+                    <option value="0" th:selected="${periodo}==0">Año actual</option>
+                </select>
+                <select name="categoria">
+                    <option value="" th:selected="${categoriaSeleccionada == null}">Todas las categorías</option>
+                    <optgroup label="Gastos" th:if="${!#lists.isEmpty(categoriasGasto)}">
+                        <option th:each="c : ${categoriasGasto}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${categoriaSeleccionada != null and categoriaSeleccionada == c.id}"></option>
+                    </optgroup>
+                    <optgroup label="Ingresos" th:if="${!#lists.isEmpty(categoriasIngreso)}">
+                        <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${categoriaSeleccionada != null and categoriaSeleccionada == c.id}"></option>
+                    </optgroup>
+                </select>
+                <select name="subcategoria">
+                    <option value="" th:selected="${subcategoriaSeleccionada == null}">Todas las subcategorías</option>
+                    <th:block th:each="c : ${categoriasGasto}">
+                        <optgroup th:if="${!#lists.isEmpty(c.subcategorias)}" th:label="${c.nombre}">
+                            <option th:each="s : ${c.subcategorias}" th:value="${s.id}" th:text="${s.nombre}" th:selected="${subcategoriaSeleccionada != null and subcategoriaSeleccionada == s.id}"></option>
+                        </optgroup>
+                    </th:block>
+                    <th:block th:each="c : ${categoriasIngreso}">
+                        <optgroup th:if="${!#lists.isEmpty(c.subcategorias)}" th:label="${c.nombre}">
+                            <option th:each="s : ${c.subcategorias}" th:value="${s.id}" th:text="${s.nombre}" th:selected="${subcategoriaSeleccionada != null and subcategoriaSeleccionada == s.id}"></option>
+                        </optgroup>
+                    </th:block>
+                </select>
+            </div>
             <div class="filtros-row-boton">
                 <button type="submit">Buscar</button>
-                <a th:href="@{/movimientos/busqueda-avanzada}" title="Limpiar filtros">
+                <a th:href="@{/movimientos/busqueda-avanzada}" title="Limpiar filtros" class="filtros-limpiar-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
                 </a>
             </div>
         </form>
-        <div th:if="${busqueda != null and #strings.trim(busqueda) != ''}">
-            <div class="totals">
-                <span><b>Ingresos:</b> <span class="ingresos" th:text="${#numbers.formatDecimal(totalIngresos, 1, 2)} + ' €'"></span></span>
-                <span><b>Gastos:</b> <span class="gastos" th:text="${#numbers.formatDecimal(totalGastos, 1, 2)} + ' €'"></span></span>
-                <span><b>Balance:</b> <span th:class="${totalBalance >= 0 ? 'balance-pos' : 'balance-neg'}" th:text="${#numbers.formatDecimal(totalBalance, 1, 2)} + ' €'"></span></span>
-            </div>
-            <table class="resumen-table">
+
+        <div class="totals">
+            <span class="totals-chip"><span class="totals-label">Ingresos</span><span class="ingresos js-money" th:text="${moneyFormatter.format(totalIngresos)}"></span></span>
+            <span class="totals-chip"><span class="totals-label">Gastos</span><span class="gastos js-money" th:text="${moneyFormatter.format(totalGastos)}"></span></span>
+            <span class="totals-chip"><span class="totals-label">Balance</span><span class="js-money" th:classappend="${totalBalance >= 0 ? 'balance-pos' : 'balance-neg'}" th:text="${moneyFormatter.format(totalBalance)}"></span></span>
+        </div>
+
+        <div class="resumen-card">
+            <table class="resumen-table" th:if="${resumen.size()} > 0">
                 <thead>
                     <tr>
                         <th>Mes</th>
@@ -61,16 +97,14 @@
                 </thead>
                 <tbody>
                     <tr th:each="mes : ${resumen}">
-                        <td th:text="${#temporals.format(mes.mes, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></td>
-                        <td th:text="${#numbers.formatDecimal(mes.ingresos, 1, 2)} + ' €'" style="color:var(--accent); font-weight:500;"></td>
-                        <td th:text="${#numbers.formatDecimal(mes.gastos, 1, 2)} + ' €'" style="color:var(--danger); font-weight:500;"></td>
-                        <td th:text="${#numbers.formatDecimal(mes.balance, 1, 2)} + ' €'" th:style="${mes.balance >= 0 ? 'color:var(--accent); font-weight:500;' : 'color:var(--danger); font-weight:500;'}"></td>
-                    </tr>
-                    <tr th:if="${resumen.size()} == 0">
-                        <td colspan="4">No hay movimientos que coincidan con la búsqueda.</td>
+                        <td class="resumen-mes" th:text="${#temporals.format(mes.mes, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></td>
+                        <td class="js-money resumen-ingresos" th:text="${moneyFormatter.format(mes.ingresos)}"></td>
+                        <td class="js-money resumen-gastos" th:text="${moneyFormatter.format(mes.gastos)}"></td>
+                        <td class="js-money" th:text="${moneyFormatter.format(mes.balance)}" th:class="${mes.balance >= 0 ? 'js-money resumen-balance-pos' : 'js-money resumen-balance-neg'}"></td>
                     </tr>
                 </tbody>
             </table>
+            <div class="resumen-empty" th:if="${resumen.size()} == 0">No hay movimientos que coincidan con la búsqueda.</div>
         </div>
     </div>
 </div>
@@ -78,7 +112,5 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 <!-- Script del header -->
 <script th:replace="~{fragments/header :: header-script}"></script>
-<!-- Botón de cambio de tema -->
-</div>
 </body>
-</html> 
+</html>

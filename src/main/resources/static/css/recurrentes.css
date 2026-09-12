@@ -5,9 +5,19 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
+
+.form-error-message {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius-sm, 10px);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
 .main-content {
   flex: 1;
-  padding-top: calc(70px + env(safe-area-inset-top, 0px)); /* altura del header fijo + margen + notch */
+  padding-top: calc(var(--header-h, 60px) + env(safe-area-inset-top, 0px) + 10px);
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 .container {
@@ -202,177 +212,22 @@ body {
   background: var(--button-hover) !important;
 }
 
-/* Botón de cambio de tema */
-.theme-switcher {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: var(--button-bg);
-  color: var(--button-text);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  box-shadow: var(--shadow);
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.theme-switcher:hover {
-  background: var(--button-hover);
-  transform: scale(1.1);
-}
-
-/* Iconos para el botón */
-.theme-switcher .sun-icon {
-  display: none;
-}
-
-.theme-switcher .moon-icon {
-  display: block;
-}
-
-[data-theme="dark"] .theme-switcher .sun-icon {
-  display: block;
-}
-
-[data-theme="dark"] .theme-switcher .moon-icon {
-  display: none;
-}
-
-/* Estilos para el modal */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 2000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.5);
-}
-
-.modal.show {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 2rem;
-  max-width: 400px;
-  width: 90%;
-  box-shadow: var(--shadow);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.modal-title {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-group label {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.form-group input,
-.form-group select {
-  padding: 0.7rem;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: var(--button-bg);
-}
-
-.modal-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1rem;
-}
-
-.modal-actions button {
-  padding: 0.7rem 1.5rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-}
-
-.btn-cancel {
-  background: var(--border-color);
-  color: var(--text-primary);
-}
-
-.btn-save {
-  background: var(--button-bg);
-  color: var(--button-text);
-}
-
-.btn-cancel:hover {
-  background: var(--text-secondary);
-}
-
-.btn-save:hover {
-  background: var(--button-hover);
-}
+/* El modal (.modal/.modal-content/.modal-form/.form-group/.modal-actions/.btn-cancel/.btn-save)
+   ya no se define aquí: es un sistema legacy de antes de que existiera el modal compartido de
+   footer-modals.js. Ambos modales de esta página (crear y "Modificar Movimiento Recurrente")
+   usan ya las clases compartidas (.modal-content.recurrente-modal-content, .modal-form) y sus
+   reglas .recurrente-modal-content de footer-modals.js, pensadas para ser compactas en móvil.
+   Tenerlo duplicado aquí no lo sustituía del todo: como .form-group/.modal-form de aquí seguían
+   fijando display:flex + gap sin que nada los pisara, sumaban espacio extra por encima del
+   diseño compacto y el modal de "Añadir movimiento recurrente" se sentía enorme y agobiante en
+   móvil (tal cual se reportó). Si se necesita algún ajuste de espaciado, se hace en las reglas
+   .recurrente-modal-content de footer-modals.js, no aquí. */
 
 /* Responsive */
 @media (max-width: 768px) {
   .container {
     max-width: 95%;
     margin: 20px auto;
-    padding: 1.5rem;
-  }
-
-  .theme-switcher {
-    width: 45px;
-    height: 45px;
-    bottom: 15px;
-    right: 15px;
-    font-size: 18px;
-  }
-
-  .modal-content {
-    max-width: 95vw;
     padding: 1.5rem;
   }
 
@@ -412,19 +267,6 @@ body {
   .container {
     max-width: 98%;
     margin: 10px auto;
-    padding: 1rem;
-  }
-
-  .theme-switcher {
-    width: 40px;
-    height: 40px;
-    bottom: 10px;
-    right: 10px;
-    font-size: 16px;
-  }
-
-  .modal-content {
-    max-width: 98vw;
     padding: 1rem;
   }
 

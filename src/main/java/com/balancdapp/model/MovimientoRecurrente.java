@@ -14,6 +14,10 @@ public class MovimientoRecurrente {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cuenta_id")
+    private Cuenta cuenta;
+
     @Column(name = "cantidad_cifrada", nullable = false)
     private String cantidadCifrada; // Cantidad cifrada como string
 
@@ -36,9 +40,13 @@ public class MovimientoRecurrente {
 
     private LocalDate ultimaFechaEjecutada;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "categoria", nullable = true)
-    private CategoriaMovimiento categoria;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategoria_id")
+    private Subcategoria subcategoria;
 
     // Getters y setters
     public Long getId() { return id; }
@@ -83,6 +91,12 @@ public class MovimientoRecurrente {
     public void setActivo(boolean activo) { this.activo = activo; }
     public LocalDate getUltimaFechaEjecutada() { return ultimaFechaEjecutada; }
     public void setUltimaFechaEjecutada(LocalDate ultimaFechaEjecutada) { this.ultimaFechaEjecutada = ultimaFechaEjecutada; }
-    public CategoriaMovimiento getCategoria() { return categoria; }
-    public void setCategoria(CategoriaMovimiento categoria) { this.categoria = categoria; }
-} 
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
+
+    public Subcategoria getSubcategoria() { return subcategoria; }
+    public void setSubcategoria(Subcategoria subcategoria) { this.subcategoria = subcategoria; }
+
+    public Cuenta getCuenta() { return cuenta; }
+    public void setCuenta(Cuenta cuenta) { this.cuenta = cuenta; }
+}

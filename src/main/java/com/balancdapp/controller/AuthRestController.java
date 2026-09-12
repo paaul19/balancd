@@ -28,6 +28,9 @@ public class AuthRestController {
                     if (!user.isVerified()) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Debes verificar tu correo antes de iniciar sesión"));
                     }
+                    if (user.isBaneado()) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Tu cuenta ha sido suspendida"));
+                    }
                     String token = jwtService.generateToken(user);
                     Map<String, Object> response = new HashMap<>();
                     response.put("token", token);

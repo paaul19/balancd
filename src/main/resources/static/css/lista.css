@@ -7,7 +7,7 @@ body {
 }
 .main-content {
   flex: 1;
-  padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  padding-top: calc(var(--header-h, 60px) + env(safe-area-inset-top, 0px) + 8px);
   padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
 }
 /* Contenedor general del dashboard */
@@ -21,6 +21,13 @@ body {
   margin: 0 auto;
   border-radius: var(--radius-lg);
   padding: 1.5rem 2rem;
+}
+.saludo-usuario {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-title);
+  color: var(--text-primary);
+  margin: 0.2rem 0.1rem 0.9rem;
 }
 h2 { text-align: center; margin-bottom: 1.5rem; }
 ul { list-style: none; padding: 0; margin: 0; }
@@ -50,6 +57,21 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
   font-size: 0.85rem;
   color: var(--text-secondary);
   font-weight: 500;
+}
+.balance-label-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  text-decoration: none;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+.balance-label-link:hover {
+  opacity: 0.75;
+}
+.balance-label-link svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-tertiary);
 }
 .balance-amount {
   font-size: 2.5rem;
@@ -120,6 +142,7 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
+  min-width: 0;
 }
 .stat-chip-label {
   font-size: 0.72rem;
@@ -140,6 +163,19 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
 /* ---------- Búsqueda ---------- */
 .search-bar {
   margin-bottom: 1.2rem;
+}
+.cuenta-filter-bar {
+  margin: -0.6rem 0 1.2rem;
+}
+.cuenta-filter-bar select {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
 }
 .search-bar form {
   display: flex !important;
@@ -199,6 +235,82 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
   border-bottom: none !important;
 }
 
+/* ---------- Transferencias entre cuentas ---------- */
+.transferencias-mes {
+  margin-top: 0.4rem;
+}
+.transferencias-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.transferencia-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.6rem;
+}
+.transferencia-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+.transferencia-icon svg { width: 18px; height: 18px; }
+.transferencia-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.transferencia-cuentas {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.transferencia-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+}
+.transferencia-importe {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+.transferencia-delete {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.transferencia-delete:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+.transferencia-delete svg { width: 14px; height: 14px; }
+
 /* Estilos para el botón de logout */
 .logout-btn button:hover {
   background: var(--button-hover) !important;
@@ -211,7 +323,7 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
 /* Estilos específicos para móvil */
 @media (max-width: 768px) {
   .main-content {
-    padding-top: calc(50px + env(safe-area-inset-top, 0px));
+    padding-top: calc(var(--header-h, 54px) + env(safe-area-inset-top, 0px) + 8px);
     padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
   }
   .container {
@@ -261,7 +373,7 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
 
 @media (max-width: 480px) {
   .main-content {
-    padding-top: calc(50px + env(safe-area-inset-top, 0px));
+    padding-top: calc(var(--header-h, 54px) + env(safe-area-inset-top, 0px) + 8px);
     padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
   }
   .container {
@@ -403,7 +515,7 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
 }
 @media (max-width: 600px) {
   .main-content {
-    padding-top: 50px;
+    padding-top: calc(var(--header-h, 44px) + env(safe-area-inset-top, 0px) + 8px);
     padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
   }
   .container {
@@ -470,6 +582,27 @@ button { border-radius: var(--radius-sm); padding: 0.5rem 1rem; cursor: pointer;
     width: auto !important;
     justify-content: flex-end !important;
     margin-top: 0 !important;
+  }
+  /* Mantener las tarjetas de transferencia en fila en móvil (mismo motivo que .movimiento-item) */
+  .transferencia-item {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.6rem !important;
+    padding: 0.6rem 0.7rem !important;
+  }
+  .transferencia-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.15rem !important;
+  }
+  .transferencia-item form {
+    width: auto !important;
+    margin-top: 0 !important;
+  }
+  .transferencia-delete {
+    padding: 0.3rem !important;
+    width: 30px !important;
+    height: 30px !important;
   }
   /* Menú tres puntitos tipo popover en móvil */
   .menu-dropdown {

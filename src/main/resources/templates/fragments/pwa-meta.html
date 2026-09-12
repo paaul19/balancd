@@ -3,8 +3,14 @@
 <head>
     <th:block th:fragment="meta">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-        <link rel="icon" type="image/x-icon" href="/images/asterisco.png">
-        <link rel="apple-touch-icon" href="/images/logo-app.png">
+        <!-- Antes usaban una sola imagen (con fondo transparente, invisible sobre fondos claros)
+             para favicon, apple-touch-icon y el icono grande del manifest a la vez. Ahora hay un
+             set generado a partir del mismo icono con fondo sólido, en los tamaños exactos que
+             pide cada contexto (pestaña del navegador, icono de pantalla de inicio en iOS/Android,
+             icono adaptable "maskable" de Android). -->
+        <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
         <link rel="manifest" href="/manifest.json">
         <meta name="theme-color" content="#0c0c0e">
         <meta name="apple-mobile-web-app-capable" content="yes">

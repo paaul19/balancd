@@ -1,0 +1,292 @@
+.categorias-section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 1.3rem 0 0.6rem 0.2rem;
+}
+.categorias-section-label:first-of-type {
+  margin-top: 0;
+}
+
+.categorias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.categoria-row {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.categoria-row--inactiva .categoria-row-icon,
+.categoria-row--inactiva .categoria-row-nombre {
+  opacity: 0.45;
+}
+
+.categoria-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.85rem 1.1rem;
+}
+
+.categoria-row-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Tamaño fijo en px, no en %: un SVG con width/height en porcentaje dentro de un flex item sin
+   una base de referencia explícita se renderiza de forma inconsistente entre navegadores (en
+   Safari/iOS en concreto, se ha visto estirarse a un tamaño mucho mayor y recortarse por el
+   contenedor en vez de escalar proporcionalmente). Fijar px directamente en el <svg> lo evita. */
+.categoria-row-icon svg { display: block; width: 22px; height: 22px; }
+
+.categoria-row-nombre {
+  flex: 1 1 auto;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoria-row-badge {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+}
+
+.categoria-row-delete-form { flex-shrink: 0; }
+.categoria-row-delete-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.categoria-row-delete-btn:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.categoria-row-delete-btn svg { display: block; width: 16px; height: 16px; }
+
+.categoria-row-edit-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
+}
+.categoria-row-edit-btn:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+.categoria-row-edit-btn svg { display: block; width: 16px; height: 16px; }
+
+.categoria-row-expand-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.categoria-row-expand-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+.categoria-row-expand-btn svg { display: block; width: 15px; height: 15px; transition: transform var(--dur-fast) var(--ease-standard); }
+.categoria-row--expanded .categoria-row-expand-btn svg {
+  transform: rotate(90deg);
+}
+
+.subcategorias-wrap {
+  display: none;
+}
+.categoria-row--expanded .subcategorias-wrap {
+  display: block;
+}
+
+.subcategoria-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 1.1rem 0.6rem 3.5rem;
+  border-top: 1px solid var(--border-color);
+}
+.subcategoria-row-nombre {
+  flex: 1 1 auto;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoria-crear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0.8rem 0 1rem;
+  padding: 0.85rem 1.2rem;
+  border-radius: 999px;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+.categoria-crear-btn:hover {
+  background: var(--bg-elevated);
+}
+.categoria-crear-btn svg { width: 18px; height: 18px; }
+
+/* Modal: crear categoría */
+.categoria-tipo-selector {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+.categoria-tipo-opcion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.categoria-tipo-opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.categoria-tipo-opcion:has(input:checked) {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.categoria-icono-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+.form-group .categoria-icono-opcion {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  max-width: 64px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  margin-bottom: 0;
+}
+.categoria-icono-opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.categoria-icono-preview {
+  width: 30px;
+  height: 30px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.categoria-icono-preview svg { display: block; width: 30px; height: 30px; }
+.categoria-icono-opcion:has(input:checked) {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+  background: var(--accent-soft);
+}
+.categoria-icono-opcion:has(input:checked) .categoria-icono-preview {
+  color: var(--accent);
+}
+
+.categoria-subs-actuales {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.categoria-subs-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+.categoria-add-sub-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (max-width: 480px) {
+  .categoria-icono-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Contrarresta la regla global "button { padding:0.7rem 0.8rem !important; font-size:0.85rem
+     !important }" de theme-switcher.html: estos tres son botones circulares de solo icono
+     (editar/eliminar/desplegar categoría), y ese padding forzado los deformaba y aplastaba el
+     SVG interior en móvil (el mismo patrón ya visto varias veces esta sesión con otros <button>). */
+  .categoria-row-edit-btn,
+  .categoria-row-delete-btn,
+  .categoria-row-expand-btn {
+    padding: 0 !important;
+    font-size: 0 !important;
+  }
+}

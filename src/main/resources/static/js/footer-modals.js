@@ -22,6 +22,127 @@ document.addEventListener('DOMContentLoaded', function() {
     const SHEET_HANDLE_HTML = '<div class="sheet-handle" aria-hidden="true"><span></span></div>';
 
     /**
+     * Escapa texto de usuario antes de interpolarlo en un string HTML (hallazgo M7). Necesario
+     * aquí porque estos modales se construyen como plantillas de texto, no vía DOM API - a
+     * diferencia de lista.js/recurrentes.js, que sí pudieron pasarse a createElement/textContent.
+     */
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    // --- Selector de cuenta compartido por los modales de ingreso/gasto/recurrente ---
+    function getCuentasActivas() {
+        return (window.cuentasUsuario || []).filter(c => c.activa !== false);
+    }
+
+    function buildCuentaOptions(selectedId) {
+        return getCuentasActivas().map(c => {
+            const selected = selectedId != null && String(selectedId) === String(c.id) ? ' selected' : '';
+            // c.nombre es texto libre introducido por el propio usuario en /cuentas.
+            return `<option value="${c.id}"${selected}>${escapeHtml(c.nombre)}</option>`;
+        }).join('');
+    }
+
+    /** Grupo de formulario para elegir cuenta. Si solo hay una, se autoselecciona sin mostrar el select. */
+    function cuentaFormGroupHtml(idPrefix, selectedId) {
+        const cuentas = getCuentasActivas();
+        if (cuentas.length <= 1) {
+            const id = cuentas.length === 1 ? cuentas[0].id : '';
+            return `<input type="hidden" id="${idPrefix}Cuenta" name="cuentaId" value="${id}">`;
+        }
+        return `
+            <div class="form-group">
+                <label for="${idPrefix}Cuenta">Cuenta</label>
+                <select id="${idPrefix}Cuenta" name="cuentaId" required>
+                    ${buildCuentaOptions(selectedId)}
+                </select>
+            </div>
+        `;
+    }
+
+    // --- Selector de categoría → subcategoría en cascada, compartido por los modales
+    // de ingreso/gasto/recurrente y por los modales de edición (lista.js/recurrentes.js) ---
+    function getCategoriasParaTipo(tipo) {
+        return (tipo === 'ingreso' ? window.categoriasIngreso : window.categoriasGasto) || [];
+    }
+
+    /** HTML de los dos selects (categoría y subcategoría, esta última oculta hasta elegir categoría). */
+    function categoriaFormGroupHtml(idPrefix, tipo) {
+        const categorias = getCategoriasParaTipo(tipo);
+        const opciones = ['<option value="">Sin categoría</option>'].concat(
+            categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`)
+        ).join('');
+        return `
+            <div class="form-group">
+                <label for="${idPrefix}Categoria">Categoría</label>
+                <select id="${idPrefix}Categoria" name="categoriaId" data-tipo="${tipo}">
+                    ${opciones}
+                </select>
+            </div>
+            <div class="form-group" id="${idPrefix}SubcategoriaGroup" style="display:none;">
+                <label for="${idPrefix}Subcategoria">Subcategoría</label>
+                <select id="${idPrefix}Subcategoria" name="subcategoriaId"></select>
+            </div>
+        `;
+    }
+
+    /** Repuebla el <select> de subcategoría según la categoría elegida. */
+    function poblarSubcategorias(idPrefix, categoriaId, preselectSubId) {
+        const catSelect = document.getElementById(idPrefix + 'Categoria');
+        const subGroup = document.getElementById(idPrefix + 'SubcategoriaGroup');
+        const subSelect = document.getElementById(idPrefix + 'Subcategoria');
+        if (!catSelect || !subGroup || !subSelect) return;
+        const categorias = getCategoriasParaTipo(catSelect.dataset.tipo);
+        const cat = categorias.find(c => String(c.id) === String(categoriaId));
+        if (!cat || !cat.subcategorias || cat.subcategorias.length === 0) {
+            subSelect.innerHTML = '';
+            subGroup.style.display = 'none';
+            return;
+        }
+        subSelect.innerHTML = cat.subcategorias.map(s => {
+            const sel = preselectSubId != null && String(preselectSubId) === String(s.id) ? ' selected' : '';
+            return `<option value="${s.id}"${sel}>${s.nombre}</option>`;
+        }).join('');
+        subGroup.style.display = '';
+    }
+
+    /** Engancha el cambio de categoría → repoblar subcategoría. Llamar tras insertar el HTML en el DOM. */
+    function wireCategoriaCascade(idPrefix, preselectCategoriaId, preselectSubId) {
+        const catSelect = document.getElementById(idPrefix + 'Categoria');
+        if (!catSelect) return;
+        if (!catSelect.dataset.cascadeWired) {
+            catSelect.dataset.cascadeWired = '1';
+            catSelect.addEventListener('change', () => poblarSubcategorias(idPrefix, catSelect.value, null));
+        }
+        if (preselectCategoriaId) {
+            catSelect.value = String(preselectCategoriaId);
+            poblarSubcategorias(idPrefix, preselectCategoriaId, preselectSubId);
+        }
+    }
+
+    /** Cuando el usuario cambia el Tipo (ingreso/gasto) en un modal de edición, refresca las opciones de categoría. */
+    function refreshCategoriaOptionsForTipo(idPrefix, tipo) {
+        const catSelect = document.getElementById(idPrefix + 'Categoria');
+        const subGroup = document.getElementById(idPrefix + 'SubcategoriaGroup');
+        const subSelect = document.getElementById(idPrefix + 'Subcategoria');
+        if (!catSelect) return;
+        catSelect.dataset.tipo = tipo;
+        const categorias = getCategoriasParaTipo(tipo);
+        catSelect.innerHTML = ['<option value="">Sin categoría</option>'].concat(
+            categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`)
+        ).join('');
+        if (subSelect) subSelect.innerHTML = '';
+        if (subGroup) subGroup.style.display = 'none';
+    }
+
+    window.CategoriaCascade = { categoriaFormGroupHtml, wireCategoriaCascade, refreshCategoriaOptionsForTipo, poblarSubcategorias };
+
+    /**
      * Inserta un modal en el DOM y lo muestra con la transición de "materializar".
      * Además engancha el gesto de arrastrar hacia abajo para descartar (1:1, con
      * rubber-banding y hand-off de velocidad a un spring, interrumpible en todo momento).
@@ -171,8 +292,87 @@ document.addEventListener('DOMContentLoaded', function() {
                             </span>
                             <span class="modal-option-label">Añadir recurrente</span>
                         </button>
+                        ${getCuentasActivas().length >= 2 ? `
+                        <button type="button" class="modal-option" id="optionTransferencia">
+                            <span class="modal-option-icon modal-option-icon--transfer">
+                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h13l-4-4M17 17H4l4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                            <span class="modal-option-label">Transferir entre cuentas</span>
+                        </button>
+                        ` : ''}
                     </div>
                 </div>
+            </div>
+        `;
+        return modal;
+    }
+
+    // Modal mostrado cuando el usuario todavía no tiene ninguna cuenta creada
+    function createSinCuentasModal() {
+        const modal = document.createElement('div');
+        modal.id = 'sinCuentasModal';
+        modal.className = 'modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 340px; text-align: center;">
+                ${SHEET_HANDLE_HTML}
+                <div class="modal-header" style="justify-content: center;">
+                    <h3 class="modal-title">Crea tu primera cuenta</h3>
+                </div>
+                <div class="modal-body">
+                    <p style="color: var(--text-secondary); margin: 0 0 1.2rem;">Antes de añadir un movimiento necesitas al menos una cuenta (banco, efectivo, tarjeta...) a la que asociarlo.</p>
+                    <div class="modal-actions" style="justify-content: center;">
+                        <button type="button" class="btn-cancel" id="cancelarSinCuentas">Ahora no</button>
+                        <a href="/cuentas" class="btn-save" style="display:flex; align-items:center; justify-content:center; text-decoration:none;">Crear cuenta</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        return modal;
+    }
+
+    // Crear modal de transferencia entre cuentas
+    function createTransferenciaModal() {
+        const modal = document.createElement('div');
+        modal.id = 'transferenciaModal';
+        modal.className = 'modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        const opciones = buildCuentaOptions();
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px;">
+                ${SHEET_HANDLE_HTML}
+                <div class="modal-header">
+                    <h3 class="modal-title">Transferir entre cuentas</h3>
+                    <button type="button" class="modal-close" id="closeTransferenciaModal" aria-label="Cerrar">&times;</button>
+                </div>
+                <form id="transferenciaForm" class="modal-form" method="post" action="/cuentas/transferir">
+                    <div class="form-group">
+                        <label for="transCuentaOrigen">Desde</label>
+                        <select id="transCuentaOrigen" name="cuentaOrigenId" required>${opciones}</select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transCuentaDestino">Hacia</label>
+                        <select id="transCuentaDestino" name="cuentaDestinoId" required>${opciones}</select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transImporte">Importe (${window.MONEY_SYMBOL || '€'})</label>
+                        <input type="number" id="transImporte" name="importe" step="0.01" min="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transFecha">Fecha</label>
+                        <input type="date" id="transFecha" name="fecha" value="${new Date().toISOString().slice(0,10)}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transDescripcion">Descripción (opcional)</label>
+                        <input type="text" id="transDescripcion" name="descripcion" maxlength="50">
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" id="cancelarTransferencia">Cancelar</button>
+                        <button type="submit" class="btn-save btn-save--transfer">Transferir</button>
+                    </div>
+                </form>
             </div>
         `;
         return modal;
@@ -198,9 +398,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <form id="movimientoForm" class="modal-form" method="post" action="/movimientos/add">
                     <div class="form-group">
-                        <label for="cantidad">Cantidad (€)</label>
+                        <label for="cantidad">Cantidad (${window.MONEY_SYMBOL || '€'})</label>
                         <input type="number" id="cantidad" name="cantidad" step="0.01" min="0" placeholder="0.00" required>
                     </div>
+                    ${cuentaFormGroupHtml('mov')}
                     <div class="form-group">
                         <label for="asunto">Asunto (opcional)</label>
                         <input type="text" id="asunto" name="asunto" maxlength="50">
@@ -209,21 +410,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <label for="fecha">Fecha del movimiento</label>
                         <input type="date" id="fecha" name="fecha" value="${new Date().toISOString().slice(0,10)}" required>
                     </div>
-                    <div class="form-group">
-                        <label for="categoria">Categoría</label>
-                        <select id="categoria" name="categoria">
-                            <option value="" selected>Sin categoría</option>
-                            <option value="TRANSPORTE">Transporte</option>
-                            <option value="COMIDA">Comida</option>
-                            <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
-                            <option value="HOGAR">Hogar</option>
-                            <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
-                            <option value="EDUCACION_CURSOS">Educación y Cursos</option>
-                            <option value="COMPRAS">Compras</option>
-                            <option value="COMPRAS_ONLINE">Compras Online</option>
-                            <option value="SUSCRIPCION">Suscripción</option>
-                        </select>
-                    </div>
+                    ${CategoriaCascade.categoriaFormGroupHtml('mov', tipo)}
                     <input type="hidden" name="ingreso" value="${tipo === 'ingreso' ? 'true' : 'false'}">
                     <input type="hidden" name="mes" value="${mes}">
                     <input type="hidden" name="anio" value="${anio}">
@@ -253,9 +440,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <form id="recurrenteForm" class="modal-form" method="post" action="/movimientos/recurrente">
                     <div class="form-group">
-                        <label for="recCantidad">Cantidad (€)</label>
+                        <label for="recCantidad">Cantidad (${window.MONEY_SYMBOL || '€'})</label>
                         <input type="number" id="recCantidad" name="cantidad" step="0.01" min="0.01" placeholder="0.00" required>
                     </div>
+                    ${cuentaFormGroupHtml('rec')}
                     <div class="form-group">
                         <label for="recAsunto">Asunto</label>
                         <input type="text" id="recAsunto" name="asunto" maxlength="50" required>
@@ -281,21 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <option value="anio">Cada año</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="recCategoria">Categoría</label>
-                        <select id="recCategoria" name="categoria">
-                            <option value="" selected>Sin categoría</option>
-                            <option value="TRANSPORTE">Transporte</option>
-                            <option value="COMIDA">Comida</option>
-                            <option value="OCIO_ENTRETENIMIENTO">Ocio y Entretenimiento</option>
-                            <option value="HOGAR">Hogar</option>
-                            <option value="SALUD_BIENESTAR">Salud y Bienestar</option>
-                            <option value="EDUCACION_CURSOS">Educación y Cursos</option>
-                            <option value="COMPRAS">Compras</option>
-                            <option value="COMPRAS_ONLINE">Compras Online</option>
-                            <option value="SUSCRIPCION">Suscripción</option>
-                        </select>
-                    </div>
+                    ${CategoriaCascade.categoriaFormGroupHtml('rec', 'ingreso')}
                     <div class="form-group">
                         <label for="recFechaFin">Fecha fin (opcional)</label>
                         <input type="date" id="recFechaFin" name="fechaFin">
@@ -322,6 +496,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (footerBtn) {
         footerBtn.addEventListener('click', function() {
             removeAnyOpenModal();
+
+            // Sin ninguna cuenta todavía: no tiene sentido ofrecer añadir movimientos
+            if (getCuentasActivas().length === 0) {
+                const sinCuentas = createSinCuentasModal();
+                presentModal(sinCuentas, () => dismissModal(sinCuentas));
+                const cancelar = document.getElementById('cancelarSinCuentas');
+                if (cancelar) cancelar.onclick = () => dismissModal(sinCuentas);
+                sinCuentas.addEventListener('click', function(e) {
+                    if (e.target === sinCuentas) dismissModal(sinCuentas);
+                });
+                return;
+            }
+
             const modal = createMainModal();
             presentModal(modal, () => dismissModal(modal));
 
@@ -330,6 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dismissModal(modal, () => {
                     const movimientoModal = createMovimientoModal('ingreso');
                     presentModal(movimientoModal, () => dismissModal(movimientoModal));
+                    CategoriaCascade.wireCategoriaCascade('mov');
                 });
             });
 
@@ -337,6 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 dismissModal(modal, () => {
                     const movimientoModal = createMovimientoModal('gasto');
                     presentModal(movimientoModal, () => dismissModal(movimientoModal));
+                    CategoriaCascade.wireCategoriaCascade('mov');
                 });
             });
 
@@ -344,6 +533,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 dismissModal(modal, () => {
                     const recurrenteModal = createRecurrenteModal();
                     presentModal(recurrenteModal, () => dismissModal(recurrenteModal));
+                    CategoriaCascade.wireCategoriaCascade('rec');
+                    const recTipoSelect = document.getElementById('recTipo');
+                    if (recTipoSelect) {
+                        recTipoSelect.addEventListener('change', () => {
+                            CategoriaCascade.refreshCategoriaOptionsForTipo('rec', recTipoSelect.value === 'true' ? 'ingreso' : 'gasto');
+                        });
+                    }
                     const closeBtn = document.getElementById('closeRecurrenteModal');
                     const cancelBtn = document.getElementById('cancelarRecurrente');
                     if (closeBtn) closeBtn.onclick = () => dismissModal(recurrenteModal);
@@ -353,6 +549,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 });
             });
+
+            const optionTransferencia = document.getElementById('optionTransferencia');
+            if (optionTransferencia) {
+                optionTransferencia.addEventListener('click', function() {
+                    dismissModal(modal, () => {
+                        const transferenciaModal = createTransferenciaModal();
+                        presentModal(transferenciaModal, () => dismissModal(transferenciaModal));
+                        // Preseleccionar cuentas de origen/destino distintas por defecto
+                        const destinoSelect = document.getElementById('transCuentaDestino');
+                        if (destinoSelect && destinoSelect.options.length > 1) {
+                            destinoSelect.selectedIndex = 1;
+                        }
+                        const closeBtn = document.getElementById('closeTransferenciaModal');
+                        const cancelBtn = document.getElementById('cancelarTransferencia');
+                        if (closeBtn) closeBtn.onclick = () => dismissModal(transferenciaModal);
+                        if (cancelBtn) cancelBtn.onclick = () => dismissModal(transferenciaModal);
+                        transferenciaModal.addEventListener('click', function(e) {
+                            if (e.target === transferenciaModal) dismissModal(transferenciaModal);
+                        });
+                    });
+                });
+            }
 
             // Cerrar modal principal
             document.getElementById('closeMainModal').addEventListener('click', function() {
@@ -373,8 +591,25 @@ document.addEventListener('DOMContentLoaded', function() {
         btnPrimerRecurrente.addEventListener('click', function(e) {
             e.preventDefault();
             removeAnyOpenModal();
+            if (getCuentasActivas().length === 0) {
+                const sinCuentas = createSinCuentasModal();
+                presentModal(sinCuentas, () => dismissModal(sinCuentas));
+                const cancelar = document.getElementById('cancelarSinCuentas');
+                if (cancelar) cancelar.onclick = () => dismissModal(sinCuentas);
+                sinCuentas.addEventListener('click', function(ev) {
+                    if (ev.target === sinCuentas) dismissModal(sinCuentas);
+                });
+                return;
+            }
             const recurrenteModal = createRecurrenteModal();
             presentModal(recurrenteModal, () => dismissModal(recurrenteModal));
+            CategoriaCascade.wireCategoriaCascade('rec');
+            const recTipoSelect = document.getElementById('recTipo');
+            if (recTipoSelect) {
+                recTipoSelect.addEventListener('change', () => {
+                    CategoriaCascade.refreshCategoriaOptionsForTipo('rec', recTipoSelect.value === 'true' ? 'ingreso' : 'gasto');
+                });
+            }
             const closeBtn = document.getElementById('closeRecurrenteModal');
             const cancelBtn = document.getElementById('cancelarRecurrente');
             if (closeBtn) closeBtn.onclick = () => dismissModal(recurrenteModal);
@@ -427,16 +662,20 @@ document.addEventListener('DOMContentLoaded', function() {
             width: 100%;
             height: 100%;
             background-color: rgba(8,9,12,0.5);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-            transition: opacity var(--dur-base, 320ms) var(--ease-standard, ease), visibility var(--dur-base, 320ms);
+            transition: opacity var(--dur-base, 320ms) var(--ease-standard, ease), visibility var(--dur-base, 320ms), backdrop-filter var(--dur-base, 320ms) var(--ease-standard, ease);
         }
 
         .modal.show {
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
         }
 
         .modal-content {
@@ -589,6 +828,10 @@ document.addEventListener('DOMContentLoaded', function() {
             background: var(--info);
             color: #fff;
         }
+        .btn-save--transfer {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
 
         .btn-cancel:hover {
             background: var(--bg-secondary);
@@ -644,6 +887,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .modal-option-icon--recurring {
             background: var(--info-soft);
             color: var(--info);
+        }
+        .modal-option-icon--transfer {
+            background: var(--border-color);
+            color: var(--text-primary);
         }
 
         @media (max-width: 600px) {

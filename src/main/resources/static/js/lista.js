@@ -1,5 +1,38 @@
  document.addEventListener('DOMContentLoaded', function() {
 
+    // --- Saludo según la hora local del dispositivo del usuario ---
+    const saludoEl = document.getElementById('saludoUsuario');
+    if (saludoEl) {
+        const hora = new Date().getHours();
+        let saludo;
+        if (hora >= 6 && hora < 12) saludo = 'Buenos días';
+        else if (hora >= 12 && hora < 20) saludo = 'Buenas tardes';
+        else saludo = 'Buenas noches';
+        saludoEl.textContent = saludo + ', ' + saludoEl.getAttribute('data-username');
+    }
+
+    // --- Poblar el selector de cuenta del modal de edición ---
+    const editCuentaSelect = document.getElementById('editCuenta');
+    if (editCuentaSelect) {
+        const cuentas = (window.cuentasUsuario || []).filter(c => c.activa !== false);
+        // c.nombre es texto libre del usuario: se construye el <option> vía DOM API en vez de
+        // interpolarlo en un string HTML, para que nunca pueda romper el marcado (hallazgo M7).
+        editCuentaSelect.innerHTML = '';
+        cuentas.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.id;
+            option.textContent = c.nombre;
+            editCuentaSelect.appendChild(option);
+        });
+    }
+
+    // Si el usuario cambia el Tipo (ingreso/gasto) en el modal de edición, refrescar las categorías disponibles
+    const editTipoSelect = document.getElementById('editTipo');
+    if (editTipoSelect) {
+        editTipoSelect.addEventListener('change', () => {
+            window.CategoriaCascade.refreshCategoriaOptionsForTipo('edit', editTipoSelect.value === 'true' ? 'ingreso' : 'gasto');
+        });
+    }
 
     // --- Menú tres puntitos: abrir/cerrar ---
     document.querySelectorAll('.menu-trigger').forEach(function(btn) {
@@ -42,7 +75,16 @@
     const cantidadSpan = li.querySelector('.cantidad-ingreso, .cantidad-gasto span');
     let cantidad = '';
     if (cantidadSpan) {
-    cantidad = cantidadSpan.innerText.replace(' €','').replace(',','.');
+    // El texto mostrado depende de la divisa preferida (€/$/£, con distinto separador
+    // decimal - ver MoneyFormatter). Se normaliza a un número plano con punto decimal
+    // para el <input type="number">, sea cual sea la divisa activa.
+    let texto = cantidadSpan.innerText.trim().replace(/[€$£]/g, '').trim();
+    if ((window.MONEY_CODE || 'EUR') === 'EUR') {
+        texto = texto.replace(/\./g, '').replace(',', '.');
+    } else {
+        texto = texto.replace(/,/g, '');
+    }
+    cantidad = texto;
 }
     // Obtener asunto
     const asunto = li.getAttribute('data-asunto') || '';
@@ -50,14 +92,19 @@
     const ingreso = li.querySelector('.cantidad-ingreso') !== null;
     // Rellenar modal
     document.getElementById('editCantidad').value = cantidad;
+    if (editCuentaSelect) {
+        editCuentaSelect.value = li.getAttribute('data-cuenta-id') || '';
+    }
     document.getElementById('editAsunto').value = asunto;
     document.getElementById('editTipo').value = ingreso ? 'true' : 'false';
     // Obtener fecha (ya viene en formato yyyy-MM-dd)
     const fecha = li.getAttribute('data-fecha');
     document.getElementById('editFecha').value = fecha;
-    // Obtener categoría
-    const categoriaValue = li.getAttribute('data-categoria') || '';
-    document.getElementById('editCategoria').value = categoriaValue;
+    // Categoría/subcategoría en cascada, según el tipo (ingreso/gasto) del movimiento
+    const categoriaId = li.getAttribute('data-categoria-id') || '';
+    const subcategoriaId = li.getAttribute('data-subcategoria-id') || '';
+    window.CategoriaCascade.refreshCategoriaOptionsForTipo('edit', ingreso ? 'ingreso' : 'gasto');
+    window.CategoriaCascade.wireCategoriaCascade('edit', categoriaId, subcategoriaId);
     // Guardar id en el form
     document.getElementById('editForm').action = '/movimientos/edit/' + id;
     // Mostrar modal
@@ -80,7 +127,9 @@
     form.action = '/movimientos/delete/' + movimientoAEliminar;
     form.style.display = 'none';
     document.body.appendChild(form);
-    form.submit();
+    // requestSubmit() (no .submit()): .submit() no dispara el evento 'submit', así que el
+    // listener de csrf.js que inyecta el token nunca se ejecutaba y el borrado daba 403.
+    form.requestSubmit();
 }
 };
 
@@ -197,7 +246,7 @@
          });
          confirmarEliminarMes.addEventListener('click', function() {
              modalEliminarMes.classList.remove('show');
-             formEliminarMes.submit();
+             formEliminarMes.requestSubmit();
          });
      } else {
          console.error("Algún elemento no se encontró:", {

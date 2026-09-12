@@ -21,8 +21,8 @@
 <div class="main-content">
 <div class="login-container">
     <div class="login-logo">
-        <img src="/images/logo-negro.png" alt="Finanzas App" class="logo-claro">
-        <img src="/images/logo-blanco.png" alt="Finanzas App" class="logo-oscuro">
+        <img src="/images/logo-negro.png" alt="balanc*d" class="logo-claro">
+        <img src="/images/logo-blanco.png" alt="balanc*d" class="logo-oscuro">
     </div>
 
     <!-- Mensajes de error/éxito -->
@@ -47,7 +47,7 @@
     <form class="register-form" th:action="@{/auth/register}" method="post">
         <input type="email" name="email" placeholder="Correo electrónico" required>
         <input type="text" name="username" placeholder="Usuario" required>
-        <input type="password" name="password" placeholder="Contraseña" required>
+        <input type="password" name="password" placeholder="Contraseña (mínimo 8 caracteres)" minlength="8" required>
         <button type="submit">Registrarse</button>
     </form>
 
