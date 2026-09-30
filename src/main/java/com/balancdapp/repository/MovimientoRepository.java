@@ -26,6 +26,9 @@ public interface MovimientoRepository extends JpaRepository<Movimiento, Long> {
 
     boolean existsByUserAndMesAsignadoAndAnioAsignado(User user, int mes, int anio);
 
+    // Gastos ya categorizados del usuario, del más reciente al más antiguo (para heredar categoría por asunto)
+    List<Movimiento> findByUserAndIngresoFalseAndCategoriaIsNotNullOrderByIdDesc(User user);
+
     boolean existsByUserAndMesAsignadoAndAnioAsignadoAndCantidadCifradaAndIngresoAndAsuntoCifradoAndFechaCifrada(User user, int mesAsignado, int anioAsignado, String cantidadCifrada, boolean ingreso, String asuntoCifrado, String fechaCifrada);
 
     @Modifying

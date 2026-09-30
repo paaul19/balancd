@@ -129,6 +129,21 @@ public class EncryptedMovimientoService {
     }
 
     /**
+     * Busca el gasto más reciente del usuario con el mismo asunto (sin distinguir mayúsculas ni
+     * espacios sobrantes) que ya tenga categoría asignada. El asunto va cifrado con IV aleatorio,
+     * así que la comparación se hace en memoria tras descifrar.
+     */
+    public java.util.Optional<Movimiento> findGastoPrevioConMismoAsunto(User user, String asunto) {
+        if (asunto == null || asunto.isBlank()) {
+            return java.util.Optional.empty();
+        }
+        String buscado = asunto.trim();
+        return movimientoRepository.findByUserAndIngresoFalseAndCategoriaIsNotNullOrderByIdDesc(user).stream()
+                .filter(m -> buscado.equalsIgnoreCase(getAsunto(m).trim()))
+                .findFirst();
+    }
+
+    /**
      * Obtiene la fecha descifrada de un movimiento
      */
     public LocalDate getFecha(Movimiento movimiento) {

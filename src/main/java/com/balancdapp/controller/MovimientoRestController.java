@@ -277,6 +277,8 @@ public class MovimientoRestController {
      * - "fecha" (yyyy-MM-dd): si se omite, hoy. mesAsignado/anioAsignado se calculan siempre a partir de la fecha.
      * - "ingreso" (true/false): opcional. Si no se indica, se deduce de la categoría elegida (p. ej. "Ingresos" → true,
      *   cualquier categoría de gasto → false); si tampoco hay categoría, se asume gasto.
+     * - Si es un gasto y el usuario ya tiene otro gasto con el mismo "asunto" (sin distinguir mayúsculas),
+     *   se copian la categoría y subcategoría del más reciente, ignorando las del payload.
      */
     @PostMapping("/movimientos")
     public ResponseEntity<?> addMovimiento(@RequestBody Map<String, Object> payload, HttpServletRequest request) {
@@ -331,7 +333,15 @@ public class MovimientoRestController {
                 ingreso = false; // sin categoría ni tipo indicado: se asume gasto, el caso de uso más habitual
             }
 
-            if (categoria != null) {
+            // Si es un gasto y ya hay otro gasto anterior con el mismo asunto, se reutilizan exactamente
+            // su categoría y subcategoría (prevalecen sobre las que vengan en el payload).
+            var gastoPrevio = !ingreso
+                    ? encryptedMovimientoService.findGastoPrevioConMismoAsunto(user, asunto)
+                    : java.util.Optional.<com.balancdapp.model.Movimiento>empty();
+            if (gastoPrevio.isPresent()) {
+                categoria = gastoPrevio.get().getCategoria();
+                subOut[0] = gastoPrevio.get().getSubcategoria();
+            } else if (categoria != null) {
                 try {
                     validarYResolverSubcategoria(categoria, ingreso, payload, subOut);
                 } catch (IllegalArgumentException e) {
