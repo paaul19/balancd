@@ -37,6 +37,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             new Rule("/verify", "GET", 20, 5 * 60 * 1000),
             new Rule("/api/login", "POST", 10, 5 * 60 * 1000),
             new Rule("/api/register", "POST", 5, 15 * 60 * 1000),
+            new Rule("/api/forgot-password", "POST", 5, 15 * 60 * 1000),
+            new Rule("/api/auth/apple", "POST", 20, 5 * 60 * 1000),
     };
 
     private final Map<String, ConcurrentLinkedDeque<Long>> hits = new ConcurrentHashMap<>();

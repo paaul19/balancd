@@ -24,14 +24,24 @@
         </div>
 
         <div class="month-nav">
-            <a th:href="@{/estadisticas(mes=${mesAnterior.monthValue},anio=${mesAnterior.year})}" class="month-nav-arrow" title="Mes anterior">
+            <a th:href="@{/estadisticas(mes=${mesAnterior.monthValue},anio=${mesAnterior.year},cuenta=${cuentaSeleccionada})}" class="month-nav-arrow" title="Mes anterior">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
             <span class="current-month" th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
-            <a th:href="@{/estadisticas(mes=${mesSiguiente.monthValue},anio=${mesSiguiente.year})}" class="month-nav-arrow" title="Mes siguiente">
+            <a th:href="@{/estadisticas(mes=${mesSiguiente.monthValue},anio=${mesSiguiente.year},cuenta=${cuentaSeleccionada})}" class="month-nav-arrow" title="Mes siguiente">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
         </div>
+
+        <!-- filtro -->
+        <form th:if="${!#lists.isEmpty(cuentas)}" th:action="@{/estadisticas}" method="get" class="cuenta-filter-bar">
+            <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
+            <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
+            <select name="cuenta" onchange="this.form.submit()" aria-label="Cuenta del gráfico">
+                <option value="" th:selected="${cuentaSeleccionada == null}">Todas las cuentas</option>
+                <option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${cuentaSeleccionada != null and cuentaSeleccionada == c.id}"></option>
+            </select>
+        </form>
 
         <div th:if="${totalGastado > 0}">
             <div class="pie-wrap">
@@ -56,7 +66,8 @@
 
         <div class="estadisticas-empty" th:if="${totalGastado == 0}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12A9 9 0 1 1 12 3" stroke-linecap="round"/><path d="M21 12A9 9 0 0 0 12 3v9z" stroke-linejoin="round"/></svg>
-            <p>No tienes gastos registrados este mes.</p>
+            <p th:if="${cuentaSeleccionada == null}">No tienes gastos registrados este mes.</p>
+            <p th:if="${cuentaSeleccionada != null}">No tienes gastos registrados este mes en esta cuenta.</p>
         </div>
     </div>
 </div>

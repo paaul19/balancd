@@ -40,6 +40,10 @@ public class User {
     private String moneda = "EUR";
 
     /** Gestionado desde el panel de administración externo (puerto 9093). */
+    /** Identificador estable del usuario en Apple ("sub" del identity token); null si nunca usó Sign in with Apple. */
+    @Column(name = "apple_sub", unique = true)
+    private String appleSub;
+
     @Column(name = "baneado", nullable = false)
     private boolean baneado = false;
 
@@ -70,6 +74,9 @@ public class User {
 
     public String getMoneda() { return moneda; }
     public void setMoneda(String moneda) { this.moneda = moneda; }
+
+    public String getAppleSub() { return appleSub; }
+    public void setAppleSub(String appleSub) { this.appleSub = appleSub; }
 
     public boolean isBaneado() { return baneado; }
     public void setBaneado(boolean baneado) { this.baneado = baneado; }

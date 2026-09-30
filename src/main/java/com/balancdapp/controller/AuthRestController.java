@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.balancdapp.service.JwtService;
+import com.balancdapp.service.AppleSignInService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,8 @@ public class AuthRestController {
     private UserService userService;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private AppleSignInService appleSignInService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> payload) {
@@ -38,6 +41,28 @@ public class AuthRestController {
                     return ResponseEntity.ok(response);
                 })
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Invalid username or password")));
+    }
+
+    /**
+     * Sign in with Apple (app iOS). Recibe el identity token de Apple y el nonce en claro con el que se pidió;
+     * responde igual que /api/login. Crea la cuenta (ya verificada) o la vincula si el correo verificado coincide.
+     */
+    @PostMapping("/auth/apple")
+    public ResponseEntity<?> apple(@RequestBody Map<String, String> payload) {
+        AppleSignInService.AppleIdentity identidad;
+        try {
+            identidad = appleSignInService.verify(payload.get("identityToken"), payload.get("nonce"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
+        }
+        User user = userService.loginOrCreateWithApple(identidad.sub(), identidad.email(), identidad.emailVerified(), payload.get("fullName"));
+        if (user.isBaneado()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Tu cuenta ha sido suspendida"));
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", jwtService.generateToken(user));
+        response.put("user", Map.of("id", user.getId(), "username", user.getUsername()));
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")

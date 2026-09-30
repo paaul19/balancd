@@ -1,6 +1,7 @@
 package com.balancdapp.controller;
 
 import com.balancdapp.model.User;
+import com.balancdapp.service.EncryptedCuentaService;
 import com.balancdapp.service.EncryptedMovimientoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,14 +16,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Gráfico circular de gastos por categoría de un mes, navegable mes a mes. Enlazado desde
- * /perfil (vivía antes ahí mismo, como resumen embebido; ahora es su propia página).
- */
+/** gráfico de gastos por categoría de un mes, navegable mes a mes y filtrable por cuenta. */
 @Controller
 public class EstadisticasController {
 
-    /** Paleta fija: colores en el orden en que se van asignando a las categorías con más gasto. */
+    /** colores en orden, se asignan a las categorías con más gasto */
     private static final String[] PALETA = {
             "#32d399", "#9b8cff", "#ff6f66", "#f5c400", "#4fb3e8",
             "#e8798f", "#7fd67a", "#c98bf5", "#e8a13b", "#5fd4c4"
@@ -32,9 +30,13 @@ public class EstadisticasController {
     @Autowired
     private EncryptedMovimientoService encryptedMovimientoService;
 
+    @Autowired
+    private EncryptedCuentaService encryptedCuentaService;
+
     @GetMapping("/estadisticas")
     public String estadisticas(@RequestParam(required = false) Integer mes,
                                 @RequestParam(required = false) Integer anio,
+                                @RequestParam(value = "cuenta", required = false) Long cuentaId,
                                 HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -43,13 +45,19 @@ public class EstadisticasController {
 
         YearMonth seleccionado = (mes != null && anio != null) ? YearMonth.of(anio, mes) : YearMonth.now();
 
+        // incluye las desactivadas: sus gastos siguen contando en meses pasados
+        List<EncryptedCuentaService.CuentaDTO> cuentas = encryptedCuentaService.getCuentasByUser(user);
+        // id ajeno o inexistente -> todas las cuentas
+        final Long cuentaFiltro = (cuentaId != null && cuentas.stream().anyMatch(c -> c.getId().equals(cuentaId)))
+                ? cuentaId : null;
+
         List<EncryptedMovimientoService.MovimientoDTO> gastosDelMes = encryptedMovimientoService.getMovimientosByUserId(user.getId()).stream()
                 .filter(m -> !m.isIngreso())
                 .filter(m -> m.getMesAsignado() == seleccionado.getMonthValue() && m.getAnioAsignado() == seleccionado.getYear())
+                .filter(m -> cuentaFiltro == null || cuentaFiltro.equals(m.getCuentaId()))
                 .toList();
 
-        // Agrupa por categoría preservando el orden de aparición; icono/color se asignan por
-        // categoría (no por movimiento) para que la leyenda y las porciones del gráfico coincidan.
+        // icono/color van por categoría, no por movimiento, para que leyenda y porciones cuadren
         Map<String, Double> gastoPorCategoria = new LinkedHashMap<>();
         Map<String, String> iconoPorCategoria = new LinkedHashMap<>();
         for (var m : gastosDelMes) {
@@ -92,6 +100,8 @@ public class EstadisticasController {
             segmentos.add(segmento);
         }
 
+        model.addAttribute("cuentas", cuentas);
+        model.addAttribute("cuentaSeleccionada", cuentaFiltro);
         model.addAttribute("mesSeleccionado", seleccionado);
         model.addAttribute("mesAnterior", seleccionado.minusMonths(1));
         model.addAttribute("mesSiguiente", seleccionado.plusMonths(1));

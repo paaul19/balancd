@@ -26,6 +26,19 @@ PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
+-- Inicio de sesión con Apple: identificador estable ("sub") del usuario en Apple, único y opcional
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE()
+     AND TABLE_NAME = 'users'
+     AND COLUMN_NAME = 'apple_sub') = 0,
+    'ALTER TABLE users ADD COLUMN apple_sub VARCHAR(255) NULL UNIQUE;',
+    'SELECT "Columna apple_sub ya existe" as status;'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
 -- Crear tabla de movimientos con campos cifrados
 CREATE TABLE IF NOT EXISTS movimientos (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

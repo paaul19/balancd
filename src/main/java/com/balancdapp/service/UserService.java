@@ -153,6 +153,45 @@ public class UserService {
         return savedUser;
     }
 
+    /**
+     * Inicio de sesión con Apple. Orden: (1) usuario ya vinculado por "sub"; (2) cuenta existente con el mismo
+     * correo, solo si Apple garantiza que el correo está verificado (se vincula); (3) alta nueva ya verificada.
+     */
+    public User loginOrCreateWithApple(String appleSub, String email, boolean emailVerified, String fullName) {
+        Optional<User> porSub = userRepository.findByAppleSub(appleSub);
+        if (porSub.isPresent()) return porSub.get();
+
+        String correo = (email != null && !email.isBlank()) ? email.trim().toLowerCase() : null;
+        if (correo != null && emailVerified) {
+            Optional<User> porCorreo = userRepository.findByEmail(correo);
+            if (porCorreo.isPresent()) {
+                User u = porCorreo.get();
+                u.setAppleSub(appleSub);
+                u.setVerified(true);
+                return userRepository.save(u);
+            }
+        }
+
+        User nuevo = new User();
+        nuevo.setAppleSub(appleSub);
+        nuevo.setEmail(correo != null && !userRepository.existsByEmail(correo) ? correo : appleSub + "@apple.balancd.invalid");
+        nuevo.setUsername(usernameLibre(fullName, correo));
+        nuevo.setPassword(UUID.randomUUID().toString() + UUID.randomUUID()); // sin contraseña utilizable: solo entra con Apple
+        nuevo.setVerified(true);
+        return saveUser(nuevo);
+    }
+
+    private String usernameLibre(String fullName, String email) {
+        String base = (fullName != null && !fullName.isBlank()) ? fullName : (email != null ? email.split("@")[0] : "usuario");
+        base = base.toLowerCase().replaceAll("[^a-z0-9._]", "");
+        if (base.length() < 3) base = "usuario";
+        if (base.length() > 20) base = base.substring(0, 20);
+        String candidato = base;
+        java.util.Random rnd = new java.security.SecureRandom();
+        while (userRepository.existsByUsername(candidato)) candidato = base + (1000 + rnd.nextInt(9000));
+        return candidato;
+    }
+
     public boolean verifyUser(String token) {
         VerificationToken verificationToken = verificationTokenRepository.findByToken(token).orElse(null);
         // Hallazgo H5: un token solo es válido para verificar un email si es del tipo correcto
