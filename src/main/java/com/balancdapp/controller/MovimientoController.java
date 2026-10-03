@@ -125,8 +125,7 @@ public class MovimientoController {
         mesesDisponibles = new ArrayList<>(mesesDisponibles.stream().distinct().sorted((a, b) -> b.compareTo(a)).toList());
 
         // Si no se especifica mes/año, usar el actual
-        YearMonth actual = YearMonth.now();
-        YearMonth seleccionado = (mes != null && anio != null) ? YearMonth.of(anio, mes) : (mesesDisponibles.isEmpty() ? actual : mesesDisponibles.get(0));
+        YearMonth seleccionado = (mes != null && anio != null) ? YearMonth.of(anio, mes) : mesActual;
 
         // Filtrar movimientos del mes/año seleccionado (ordenar por fecha descendente y luego por ID descendente para que los más recientes aparezcan primero)
         List<EncryptedMovimientoService.MovimientoDTO> movimientos = todos.stream()
