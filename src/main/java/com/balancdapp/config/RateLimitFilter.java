@@ -32,6 +32,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     // equivoca de contraseña varias veces seguidas no debería notarlo.
     private final Rule[] rules = new Rule[] {
             new Rule("/login", "POST", 10, 5 * 60 * 1000),
+            new Rule("/login/passkey", "POST", 10, 5 * 60 * 1000),
+            new Rule("/login/passkey/opciones", "POST", 30, 5 * 60 * 1000),
             new Rule("/auth/register", "POST", 5, 15 * 60 * 1000),
             new Rule("/forgot-password", "POST", 5, 15 * 60 * 1000),
             new Rule("/verify", "GET", 20, 5 * 60 * 1000),

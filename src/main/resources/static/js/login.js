@@ -33,4 +33,27 @@ document.addEventListener('DOMContentLoaded', function() {
             showRegisterBtn.style.display = 'block';
         }, 250);
     });
+
+    // Login con passkey: solo se muestra si el navegador soporta WebAuthn.
+    const passkeyLogin = document.getElementById('passkeyLogin');
+    const btnPasskey = document.getElementById('btnPasskeyLogin');
+    const passkeyError = document.getElementById('passkeyLoginError');
+    if (passkeyLogin && window.Passkey && Passkey.isSupported()) {
+        passkeyLogin.hidden = false;
+        btnPasskey.addEventListener('click', async function () {
+            passkeyError.hidden = true;
+            btnPasskey.disabled = true;
+            try {
+                const result = await Passkey.login();
+                window.location.href = result.redirect || '/movimientos';
+            } catch (err) {
+                const msg = Passkey.friendlyError(err);
+                if (msg) {
+                    passkeyError.textContent = msg;
+                    passkeyError.hidden = false;
+                }
+                btnPasskey.disabled = false;
+            }
+        });
+    }
 });

@@ -62,4 +62,53 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+
+    // --- Passkeys: vincular un nuevo dispositivo ---
+    // navigator.credentials.create() debe ejecutarse a raíz de un gesto del usuario (Safari
+    // en iOS lo exige), por eso se lanza desde el submit del modal y no tras un prompt().
+    const btnAnadirPasskey = document.getElementById('btnAnadirPasskey');
+    const modalPasskey = document.getElementById('modalAnadirPasskey');
+    const formPasskey = document.getElementById('formAnadirPasskey');
+    const nombrePasskey = document.getElementById('passkeyNombre');
+    const btnConfirmarPasskey = document.getElementById('btnConfirmarPasskey');
+    const passkeyError = document.getElementById('passkeyError');
+
+    function cerrarModalPasskey() {
+        modalPasskey.classList.remove('show');
+        passkeyError.hidden = true;
+        btnConfirmarPasskey.disabled = false;
+    }
+
+    if (btnAnadirPasskey) {
+        if (!window.Passkey || !Passkey.isSupported()) {
+            btnAnadirPasskey.disabled = true;
+            document.getElementById('passkeysAyuda').textContent = 'Este navegador no es compatible con passkeys.';
+        } else {
+            btnAnadirPasskey.addEventListener('click', function () {
+                nombrePasskey.value = Passkey.defaultDeviceName();
+                modalPasskey.classList.add('show');
+            });
+            document.getElementById('closeAnadirPasskey').addEventListener('click', cerrarModalPasskey);
+            document.getElementById('cancelarAnadirPasskey').addEventListener('click', cerrarModalPasskey);
+            modalPasskey.addEventListener('click', function (e) {
+                if (e.target === modalPasskey) cerrarModalPasskey();
+            });
+            formPasskey.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                passkeyError.hidden = true;
+                btnConfirmarPasskey.disabled = true;
+                try {
+                    await Passkey.register(nombrePasskey.value);
+                    window.location.reload();
+                } catch (err) {
+                    const msg = Passkey.friendlyError(err);
+                    if (msg) {
+                        passkeyError.textContent = msg;
+                        passkeyError.hidden = false;
+                    }
+                    btnConfirmarPasskey.disabled = false;
+                }
+            });
+        }
+    }
 });

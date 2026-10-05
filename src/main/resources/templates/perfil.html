@@ -62,6 +62,35 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Sección seguridad: passkeys -->
+            <div class="cuenta-section passkeys-section">
+                <div class="cuenta-section-label">Passkeys</div>
+                <div class="cuenta-options">
+                    <div class="passkey-item" th:each="pk : ${passkeys}">
+                        <span class="cuenta-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-3.5 3-6 7-6 1.2 0 2.3.2 3.3.7" stroke-linecap="round"/><circle cx="18" cy="13" r="2.5"/><path d="M18 15.5V21M18 18.5h2" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="passkey-item-info">
+                            <span class="passkey-item-nombre" th:text="${pk.nombre}">iPhone</span>
+                            <span class="passkey-item-fecha"
+                                  th:text="${pk.lastUsedAt != null} ? 'Último uso: ' + ${#temporals.format(pk.lastUsedAt, 'dd/MM/yyyy')} : 'Creada: ' + ${#temporals.format(pk.createdAt, 'dd/MM/yyyy')}">Creada: 01/01/2026</span>
+                        </span>
+                        <form th:action="@{/perfil/passkeys/{id}/eliminar(id=${pk.id})}" method="post" class="passkey-eliminar-form">
+                            <button type="submit" class="passkey-eliminar-btn" title="Eliminar passkey" aria-label="Eliminar passkey">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                    <button type="button" class="cuenta-option" id="btnAnadirPasskey">
+                        <span class="cuenta-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="cuenta-option-label">Añadir passkey</span>
+                    </button>
+                </div>
+                <p class="passkeys-ayuda" id="passkeysAyuda">Inicia sesión con Face ID, Touch ID o el PIN de tu dispositivo, sin contraseña.</p>
+            </div>
         </div>
     </div>
 
@@ -122,12 +151,34 @@
         </div>
     </div>
 
+    <!-- Modal: añadir passkey -->
+    <div id="modalAnadirPasskey" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Añadir passkey</h3>
+                <button type="button" class="modal-close" id="closeAnadirPasskey" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="formAnadirPasskey" class="modal-form">
+                <div class="form-group">
+                    <label for="passkeyNombre">Nombre del dispositivo</label>
+                    <input type="text" id="passkeyNombre" maxlength="100" required>
+                </div>
+                <p id="passkeyError" class="perfil-message error" hidden></p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" id="cancelarAnadirPasskey">Cancelar</button>
+                    <button type="submit" class="btn-save" id="btnConfirmarPasskey">Continuar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
 
     <!-- Scripts de header y tema -->
     <script th:replace="~{fragments/header :: header-script}"></script>
     <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+    <script src="/js/passkey.js"></script>
     <script src="/js/perfil.js"></script>
 </body>
 </html>

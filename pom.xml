@@ -76,6 +76,12 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Passkeys (WebAuthn): verificación de registro y login con Face ID / Touch ID -->
+		<dependency>
+			<groupId>com.yubico</groupId>
+			<artifactId>webauthn-server-core</artifactId>
+			<version>2.6.0</version>
+		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>

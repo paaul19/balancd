@@ -37,6 +37,8 @@ services:
       # Poner COOKIE_SECURE=true en el .env de producción (servida por HTTPS). En local sobre
       # HTTP debe quedarse en false o el navegador nunca reenviará la cookie de sesión.
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      # Passkeys: dominio al que quedan ligadas. En local poner WEBAUTHN_RP_ID=localhost en el .env.
+      WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:-balancd.es}
 
   admin:
     build: ./admin-panel

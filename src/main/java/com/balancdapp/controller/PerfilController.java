@@ -5,6 +5,7 @@ import com.balancdapp.service.UserService;
 import com.balancdapp.service.PasswordService;
 import com.balancdapp.service.EncryptedCuentaService;
 import com.balancdapp.service.EncryptedMovimientoService;
+import com.balancdapp.service.PasskeyService;
 import com.balancdapp.repository.UserRepository;
 import com.balancdapp.repository.MovimientoRepository;
 import jakarta.servlet.http.HttpSession;
@@ -39,6 +40,8 @@ public class PerfilController {
     private MovimientoRepository movimientoRepository;
     @Autowired
     private EncryptedCuentaService encryptedCuentaService;
+    @Autowired
+    private PasskeyService passkeyService;
 
     @GetMapping("/perfil")
     public String perfil(HttpSession session, Model model) {
@@ -53,6 +56,7 @@ public class PerfilController {
                 ? username.substring(0, 2).toUpperCase()
                 : username.substring(0, 1).toUpperCase();
         model.addAttribute("iniciales", iniciales);
+        model.addAttribute("passkeys", passkeyService.listForUser(user.getId()));
         return "perfil";
     }
 

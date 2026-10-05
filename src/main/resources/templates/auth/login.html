@@ -14,6 +14,7 @@
 
     <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
+    <script src="/js/passkey.js"></script>
     <script src="/js/login.js"></script>
 </head>
 <body>
@@ -38,6 +39,14 @@
         <input type="text" name="username" placeholder="Usuario o Email" required>
         <input type="password" name="password" placeholder="Contraseña" required>
         <button type="submit">Iniciar sesión</button>
+        <div class="passkey-login" id="passkeyLogin" hidden>
+            <div class="passkey-divider"><span>o</span></div>
+            <button type="button" class="passkey-btn" id="btnPasskeyLogin">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-3.5 3-6 7-6 1.2 0 2.3.2 3.3.7" stroke-linecap="round"/><circle cx="18" cy="13" r="2.5"/><path d="M18 15.5V21M18 18.5h2" stroke-linecap="round"/></svg>
+                Iniciar sesión con passkey
+            </button>
+            <div class="error" id="passkeyLoginError" hidden></div>
+        </div>
         <div class="forgot-password-link">
             <a href="/forgot-password">He olvidado mi contraseña</a>
         </div>

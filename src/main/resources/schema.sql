@@ -811,3 +811,17 @@ SET @sql = (SELECT IF(
     'SELECT "Tabla subcategorias_desactivadas ya existe" as status;'
 ));
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Passkeys (WebAuthn): una fila por cada dispositivo/llavero que el usuario ha vinculado.
+-- credential_id y public_key_cose se guardan en base64url. Al borrar el usuario se borran sus passkeys.
+CREATE TABLE IF NOT EXISTS passkey_credentials (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    credential_id VARCHAR(512) NOT NULL UNIQUE,
+    public_key_cose TEXT NOT NULL,
+    signature_count BIGINT NOT NULL DEFAULT 0,
+    nombre VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL,
+    last_used_at DATETIME NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
