@@ -24,6 +24,9 @@ import java.util.Base64;
  *     Max-Age) que el navegador descarta al cerrarse, mientras que JSESSIONID sí persiste.
  *   - Lleva más de {@code app.lock.idle-minutes} sin peticiones (p. ej. la app se quedó en
  *     segundo plano en el móvil y se vuelve a ella).
+ *   - El cliente detecta que la app se acaba de abrir (app-lock.js: sessionStorage vacío en una
+ *     pestaña/PWA nueva) y pide bloquearla con {@link #lock}. Cubre el caso de la PWA de iOS,
+ *     que no siempre descarta las cookies de sesión al cerrarla.
  * La cookie solo contiene un token aleatorio que debe coincidir con el guardado en la sesión.
  */
 @Service
@@ -32,6 +35,7 @@ public class AppLockService {
     public static final String COOKIE_NAME = "BALANCD_UNLOCK";
     private static final String SESSION_TOKEN = "appLockToken";
     private static final String SESSION_LAST_SEEN = "appLockLastSeen";
+    private static final String SESSION_FRESH = "appLockFresh";
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final PasskeyCredentialRepository passkeyRepository;
@@ -76,6 +80,7 @@ public class AppLockService {
         RANDOM.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         session.setAttribute(SESSION_TOKEN, token);
+        session.setAttribute(SESSION_FRESH, Boolean.TRUE);
         touch(session);
         ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, token)
                 .path("/")
@@ -84,6 +89,22 @@ public class AppLockService {
                 .sameSite("Lax")
                 .build(); // sin maxAge: cookie de sesión del navegador
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    /** Vuelve a bloquear la sesión (sin cerrarla): hará falta la passkey para seguir. */
+    public void lock(HttpSession session) {
+        session.removeAttribute(SESSION_TOKEN);
+        session.removeAttribute(SESSION_FRESH);
+    }
+
+    /**
+     * true solo en la primera página tras desbloquear: app-lock.js lo usa para recordar en esa
+     * pestaña que ya se ha verificado, y no volver a bloquearla al cargar.
+     */
+    public boolean consumeFresh(HttpSession session) {
+        boolean fresh = session.getAttribute(SESSION_FRESH) != null;
+        session.removeAttribute(SESSION_FRESH);
+        return fresh;
     }
 
     private static String readCookie(HttpServletRequest request) {

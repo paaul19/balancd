@@ -65,6 +65,10 @@ public class AppLockFilter extends OncePerRequestFilter {
         // Para que las plantillas incluyan app-lock.js (pwa-meta.html).
         request.setAttribute("appLockActivo", true);
         request.setAttribute("appLockIdleMinutes", appLockService.getIdleMinutes());
+        String accept = request.getHeader("Accept");
+        if ("GET".equals(request.getMethod()) && accept != null && accept.contains("text/html")) {
+            request.setAttribute("appLockRecienDesbloqueado", appLockService.consumeFresh(session));
+        }
         filterChain.doFilter(request, response);
     }
 }

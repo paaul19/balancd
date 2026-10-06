@@ -206,6 +206,16 @@ public class PasskeyController {
         return ResponseEntity.ok(objectMapper.writeValueAsString(Map.of("redirect", consumeNext(session))));
     }
 
+    /** Llamado por app-lock.js al detectar que la app se acaba de abrir. */
+    @PostMapping(value = "/desbloquear/bloquear", produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<String> bloquear(HttpSession session) throws Exception {
+        if (session.getAttribute("user") != null) {
+            appLockService.lock(session);
+        }
+        return ResponseEntity.ok(objectMapper.writeValueAsString(Map.of("redirect", "/desbloquear")));
+    }
+
     /** Página a la que se iba antes del bloqueo (solo rutas internas guardadas por AppLockFilter). */
     private static String consumeNext(HttpSession session) {
         Object next = session.getAttribute(AppLockFilter.SESSION_NEXT);

@@ -20,7 +20,7 @@
         <!-- Bloqueo con passkey al volver a la app; AppLockFilter solo marca appLockActivo
              para usuarios con passkey y la sesión ya desbloqueada. -->
         <script th:if="${appLockActivo}" src="/js/app-lock.js"
-                th:attr="data-idle-minutes=${appLockIdleMinutes}"></script>
+                th:attr="data-idle-minutes=${appLockIdleMinutes},data-recien-desbloqueado=${appLockRecienDesbloqueado == true}"></script>
     </th:block>
 </head>
 <body></body>
