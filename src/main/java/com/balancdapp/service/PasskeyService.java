@@ -110,6 +110,15 @@ public class PasskeyService {
                 .build());
     }
 
+    /** Desbloqueo de la app: solo se aceptan las passkeys del usuario ya identificado en la sesión. */
+    public AssertionRequest startAssertion(User user) {
+        return relyingParty.startAssertion(StartAssertionOptions.builder()
+                .username(user.getEmail())
+                .userVerification(UserVerificationRequirement.REQUIRED)
+                .timeout(120_000L)
+                .build());
+    }
+
     /** Verifica la firma y devuelve el usuario dueño de la passkey, o vacío si la verificación falla. */
     @Transactional
     public Optional<User> finishAssertion(String requestJson, String responseJson) throws IOException {

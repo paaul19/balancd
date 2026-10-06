@@ -17,6 +17,10 @@
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="balanc*d">
+        <!-- Bloqueo con passkey al volver a la app; AppLockFilter solo marca appLockActivo
+             para usuarios con passkey y la sesión ya desbloqueada. -->
+        <script th:if="${appLockActivo}" src="/js/app-lock.js"
+                th:attr="data-idle-minutes=${appLockIdleMinutes}"></script>
     </th:block>
 </head>
 <body></body>

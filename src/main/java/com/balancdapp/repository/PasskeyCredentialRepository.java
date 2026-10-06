@@ -12,4 +12,5 @@ public interface PasskeyCredentialRepository extends JpaRepository<PasskeyCreden
     List<PasskeyCredential> findByUserIdOrderByCreatedAtDesc(Long userId);
     Optional<PasskeyCredential> findByCredentialId(String credentialId);
     Optional<PasskeyCredential> findByIdAndUserId(Long id, Long userId);
+    boolean existsByUserId(Long userId);
 }

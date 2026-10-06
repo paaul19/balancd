@@ -113,3 +113,28 @@ body {
         transform: translateY(0);
     }
 }
+
+
+/* Desbloqueo con passkey (/desbloquear) */
+.unlock-box .unlock-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.unlock-box .unlock-btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+.unlock-box .unlock-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.unlock-box .error[hidden] {
+    display: none;
+}
+.unlock-box .unlock-alt {
+    margin-top: 18px;
+    font-size: 0.9em;
+}

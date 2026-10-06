@@ -3,7 +3,9 @@ package com.balancdapp.controller;
 import com.balancdapp.dto.LoginRequest;
 import com.balancdapp.dto.RegisterRequest;
 import com.balancdapp.model.User;
+import com.balancdapp.service.AppLockService;
 import com.balancdapp.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,6 +20,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private AppLockService appLockService;
 
     @GetMapping("/")
     public String home(HttpSession session) {
@@ -39,7 +43,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@ModelAttribute LoginRequest loginRequest, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String login(@ModelAttribute LoginRequest loginRequest, HttpSession session,
+                        HttpServletResponse response, RedirectAttributes redirectAttributes) {
         return userService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword())
                 .map(authenticatedUser -> {
                     if (!authenticatedUser.isVerified()) {
@@ -51,6 +56,7 @@ public class AuthController {
                         return "redirect:/login";
                     }
                     session.setAttribute("user", authenticatedUser);
+                    appLockService.markUnlocked(session, response);
                     return "redirect:/movimientos";
                 })
                 .orElseGet(() -> {

@@ -32,6 +32,9 @@ public class SecurityConfig {
     @org.springframework.beans.factory.annotation.Autowired
     private BanCheckFilter banCheckFilter;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private AppLockFilter appLockFilter;
+
     /**
      * Orígenes desde los que un navegador puede hacer peticiones con credenciales (cookie de
      * sesión) a las rutas web. Configurable por entorno; por defecto solo el dominio de
@@ -86,6 +89,7 @@ public class SecurityConfig {
                     }
                 }, BasicAuthenticationFilter.class)
                 .addFilterAfter(banCheckFilter, BasicAuthenticationFilter.class)
+                .addFilterAfter(appLockFilter, BasicAuthenticationFilter.class)
                 .headers(headers -> headers
                         // Sustituye al frameOptions().disable() global anterior (motivado solo por
                         // la consola H2, que ahora está desactivada por completo - ver C5/H1).

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Desbloquear • balanc*d</title>
+    <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
+    <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/acceso.css">
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
+    <script src="/js/csrf.js"></script>
+    <script src="/js/passkey.js"></script>
+    <script src="/js/desbloquear.js"></script>
+</head>
+<body>
+<div class="check-email-box unlock-box">
+    <img src="/images/logo-app.png" alt="balanc*d">
+    <h2 th:text="'Hola, ' + ${username}">Hola</h2>
+    <p>Verifica tu identidad con tu passkey para ver tus datos.</p>
+    <div class="error" id="unlockError" hidden></div>
+    <button type="button" class="btn-volver unlock-btn" id="btnUnlock">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-3.5 3-6 7-6 1.2 0 2.3.2 3.3.7" stroke-linecap="round"/><circle cx="18" cy="13" r="2.5"/><path d="M18 15.5V21M18 18.5h2" stroke-linecap="round"/></svg>
+        Desbloquear con passkey
+    </button>
+    <p class="unlock-alt"><a href="/logout">Cerrar sesión</a> e iniciar sesión con contraseña</p>
+</div>
+</body>
+</html>

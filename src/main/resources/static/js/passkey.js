@@ -75,8 +75,9 @@
         return postJson('/perfil/passkeys', { nombre: nombre, credential: credential });
     }
 
-    async function login() {
-        const options = (await postJson('/login/passkey/opciones')).publicKey;
+    /** Pide la passkey al dispositivo con las opciones de optionsUrl y envía la firma a finishUrl. */
+    async function authenticate(optionsUrl, finishUrl) {
+        const options = (await postJson(optionsUrl)).publicKey;
         options.challenge = b64urlToBuffer(options.challenge);
         (options.allowCredentials || []).forEach(function (c) { c.id = b64urlToBuffer(c.id); });
 
@@ -93,7 +94,16 @@
             },
             clientExtensionResults: cred.getClientExtensionResults ? cred.getClientExtensionResults() : {}
         };
-        return postJson('/login/passkey', credential);
+        return postJson(finishUrl, credential);
+    }
+
+    function login() {
+        return authenticate('/login/passkey/opciones', '/login/passkey');
+    }
+
+    /** Desbloqueo de la app con una passkey del usuario que ya tiene la sesión iniciada. */
+    function unlock() {
+        return authenticate('/desbloquear/opciones', '/desbloquear');
     }
 
     /** Nombre por defecto sugerido para la passkey según el dispositivo actual. */
@@ -111,6 +121,7 @@
         isSupported: isSupported,
         register: register,
         login: login,
+        unlock: unlock,
         friendlyError: friendlyError,
         defaultDeviceName: defaultDeviceName
     };
