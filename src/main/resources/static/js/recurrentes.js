@@ -71,6 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Cerrar modal con el botón cancelar
     document.getElementById('btnCancelarRecurrente').addEventListener('click', closeEditModal);
+    const closeBtn = document.getElementById('closeEditRecurrente');
+    if (closeBtn) closeBtn.addEventListener('click', closeEditModal);
 
     // Cerrar modal haciendo clic fuera
     document.getElementById('editRecurrenteModal').addEventListener('click', function(e) {

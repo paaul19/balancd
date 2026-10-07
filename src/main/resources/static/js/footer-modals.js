@@ -899,51 +899,140 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        .recurrente-modal-content {
-            max-width: 400px !important;
+        /* ---- Modales de movimiento recurrente (añadir / modificar) ----
+           Tarjeta centrada en escritorio; hoja inferior en móvil. Cabecera fija, formulario con
+           scroll propio y barra de acciones siempre visible abajo. */
+        .modal .recurrente-modal-content {
+            display: flex;
+            flex-direction: column;
             width: 100%;
+            max-width: 420px !important;
+            max-height: 90vh;
+            max-height: 90dvh;
+            margin: 1rem !important;
+            padding: 0 !important;
+            overflow: hidden;
             box-sizing: border-box;
-            max-height: 92vh;
-            overflow-y: auto;
-            padding: 0 0.7rem 0.7rem 0.7rem !important;
-            font-size: 0.85rem;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            font-size: 1rem;
+            border-radius: var(--radius-lg) !important;
+            background: var(--bg-secondary);
+            box-shadow: var(--shadow-lg);
         }
-        .recurrente-modal-content::-webkit-scrollbar {
-            display: none;
+        .recurrente-modal-content .modal-header {
+            flex: 0 0 auto;
+            padding: 0.9rem 1.25rem 0.5rem;
+            margin-bottom: 0;
+            gap: 0.8rem;
         }
         .recurrente-modal-content .modal-title {
-            font-size: 0.98rem;
+            font-size: 1.15rem;
+            font-weight: 800;
         }
+        .recurrente-modal-content .modal-form {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0 !important;
+            padding: 0.4rem 1.25rem 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .recurrente-modal-content .modal-form::-webkit-scrollbar { display: none; }
         .recurrente-modal-content .form-group {
-            margin-bottom: 0.45rem;
+            flex: 0 0 auto;
+            margin-bottom: 0.9rem;
+            min-width: 0;
         }
         .recurrente-modal-content .form-group label {
+            display: block;
+            margin-bottom: 0.35rem;
             font-size: 0.85rem;
-            margin-bottom: 0.12rem;
+            font-weight: 600;
+            color: var(--text-secondary);
         }
         .recurrente-modal-content .form-group input,
         .recurrente-modal-content .form-group select {
-            font-size: 0.85rem;
-            padding: 0.4rem 0.6rem;
+            display: block;
+            width: 100% !important;
+            min-width: 0;
+            max-width: 100%;
+            height: 46px;
+            padding: 0 0.9rem !important;
+            font-size: 16px !important; /* evita el zoom de iOS al enfocar */
+            border-radius: 12px;
+            background: var(--bg-elevated);
+            -webkit-appearance: none;
+            appearance: none;
+            box-sizing: border-box;
         }
+        .recurrente-modal-content .form-group select {
+            padding-right: 2.2rem !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 18' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 7l4-4 4 4M3 11l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.8rem center;
+            background-size: 12px 16px;
+        }
+        /* iOS pinta los date/time con su propio ancho y centrados: se fuerzan al ancho del campo */
+        .recurrente-modal-content .form-group input[type="date"] {
+            text-align: left;
+            line-height: 46px;
+        }
+        .recurrente-modal-content input[type="date"]::-webkit-date-and-time-value {
+            text-align: left;
+            min-height: 1.2em;
+        }
+        .recurrente-modal-content .form-group input:focus,
+        .recurrente-modal-content .form-group select:focus {
+            border-color: var(--accent);
+            box-shadow: var(--focus-ring);
+        }
+        /* Barra de acciones fija abajo */
         .recurrente-modal-content .modal-actions {
-            margin-top: 0.4rem;
+            position: sticky;
+            bottom: 0;
+            z-index: 1;
+            flex: 0 0 auto;
+            margin: 0.4rem -1.25rem 0;
+            padding: 0.9rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px));
+            background: linear-gradient(to bottom, transparent, var(--bg-secondary) 28%);
+            gap: 0.7rem;
+            justify-content: stretch;
         }
-        @media (max-width: 700px) {
-            .recurrente-modal-content {
-                max-width: 98vw !important;
-                margin: 0.2rem !important;
-                padding: 0.1rem !important;
-            }
+        .recurrente-modal-content .modal-actions .btn-cancel,
+        .recurrente-modal-content .modal-actions .btn-save {
+            flex: 1 1 0;
+            height: 48px;
+            padding: 0 1rem !important;
+            font-size: 1rem !important;
+            font-weight: 700;
+            border-radius: 14px;
         }
-        @media (max-width: 480px) {
-            .recurrente-modal-content {
-                max-width: 100vw !important;
+        .recurrente-modal-content .modal-actions .btn-cancel {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        .recurrente-modal-content .modal-actions .btn-save {
+            background: var(--accent);
+            color: #06120a;
+            box-shadow: 0 8px 24px var(--accent-soft);
+        }
+        /* Móvil: hoja inferior pegada al borde */
+        @media (max-width: 600px) {
+            .modal:has(.recurrente-modal-content) { align-items: flex-end; }
+            .modal .recurrente-modal-content {
+                max-width: 100% !important;
                 margin: 0 !important;
-                border-radius: 0 !important;
+                max-height: 92vh;
+                max-height: 92dvh;
+                border-radius: 24px 24px 0 0 !important;
+                border-bottom: none;
+                transform: translateY(32px);
             }
+            .modal.show .recurrente-modal-content { transform: none; }
         }
 
         @media (prefers-reduced-motion: reduce) {
