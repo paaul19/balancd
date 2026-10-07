@@ -3,25 +3,7 @@
 (function () {
     'use strict';
 
-    // 1) Entrada escalonada del contenido principal de cada página.
-    function revealContent() {
-        var nav = window.performance && performance.getEntriesByType
-            ? performance.getEntriesByType('navigation')[0] : null;
-        if (nav && nav.type === 'back_forward') return; // al volver atrás no se repite
-        var wrap = document.querySelector('.main-content > [class$="-wrap"], .main-content > .container');
-        if (!wrap) return;
-        var i = 0;
-        Array.prototype.forEach.call(wrap.children, function (el) {
-            if (el.matches('script, style, template, .modal, [hidden]')) return;
-            var cs = getComputedStyle(el);
-            if (cs.display === 'none' || cs.position === 'fixed' || cs.position === 'absolute') return;
-            el.style.setProperty('--i', Math.min(i++, 6));
-            el.classList.add('reveal');
-            el.addEventListener('animationend', function (e) {
-                if (e.target === el) el.classList.remove('reveal');
-            }, { once: true });
-        });
-    }
+    // (La entrada escalonada del contenido es solo CSS: ver fragments/theme-switcher.html.)
 
     // 2) Header: marca .is-scrolled al bajar para que aparezca su separación.
     function wireHeaderScroll() {
@@ -61,7 +43,6 @@
     }
 
     function init() {
-        revealContent();
         wireHeaderScroll();
         wireBusySubmit();
     }

@@ -31,6 +31,17 @@
 
             <!-- Saludo según la hora local del dispositivo (lo rellena lista.js) -->
             <div class="saludo-usuario" id="saludoUsuario" th:attr="data-username=${user.username}"></div>
+            <script>
+                // Se rellena aquí mismo, antes del primer pintado, para que no "popee" cuando
+                // termina de cargar lista.js (que repite lo mismo por si acaso).
+                (function () {
+                    var el = document.getElementById('saludoUsuario');
+                    if (!el) return;
+                    var h = new Date().getHours();
+                    var saludo = h >= 6 && h < 12 ? 'Buenos días' : (h >= 12 && h < 20 ? 'Buenas tardes' : 'Buenas noches');
+                    el.textContent = saludo + ', ' + el.getAttribute('data-username');
+                })();
+            </script>
 
             <!-- Tarjeta de balance principal -->
             <div class="balance-card">

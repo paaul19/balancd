@@ -187,8 +187,13 @@
 
         /* Navegación entre páginas (View Transitions entre documentos: Chrome 126+, Safari 18.2+).
            Header y footer tienen nombre propio para quedarse quietos mientras cambia el contenido. */
+        /* No en iOS: durante la transición WebKit enseña capturas en vez de la página real y la
+           franja de 1px que le sirve para colorear la barra de estado (ver html::before) deja de
+           muestrearse, con lo que el blur de iOS 27 reaparece arriba hasta que termina. */
         @media (prefers-reduced-motion: no-preference) {
-            @view-transition { navigation: auto; }
+            @supports not (-webkit-touch-callout: none) {
+                @view-transition { navigation: auto; }
+            }
         }
         .header { view-transition-name: app-header; }
         .footer-bar { view-transition-name: app-footer; }
@@ -215,12 +220,23 @@
         @keyframes fade-in-only {
             from { opacity: 0; }
         }
-        .reveal {
+        /* Solo CSS (sin esperar a JS) para que arranque invisible desde el primer pintado: si lo
+           añadía un script al cargar el DOM, el contenido se veía entero, desaparecía y recién
+           entonces hacía el fundido. Los hijos del contenedor principal entran escalonados. */
+        .main-content > :is([class$="-wrap"], .container) > :not(script, style, template, .modal, [hidden]) {
             animation: rise-in 280ms var(--ease-standard) backwards;
-            animation-delay: calc(var(--i, 0) * 40ms);
         }
+        .main-content > :is([class$="-wrap"], .container) > :nth-child(2) { animation-delay: 40ms; }
+        .main-content > :is([class$="-wrap"], .container) > :nth-child(3) { animation-delay: 80ms; }
+        .main-content > :is([class$="-wrap"], .container) > :nth-child(4) { animation-delay: 120ms; }
+        .main-content > :is([class$="-wrap"], .container) > :nth-child(5) { animation-delay: 160ms; }
+        .main-content > :is([class$="-wrap"], .container) > :nth-child(6) { animation-delay: 200ms; }
+        .main-content > :is([class$="-wrap"], .container) > :nth-child(n+7) { animation-delay: 240ms; }
         @media (prefers-reduced-motion: reduce) {
-            .reveal { animation: fade-in-only 160ms ease backwards; animation-delay: 0ms; }
+            .main-content > :is([class$="-wrap"], .container) > :not(script, style, template, .modal, [hidden]) {
+                animation: fade-in-only 160ms ease backwards;
+                animation-delay: 0ms;
+            }
         }
 
         /* Mensajes de error/éxito: aparecen en vez de saltar */

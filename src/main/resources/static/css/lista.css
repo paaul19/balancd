@@ -28,6 +28,7 @@ body {
   letter-spacing: var(--tracking-title);
   color: var(--text-primary);
   margin: 0.2rem 0.1rem 0.9rem;
+  min-height: 1.4em; /* reserva su altura: el resto no se desplaza si el texto llega un frame tarde */
 }
 h2 { text-align: center; margin-bottom: 1.5rem; }
 ul { list-style: none; padding: 0; margin: 0; }
