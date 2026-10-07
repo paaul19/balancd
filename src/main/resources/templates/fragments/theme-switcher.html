@@ -102,8 +102,45 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html {
             background: var(--bg-primary);
+        }
+        body {
+            background: transparent;
+        }
+
+        
+        html::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background:
+                radial-gradient(55% 40% at 105% 108%, var(--info-soft), transparent 70%),
+                radial-gradient(55% 40% at -10% 108%, var(--accent-soft), transparent 70%);
+            opacity: 0.9;
+        }
+
+        /* Foco con el mismo anillo verde que en los formularios de acceso */
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: var(--focus-ring);
+        }
+
+        /* Botón principal de acción: acento verde con halo, como el CTA de la landing */
+        .btn-primary-accent,
+        .btn-nueva-cuenta, .btn-nuevo, .btn-save,
+        .filtros-row-boton button {
+            background: var(--accent);
+            color: #06120a;
+            box-shadow: 0 8px 24px var(--accent-soft);
+        }
+        .btn-primary-accent:hover,
+        .btn-nueva-cuenta:hover, .btn-nuevo:hover, .btn-save:hover,
+        .filtros-row-boton button:hover {
+            background: var(--accent);
+            filter: brightness(1.06);
         }
 
         /* Reserva siempre el espacio de la scrollbar: sin esto, las páginas con

@@ -116,8 +116,9 @@ body {
 }
 .filtros-row-boton button {
   flex: 1 1 auto;
-  background: var(--button-bg);
-  color: var(--button-text);
+  background: var(--accent);
+  color: #06120a;
+  box-shadow: 0 8px 24px var(--accent-soft);
   border: none;
   border-radius: 999px;
   padding: 0.75rem 1.2rem;
