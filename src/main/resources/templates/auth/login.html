@@ -2,76 +2,80 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login/Register • balanc*d</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Iniciar sesión • balanc*d</title>
     <th:block th:replace="~{fragments/pwa-meta :: meta}"></th:block>
-
-    <!-- Incluir estilos del tema -->
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
-    <style th:replace="~{fragments/footer :: footer-styles}"></style>
-    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
-
-    <script th:replace="~{fragments/theme-switcher :: theme-script-immediate}"></script>
     <script th:replace="~{fragments/theme-switcher :: theme-script}"></script>
     <script src="/js/passkey.js"></script>
     <script src="/js/login.js"></script>
 </head>
-<body>
+<body class="auth-body">
 <a href="/" class="back-home-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg> Inicio</a>
-<div class="main-content">
-<div class="login-container">
-    <div class="login-logo">
-        <img src="/images/logo-negro.png" alt="balanc*d" class="logo-claro">
-        <img src="/images/logo-blanco.png" alt="balanc*d" class="logo-oscuro">
-    </div>
-
-    <!-- Mensajes de error/éxito -->
-    <div th:if="${error}" class="error" th:text="${error}"></div>
-    <div th:if="${success}" class="success" th:text="${success}"></div>
-
-    <!-- Indicador de formulario activo -->
-    <div class="form-indicator login-indicator" id="loginIndicator"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg> Estás Iniciando Sesión</div>
-    <div class="form-indicator register-indicator" id="registerIndicator" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke-linecap="round"/></svg> Estás Registrándote</div>
-
-    <!-- Formulario de Login -->
-    <form class="login-form active" th:action="@{/login}" method="post">
-        <input type="text" name="username" placeholder="Usuario o Email" required>
-        <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit">Iniciar sesión</button>
-        <div class="passkey-login" id="passkeyLogin" hidden>
-            <div class="passkey-divider"><span>o</span></div>
-            <button type="button" class="passkey-btn" id="btnPasskeyLogin">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-3.5 3-6 7-6 1.2 0 2.3.2 3.3.7" stroke-linecap="round"/><circle cx="18" cy="13" r="2.5"/><path d="M18 15.5V21M18 18.5h2" stroke-linecap="round"/></svg>
-                Iniciar sesión con passkey
-            </button>
-            <div class="error" id="passkeyLoginError" hidden></div>
+<main class="auth-main">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <img src="/images/logo-negro.png" alt="balanc*d" class="logo-claro">
+            <img src="/images/logo-blanco.png" alt="balanc*d" class="logo-oscuro">
         </div>
-        <div class="forgot-password-link">
-            <a href="/forgot-password">He olvidado mi contraseña</a>
+
+        <div class="auth-tabs" id="authTabs" data-active="login" role="tablist">
+            <span class="tab-pill"></span>
+            <button type="button" id="showLogin" class="active" role="tab">Iniciar sesión</button>
+            <button type="button" id="showRegister" role="tab">Registrarse</button>
         </div>
-    </form>
 
-    <!-- Formulario de Registro -->
-    <form class="register-form" th:action="@{/auth/register}" method="post">
-        <input type="email" name="email" placeholder="Correo electrónico" required>
-        <input type="text" name="username" placeholder="Usuario" required>
-        <input type="password" name="password" placeholder="Contraseña (mínimo 8 caracteres)" minlength="8" required>
-        <button type="submit">Registrarse</button>
-    </form>
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        <div th:if="${success}" class="success" th:text="${success}"></div>
 
-    <!-- Botones para cambiar entre formularios -->
-    <div class="form-switch">
-        <button type="button" id="showRegister">¿No tienes cuenta? Regístrate</button>
-        <button type="button" id="showLogin" style="display:none;">¿Ya tienes cuenta? Inicia sesión</button>
+        <!-- Formulario de Login -->
+        <form class="auth-form login-form active" th:action="@{/login}" method="post">
+            <label class="field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke-linecap="round"/></svg>
+                <input type="text" name="username" placeholder="Usuario o email" required autocomplete="username">
+            </label>
+            <label class="field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg>
+                <input type="password" name="password" placeholder="Contraseña" required autocomplete="current-password">
+            </label>
+            <button type="submit" class="btn-primary">Iniciar sesión</button>
+            <div class="passkey-login" id="passkeyLogin" hidden>
+                <div class="passkey-divider"><span>o</span></div>
+                <button type="button" class="btn-secondary" id="btnPasskeyLogin">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-3.5 3-6 7-6 1.2 0 2.3.2 3.3.7" stroke-linecap="round"/><circle cx="18" cy="13" r="2.5"/><path d="M18 15.5V21M18 18.5h2" stroke-linecap="round"/></svg>
+                    Iniciar sesión con passkey
+                </button>
+                <div class="error" id="passkeyLoginError" hidden></div>
+            </div>
+            <div class="auth-links">
+                <a href="/forgot-password" class="auth-link">He olvidado mi contraseña</a>
+            </div>
+        </form>
+
+        <!-- Formulario de Registro -->
+        <form class="auth-form register-form" th:action="@{/auth/register}" method="post">
+            <label class="field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3.5 7.5l8.5 6 8.5-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <input type="email" name="email" placeholder="Correo electrónico" required autocomplete="email">
+            </label>
+            <label class="field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" stroke-linecap="round"/></svg>
+                <input type="text" name="username" placeholder="Usuario" required autocomplete="username">
+            </label>
+            <label class="field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" stroke-linecap="round"/></svg>
+                <input type="password" name="password" placeholder="Contraseña" minlength="8" required autocomplete="new-password">
+            </label>
+            <p class="auth-hint">Mínimo 8 caracteres.</p>
+            <button type="submit" class="btn-primary">Crear cuenta</button>
+        </form>
     </div>
-</div>
-</div>
-
-
-
-<!-- Botón de cambio de tema -->
-<button class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema">
+</main>
+<button type="button" class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">
     <span class="sun-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2 12h2M20 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke-linecap="round"/></svg></span>
     <span class="moon-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" stroke-linejoin="round"/></svg></span>
 </button>

@@ -3,36 +3,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.querySelector('.register-form');
     const showRegisterBtn = document.getElementById('showRegister');
     const showLoginBtn = document.getElementById('showLogin');
-    const loginIndicator = document.getElementById('loginIndicator');
-    const registerIndicator = document.getElementById('registerIndicator');
+    const tabs = document.getElementById('authTabs');
 
-    // Mostrar formulario de registro
-    showRegisterBtn.addEventListener('click', function() {
-        loginForm.classList.remove('fade-in');
-        loginForm.classList.add('fade-out');
+    function switchTo(target) {
+        const toRegister = target === 'register';
+        const from = toRegister ? loginForm : registerForm;
+        const to = toRegister ? registerForm : loginForm;
+        if (to.classList.contains('active')) return;
+        tabs.dataset.active = target;
+        showLoginBtn.classList.toggle('active', !toRegister);
+        showRegisterBtn.classList.toggle('active', toRegister);
+        from.classList.remove('fade-in');
+        from.classList.add('fade-out');
         setTimeout(function() {
-            loginForm.classList.remove('active', 'fade-out');
-            registerForm.classList.add('active', 'fade-in');
-            loginIndicator.style.display = 'none';
-            registerIndicator.style.display = 'block';
-            showRegisterBtn.style.display = 'none';
-            showLoginBtn.style.display = 'block';
-        }, 250);
-    });
+            from.classList.remove('active', 'fade-out');
+            to.classList.add('active', 'fade-in');
+        }, 180);
+    }
 
-    // Mostrar formulario de login
-    showLoginBtn.addEventListener('click', function() {
-        registerForm.classList.remove('fade-in');
-        registerForm.classList.add('fade-out');
-        setTimeout(function() {
-            registerForm.classList.remove('active', 'fade-out');
-            loginForm.classList.add('active', 'fade-in');
-            registerIndicator.style.display = 'none';
-            loginIndicator.style.display = 'block';
-            showLoginBtn.style.display = 'none';
-            showRegisterBtn.style.display = 'block';
-        }, 250);
-    });
+    showRegisterBtn.addEventListener('click', function() { switchTo('register'); });
+    showLoginBtn.addEventListener('click', function() { switchTo('login'); });
 
     // Login con passkey: solo se muestra si el navegador soporta WebAuthn.
     const passkeyLogin = document.getElementById('passkeyLogin');
