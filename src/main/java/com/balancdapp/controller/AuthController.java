@@ -5,6 +5,7 @@ import com.balancdapp.dto.RegisterRequest;
 import com.balancdapp.model.User;
 import com.balancdapp.service.AppLockService;
 import com.balancdapp.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(@ModelAttribute LoginRequest loginRequest, HttpSession session,
-                        HttpServletResponse response, RedirectAttributes redirectAttributes) {
+                        HttpServletRequest request, HttpServletResponse response, RedirectAttributes redirectAttributes) {
         return userService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword())
                 .map(authenticatedUser -> {
                     if (!authenticatedUser.isVerified()) {
@@ -55,6 +56,9 @@ public class AuthController {
                         redirectAttributes.addFlashAttribute("error", "Tu cuenta ha sido suspendida.");
                         return "redirect:/login";
                     }
+                    // Id de sesión nuevo al autenticarse (evita la fijación de sesión), igual que
+                    // ya hace el login con passkey.
+                    request.changeSessionId();
                     session.setAttribute("user", authenticatedUser);
                     appLockService.markUnlocked(session, response);
                     return "redirect:/movimientos";
@@ -73,9 +77,14 @@ public class AuthController {
                 model.addAttribute("error", "Username already in use");
                 return "error";
             }
-            // Deliberadamente NO se revela si el email ya está en uso (ver M6 en la auditoría):
-            // registerUser() ya lo comprueba internamente y lanza una RuntimeException genérica
-            // que se muestra igual que cualquier otro fallo de validación.
+            // No se revela si el email ya está en uso: se responde igual que en un registro
+            // correcto ("revisa tu correo"), sin crear nada. Antes el mensaje de error de
+            // registerUser() ("Email already in use") llegaba tal cual al usuario.
+            if (registerRequest.getEmail() != null
+                    && userService.getUserByEmail(registerRequest.getEmail().trim()).isPresent()) {
+                model.addAttribute("email", registerRequest.getEmail());
+                return "auth/check-email";
+            }
 
             // Se construye una entidad User nueva a mano, copiando solo los 3 campos permitidos.
             // Nunca se bindea la entidad JPA directamente desde el formulario: así "id" (u otro
@@ -89,6 +98,10 @@ public class AuthController {
             model.addAttribute("email", user.getEmail());
             return "auth/check-email";
         } catch (RuntimeException e) {
+            if ("Email already in use".equals(e.getMessage())) { // carrera entre dos registros simultáneos
+                model.addAttribute("email", registerRequest.getEmail());
+                return "auth/check-email";
+            }
             // Nota: no existe un @GetMapping("/auth/register") propio (el formulario de
             // registro vive como pestaña dentro de /login) - se redirige ahí para que el
             // mensaje de error sea visible en vez de terminar en un 404.
@@ -97,10 +110,15 @@ public class AuthController {
         }
     }
 
+    /**
+     * El cierre de sesión real es POST /logout (lo gestiona Spring Security con CSRF, ver
+     * SecurityConfig). Un GET ya no cierra la sesión: así un enlace o imagen ajena no puede
+     * desconectar al usuario. Los botones antiguos que aún apunten aquí (páginas en caché de la
+     * PWA) caen en esta redirección en vez de dar un 404.
+     */
     @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
+    public String logoutLegacy(HttpSession session) {
+        return session.getAttribute("user") != null ? "redirect:/ajustes" : "redirect:/";
     }
 
     @GetMapping("/verify")

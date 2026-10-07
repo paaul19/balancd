@@ -28,7 +28,9 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-3.5 3-6 7-6 1.2 0 2.3.2 3.3.7" stroke-linecap="round"/><circle cx="18" cy="13" r="2.5"/><path d="M18 15.5V21M18 18.5h2" stroke-linecap="round"/></svg>
             Desbloquear con passkey
         </button>
-        <p class="auth-foot"><a href="/logout">Cerrar sesión</a> e iniciar sesión con contraseña</p>
+        <form th:action="@{/logout}" method="post" class="auth-foot">
+            <button type="submit" class="auth-linkbtn">Cerrar sesión</button> e iniciar sesión con contraseña
+        </form>
     </div>
 </main>
 <button type="button" class="theme-switcher" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema">

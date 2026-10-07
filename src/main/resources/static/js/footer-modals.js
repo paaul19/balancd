@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function categoriaFormGroupHtml(idPrefix, tipo) {
         const categorias = getCategoriasParaTipo(tipo);
         const opciones = ['<option value="">Sin categoría</option>'].concat(
-            categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`)
+            categorias.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`)
         ).join('');
         return `
             <div class="form-group">
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         subSelect.innerHTML = cat.subcategorias.map(s => {
             const sel = preselectSubId != null && String(preselectSubId) === String(s.id) ? ' selected' : '';
-            return `<option value="${s.id}"${sel}>${s.nombre}</option>`;
+            return `<option value="${s.id}"${sel}>${escapeHtml(s.nombre)}</option>`;
         }).join('');
         subGroup.style.display = '';
     }
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         catSelect.dataset.tipo = tipo;
         const categorias = getCategoriasParaTipo(tipo);
         catSelect.innerHTML = ['<option value="">Sin categoría</option>'].concat(
-            categorias.map(c => `<option value="${c.id}">${c.nombre}</option>`)
+            categorias.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)}</option>`)
         ).join('');
         if (subSelect) subSelect.innerHTML = '';
         if (subGroup) subGroup.style.display = 'none';

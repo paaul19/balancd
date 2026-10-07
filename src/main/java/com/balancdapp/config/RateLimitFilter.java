@@ -4,10 +4,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -45,6 +47,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final Map<String, ConcurrentLinkedDeque<Long>> hits = new ConcurrentHashMap<>();
 
+    /**
+     * Cuántos proxies de confianza hay delante de la app (1 = un nginx/Caddy; 2 = p. ej. Cloudflare
+     * + nginx). La IP del cliente es la entrada de X-Forwarded-For que añadió el proxy MÁS CERCANO,
+     * contando desde la derecha: lo que el cliente escriba a la izquierda no cuenta.
+     */
+    @Value("${app.rate-limit.trusted-proxy-hops:1}")
+    private int trustedProxyHops;
+
+    private static final long MAX_WINDOW_MILLIS = 15 * 60 * 1000L;
+    private static final int PURGE_THRESHOLD = 10_000;
+    private volatile long lastPurge = 0;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -70,6 +84,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String key = rule.pathPrefix() + "|" + clientIp(request);
         long now = System.currentTimeMillis();
         long windowStart = now - rule.windowMillis();
+        purgeIfNeeded(now);
 
         ConcurrentLinkedDeque<Long> timestamps = hits.computeIfAbsent(key, k -> new ConcurrentLinkedDeque<>());
         synchronized (timestamps) {
@@ -85,12 +100,41 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private String clientIp(HttpServletRequest request) {
-        // X-Forwarded-For: confiamos en ella porque el despliegue real siempre va detrás de un
-        // reverse proxy (ver docker-compose.yml); si no viene, se usa la IP directa de la conexión.
+        String remote = request.getRemoteAddr();
         String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
+        // Solo se mira la cabecera si la conexión llega desde un proxy interno (loopback/red
+        // privada). Antes se usaba SIEMPRE el primer valor, que lo controla el cliente: enviando
+        // una IP distinta en cada petición se evitaba el límite por completo.
+        if (forwarded == null || forwarded.isBlank() || !isInternal(remote)) {
+            return remote;
         }
-        return request.getRemoteAddr();
+        String[] partes = forwarded.split(",");
+        int idx = partes.length - Math.max(1, trustedProxyHops);
+        if (idx < 0) {
+            return remote;
+        }
+        String candidata = partes[idx].trim();
+        return candidata.isEmpty() ? remote : candidata;
+    }
+
+    private static boolean isInternal(String ip) {
+        try {
+            InetAddress a = InetAddress.getByName(ip); // ip viene de getRemoteAddr(): ya es literal, sin DNS
+            if (a.isLoopbackAddress() || a.isSiteLocalAddress() || a.isLinkLocalAddress()) return true;
+            byte[] b = a.getAddress();
+            return b.length == 16 && (b[0] & 0xfe) == 0xfc; // IPv6 unique-local fc00::/7
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** Evita que el mapa crezca sin límite (p. ej. con muchas IPs distintas). */
+    private void purgeIfNeeded(long now) {
+        if (hits.size() < PURGE_THRESHOLD || now - lastPurge < 60_000) return;
+        lastPurge = now;
+        hits.entrySet().removeIf(e -> {
+            Long last = e.getValue().peekLast();
+            return last == null || last < now - MAX_WINDOW_MILLIS;
+        });
     }
 }

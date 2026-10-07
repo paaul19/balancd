@@ -77,6 +77,11 @@ public class SecurityConfig {
                 // plantillas Thymeleaf (csrf.js lee la cookie en su lugar), hace falta forzar
                 // esa lectura en cada petición - es el propio patrón que documenta la guía de
                 // Spring Security para SPA/JS con CookieCsrfTokenRepository.
+                .logout(logout -> logout
+                        .logoutUrl("/logout") // solo POST (con token CSRF)
+                        .logoutSuccessUrl("/")
+                        .deleteCookies("JSESSIONID", "BALANCD_UNLOCK")
+                )
                 .addFilterAfter(new OncePerRequestFilter() {
                     @Override
                     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

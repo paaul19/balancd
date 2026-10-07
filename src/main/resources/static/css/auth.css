@@ -400,6 +400,20 @@ html[data-theme="dark"] .logo-oscuro { display: block !important; }
   color: var(--text-secondary);
 }
 .auth-foot a { color: var(--text-primary); font-weight: 600; }
+form.auth-foot { display: block; width: 100%; text-align: center; }
+.auth-linkbtn {
+  display: inline;
+  padding: 0 !important;
+  margin: 0;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.auth-linkbtn:hover { background: none; opacity: 0.8; }
 
 @media (max-width: 480px) {
   .auth-card { padding: 2rem 1.35rem 1.6rem; }

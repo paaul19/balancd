@@ -85,7 +85,8 @@ public class AuthRestController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Username already in use"));
         }
         if (userService.getUserByEmail(email).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Email already in use"));
+            // Misma respuesta que un registro correcto: no se revela si el correo ya tiene cuenta.
+            return ResponseEntity.ok(Map.of("success", true, "message", "Account created successfully. Please check your email to verify your account."));
         }
         
         try {

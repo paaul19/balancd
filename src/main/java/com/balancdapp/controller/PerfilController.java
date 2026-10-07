@@ -121,9 +121,9 @@ public class PerfilController {
         writer.write('﻿'); // BOM para que Excel detecte UTF-8
         writer.println("Fecha;Tipo;Cantidad;Asunto;Categoria;Subcategoria");
         for (EncryptedMovimientoService.MovimientoDTO mov : movimientos) {
-            String asunto = mov.getAsunto() == null ? "" : mov.getAsunto().replace(";", ",");
-            String categoria = mov.getCategoriaNombre() == null ? "" : mov.getCategoriaNombre();
-            String subcategoria = mov.getSubcategoriaNombre() == null ? "" : mov.getSubcategoriaNombre();
+            String asunto = csvSeguro(mov.getAsunto() == null ? "" : mov.getAsunto().replace(";", ","));
+            String categoria = csvSeguro(mov.getCategoriaNombre() == null ? "" : mov.getCategoriaNombre().replace(";", ","));
+            String subcategoria = csvSeguro(mov.getSubcategoriaNombre() == null ? "" : mov.getSubcategoriaNombre().replace(";", ","));
             writer.printf("%s;%s;%s;%s;%s;%s%n",
                     mov.getFecha(),
                     mov.isIngreso() ? "Ingreso" : "Gasto",
@@ -133,6 +133,16 @@ public class PerfilController {
                     subcategoria);
         }
         writer.flush();
+    }
+
+    /**
+     * Evita la inyección de fórmulas al abrir el CSV en Excel/Sheets: un texto que empiece por
+     * = + - @ (o tabulador/retorno) se interpretaría como fórmula, así que se antepone una comilla.
+     */
+    private static String csvSeguro(String valor) {
+        if (valor == null || valor.isEmpty()) return valor;
+        char c = valor.charAt(0);
+        return (c == '=' || c == '+' || c == '-' || c == '@' || c == '\t' || c == '\r') ? "'" + valor : valor;
     }
 
     @PostMapping("/perfil/cambiar-usuario")

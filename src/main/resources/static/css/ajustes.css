@@ -267,6 +267,13 @@
   box-shadow: var(--shadow);
   transition: background-color var(--dur-fast) var(--ease-standard);
 }
+.ajustes-logout-form { margin: 0; width: 100%; }
+button.ajustes-logout-btn {
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
 .ajustes-logout-btn:hover {
   background: var(--border-color);
 }

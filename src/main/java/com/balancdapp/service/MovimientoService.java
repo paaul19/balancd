@@ -71,7 +71,10 @@ public class MovimientoService {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             Optional<Movimiento> movOpt = movimientoRepository.findById(movimientoId);
-            if (movOpt.isPresent()) {
+            // Solo se toca el balance si el movimiento es del usuario: antes se descifraba y
+            // aplicaba al balance de quien llamaba cualquier id, aunque fuese de otra cuenta.
+            if (movOpt.isPresent() && movOpt.get().getUser() != null
+                    && movOpt.get().getUser().getId().equals(userId)) {
                 Movimiento mov = movOpt.get();
                 Double cantidadDescifrada = dataEncryptionService.decryptNumber(mov.getCantidadCifrada());
                 BigDecimal cantidad = cantidadDescifrada == null ? BigDecimal.ZERO : BigDecimal.valueOf(cantidadDescifrada);

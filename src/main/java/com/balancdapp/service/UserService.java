@@ -105,9 +105,26 @@ public class UserService {
         }
     }
 
+    private volatile String dummyHash;
+
+    private String dummyHash() {
+        String h = dummyHash;
+        if (h == null) {
+            h = passwordService.encodePassword(UUID.randomUUID().toString());
+            dummyHash = h;
+        }
+        return h;
+    }
+
     public Optional<User> authenticateUser(String identifier, String password) {
         // Permitir login por email o username
         Optional<User> userOpt = identifier.contains("@") ? userRepository.findByEmail(identifier) : userRepository.findByUsername(identifier);
+        if (userOpt.isEmpty()) {
+            // Misma carga de BCrypt que con un usuario real: así el tiempo de respuesta no delata
+            // si la cuenta existe.
+            passwordService.matches(password == null ? "" : password, dummyHash());
+            return Optional.empty();
+        }
         return userOpt.filter(user -> passwordService.matches(password, user.getPassword()))
                 .filter(User::isVerified);
     }
@@ -166,6 +183,13 @@ public class UserService {
             Optional<User> porCorreo = userRepository.findByEmail(correo);
             if (porCorreo.isPresent()) {
                 User u = porCorreo.get();
+                if (!u.isVerified()) {
+                    // Cuenta registrada con este correo pero que nunca lo verificó: quien la creó
+                    // pudo ser un tercero que conoce su contraseña (pre-secuestro de cuenta). Se
+                    // invalida esa contraseña al vincularla con Apple, que sí prueba la propiedad
+                    // del correo; el dueño real entra con Apple o con "olvidé mi contraseña".
+                    u.setPassword(passwordService.encodePassword(UUID.randomUUID().toString() + UUID.randomUUID()));
+                }
                 u.setAppleSub(appleSub);
                 u.setVerified(true);
                 return userRepository.save(u);
