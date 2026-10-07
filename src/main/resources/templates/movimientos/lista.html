@@ -248,23 +248,26 @@
             </div>
             <!-- Modal de confirmación de eliminación de movimiento -->
             <div id="modalConfirmarEliminar" class="modal">
-                <div class="modal-content" style="max-width:340px;">
-                    <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres eliminar este movimiento?</div>
-                    <div style="display:flex; gap:1rem; justify-content:flex-end;">
-                        <button id="cancelarEliminarMov" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
-                        <button id="confirmarEliminarMov" style="background:var(--danger); color:#fff;">Eliminar</button>
+                <div class="modal-content confirm-content">
+                    <div class="confirm-icon is-danger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <h3 class="confirm-title">¿Eliminar este movimiento?</h3>
+                    <p class="confirm-text">Se borrará definitivamente. Esta acción no se puede deshacer.</p>
+                    <div class="confirm-actions">
+                        <button type="button" id="cancelarEliminarMov" class="confirm-btn confirm-cancel">Cancelar</button>
+                        <button type="button" id="confirmarEliminarMov" class="confirm-btn confirm-danger">Eliminar</button>
                     </div>
                 </div>
             </div>
 
-
             <!-- Modal de confirmación de eliminación de mes -->
             <div id="modalConfirmarEliminarMes" class="modal">
-                <div class="modal-content" style="max-width:340px;">
-                    <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres eliminar este mes y todos sus movimientos?</div>
-                    <div style="display:flex; gap:1rem; justify-content:flex-end;">
-                        <button id="cancelarEliminarMes" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
-                        <button id="confirmarEliminarMes" style="background:var(--danger); color:#fff;">Eliminar</button>
+                <div class="modal-content confirm-content">
+                    <div class="confirm-icon is-danger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                    <h3 class="confirm-title">¿Eliminar este mes?</h3>
+                    <p class="confirm-text">Se borrarán <b>todos sus movimientos</b>. Esta acción no se puede deshacer.</p>
+                    <div class="confirm-actions">
+                        <button type="button" id="cancelarEliminarMes" class="confirm-btn confirm-cancel">Cancelar</button>
+                        <button type="button" id="confirmarEliminarMes" class="confirm-btn confirm-danger">Eliminar</button>
                     </div>
                 </div>
             </div>

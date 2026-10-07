@@ -124,6 +124,32 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('modalConfirmarEliminarRecurrente').classList.add('show');
         });
     });
+    // Terminar: mismo patrón que el borrado (el botón vive dentro de un <form method="post">).
+    let formularioATerminar = null;
+    const modalTerminar = document.getElementById('modalConfirmarTerminarRecurrente');
+    document.querySelectorAll('.rec-end').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            formularioATerminar = this.closest('form');
+            modalTerminar.classList.add('show');
+        });
+    });
+    document.getElementById('cancelarTerminarRecurrente').addEventListener('click', function() {
+        modalTerminar.classList.remove('show');
+        formularioATerminar = null;
+    });
+    document.getElementById('confirmarTerminarRecurrente').addEventListener('click', function() {
+        if (formularioATerminar) {
+            formularioATerminar.requestSubmit();
+        }
+    });
+    modalTerminar.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('show');
+            formularioATerminar = null;
+        }
+    });
+
     document.getElementById('cancelarEliminarRecurrente').addEventListener('click', function() {
         document.getElementById('modalConfirmarEliminarRecurrente').classList.remove('show');
         formularioAEliminar = null;

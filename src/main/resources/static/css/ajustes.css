@@ -54,6 +54,9 @@
   color: var(--text-primary);
 }
 
+/* Sin botón "atrás" (Ajustes se abre desde el header): no hace falta compensar su ancho */
+.ajustes-titulo.sin-volver { margin-right: 0; }
+
 .ajustes-message {
   margin-bottom: 1rem;
   text-align: center;

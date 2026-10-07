@@ -30,12 +30,27 @@ function refreshStatusBar() {
 
 // iOS no vuelve a muestrear el color de la barra de estado en caliente (ni recreando la franja
 // ni cambiando theme-color), así que en la PWA instalada se recarga tras un cambio real de tema.
-function reloadIfIosStandalone(prevResolved) {
+function isIosStandalone() {
     var standalone = window.navigator.standalone === true;
     var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (standalone && ios && document.documentElement.getAttribute('data-theme') !== prevResolved) {
+    return standalone && ios;
+}
+
+function reloadIfIosStandalone(prevResolved) {
+    if (isIosStandalone() && document.documentElement.getAttribute('data-theme') !== prevResolved) {
         setTimeout(function () { window.location.reload(); }, 120);
+    }
+}
+
+// Cambio de tema con crossfade de toda la pantalla (View Transitions). En la PWA de iOS se aplica
+// directo porque de todas formas se recarga la página, y sin movimiento reducido solicitado.
+function withThemeTransition(change) {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (document.startViewTransition && !reduce && !isIosStandalone()) {
+        document.startViewTransition(change);
+    } else {
+        change();
     }
 }
 
@@ -48,8 +63,10 @@ function applyTheme(pref) {
 function setTheme(pref) {
     var prev = document.documentElement.getAttribute('data-theme');
     localStorage.setItem('theme', pref);
-    applyTheme(pref);
-    document.dispatchEvent(new CustomEvent('themechange', { detail: { pref: pref } }));
+    withThemeTransition(function () {
+        applyTheme(pref);
+        document.dispatchEvent(new CustomEvent('themechange', { detail: { pref: pref } }));
+    });
     reloadIfIosStandalone(prev);
 }
 

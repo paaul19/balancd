@@ -315,17 +315,16 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
         modal.innerHTML = `
-            <div class="modal-content" style="max-width: 340px; text-align: center;">
+            <div class="modal-content confirm-content">
                 ${SHEET_HANDLE_HTML}
-                <div class="modal-header" style="justify-content: center;">
-                    <h3 class="modal-title">Crea tu primera cuenta</h3>
+                <div class="confirm-icon is-accent" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2" stroke-linecap="round"/></svg>
                 </div>
-                <div class="modal-body">
-                    <p style="color: var(--text-secondary); margin: 0 0 1.2rem;">Antes de añadir un movimiento necesitas al menos una cuenta (banco, efectivo, tarjeta...) a la que asociarlo.</p>
-                    <div class="modal-actions" style="justify-content: center;">
-                        <button type="button" class="btn-cancel" id="cancelarSinCuentas">Ahora no</button>
-                        <a href="/cuentas" class="btn-save" style="display:flex; align-items:center; justify-content:center; text-decoration:none;">Crear cuenta</a>
-                    </div>
+                <h3 class="confirm-title">Crea tu primera cuenta</h3>
+                <p class="confirm-text">Antes de añadir un movimiento necesitas al menos una cuenta (banco, efectivo, tarjeta...) a la que asociarlo.</p>
+                <div class="confirm-actions">
+                    <button type="button" class="confirm-btn confirm-cancel" id="cancelarSinCuentas">Ahora no</button>
+                    <a href="/cuentas" class="confirm-btn confirm-ok">Crear cuenta</a>
                 </div>
             </div>
         `;

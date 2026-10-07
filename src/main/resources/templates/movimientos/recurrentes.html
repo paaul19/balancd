@@ -9,6 +9,7 @@
     <style th:replace="~{fragments/theme-switcher :: theme-styles}"></style>
     <!-- Incluir estilos del header y footer -->
     <style th:replace="~{fragments/header :: header-styles}"></style>
+    <link rel="stylesheet" href="/css/grouped.css">
     <link rel="stylesheet" href="/css/recurrentes.css">
     <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
@@ -24,84 +25,31 @@
     <div th:replace="~{fragments/header :: header}"></div>
     <div class="main-content">
         <div class="container">
-            <div class="header-section">
-                <h1>Movimientos Recurrentes</h1>
-            </div>
+            <h1 class="visually-hidden">Movimientos recurrentes</h1>
             <div th:if="${#lists.isEmpty(recurrentes)}" class="empty-state">
                 <h3>No hay movimientos recurrentes</h3>
                 <p>Aún no has creado ningún movimiento recurrente. Los movimientos recurrentes te permiten automatizar gastos e ingresos que se repiten regularmente.</p>
                 <button type="button" id="btnCrearPrimerRecurrente" class="btn">Crear mi primer recurrente</button>
             </div>
-            
-            <ul class="recurrentes-list" th:if="${!#lists.isEmpty(recurrentes)}">
-                <li th:each="rec : ${recurrentes}" class="recurrente-item">
-                    <div class="recurrente-header">
-                        <div class="recurrente-info">
-                            <div class="recurrente-asunto" th:text="${rec.asunto}">Asunto</div>
-                            <div class="recurrente-cantidad" th:class="${rec.ingreso ? 'cantidad-ingreso' : 'cantidad-gasto'}">
-                                <span th:text="${rec.ingreso ? '+' : '-'}"></span>
-                                <span class="js-money" th:text="${moneyFormatter.format(rec.cantidad)}"></span>
-                            </div>
-                        </div>
-                        <div class="estado-activo" th:class="${rec.activo ? 'estado-activo activo' : 'estado-activo inactivo'}" 
-                             th:text="${rec.activo ? 'Activo' : 'Inactivo'}">Estado</div>
-                    </div>
-                    
-                    <div class="recurrente-details">
-                        <div class="detail-item">
-                            <span class="detail-label">Tipo</span>
-                            <span class="detail-value" th:text="${rec.ingreso ? 'Ingreso' : 'Gasto'}">Tipo</span>
-                        </div>
-                        <div class="detail-item" th:if="${rec.cuentaNombre != null}">
-                            <span class="detail-label">Cuenta</span>
-                            <span class="detail-value" th:text="${rec.cuentaNombre}">Cuenta</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Fecha de inicio</span>
-                            <span class="detail-value" th:text="${#temporals.format(rec.fechaInicio, 'dd/MM/yyyy')}">Fecha</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Frecuencia</span>
-                            <span class="frecuencia-badge" th:text="${rec.frecuencia == 'semana' ? 'Cada semana' : 
-                                                                       rec.frecuencia == 'dos_semanas' ? 'Cada 2 semanas' :
-                                                                       rec.frecuencia == 'mes' ? 'Cada mes' :
-                                                                       rec.frecuencia == 'dos_meses' ? 'Cada 2 meses' :
-                                                                       rec.frecuencia == 'anio' ? 'Cada año' : rec.frecuencia}">Frecuencia</span>
-                        </div>
-                        <div class="detail-item" th:if="${rec.fechaFin != null}">
-                            <span class="detail-label">Fecha fin</span>
-                            <span class="detail-value" th:text="${#temporals.format(rec.fechaFin, 'dd/MM/yyyy')}">Fecha fin</span>
-                        </div>
-                        <div class="detail-item" th:if="${rec.ultimaFechaEjecutada != null}">
-                            <span class="detail-label">Última vez ejecutado</span>
-                            <span class="detail-value" th:text="${#temporals.format(rec.ultimaFechaEjecutada, 'dd/MM/yyyy')}">Última</span>
-                        </div>
-                        <div class="detail-item" th:if="${rec.categoriaNombre != null}">
-                            <span class="detail-label">Categoría</span>
-                            <span class="detail-value" th:text="${rec.subcategoriaNombre != null} ? (${rec.categoriaNombre} + ' · ' + ${rec.subcategoriaNombre}) : ${rec.categoriaNombre}"></span>
-                        </div>
-                    </div>
-                    
-                    <div class="recurrente-actions">
-                        <button type="button" 
-                                class="btn btn-sm btn-modificar" 
-                                th:data-id="${rec.id}"
-                                th:data-asunto="${rec.asunto}"
-                                th:data-cantidad="${rec.cantidad}"
-                                th:data-ingreso="${rec.ingreso}"
-                                th:data-fecha="${#temporals.format(rec.fechaInicio, 'yyyy-MM-dd')}"
-                                th:data-frecuencia="${rec.frecuencia}"
-                                th:data-categoria-id="${rec.categoriaId}"
-                                th:data-subcategoria-id="${rec.subcategoriaId}"
-                                th:data-cuenta-id="${rec.cuentaId}">
-                            Modificar
-                        </button>
-                        <form th:action="@{'/movimientos/recurrentes/borrar/' + ${rec.id}}" method="post" style="display:inline; margin:0;">
-                            <button type="submit" class="btn btn-sm btn-danger">Borrar</button>
-                        </form>
-                    </div>
-                </li>
-            </ul>
+
+            <th:block th:if="${!#lists.isEmpty(recurrentes)}">
+                <th:block th:if="${!#lists.isEmpty(recurrentes.?[activo])}">
+                    <h2 class="group-title">Activos</h2>
+                    <ul class="group">
+                        <th:block th:each="rec : ${recurrentes.?[activo]}">
+                            <li th:replace="~{fragments/recurrente-row :: recRow(${rec})}"></li>
+                        </th:block>
+                    </ul>
+                </th:block>
+                <th:block th:if="${!#lists.isEmpty(recurrentes.?[!activo])}">
+                    <h2 class="group-title">Terminados</h2>
+                    <ul class="group is-ended">
+                        <th:block th:each="rec : ${recurrentes.?[!activo]}">
+                            <li th:replace="~{fragments/recurrente-row :: recRow(${rec})}"></li>
+                        </th:block>
+                    </ul>
+                </th:block>
+            </th:block>
         </div>
 
         <!-- Modal para editar movimiento recurrente -->
@@ -165,12 +113,32 @@
 
 
     <!-- Modal de confirmación de eliminación de recurrente -->
-    <div id="modalConfirmarEliminarRecurrente" class="modal">
-        <div class="modal-content" style="max-width:340px;">
-            <div style="font-size:1.1rem; margin-bottom:1.2rem;">¿Seguro que quieres borrar este movimiento recurrente?</div>
-            <div style="display:flex; gap:1rem; justify-content:flex-end;">
-                <button id="cancelarEliminarRecurrente" style="background:var(--border-color); color:var(--text-primary);">Cancelar</button>
-                <button id="confirmarEliminarRecurrente" style="background:var(--danger); color:#fff;">Eliminar</button>
+    <!-- Modal de confirmación de terminar recurrente -->
+    <div id="modalConfirmarTerminarRecurrente" class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloTerminarRecurrente">
+        <div class="modal-content confirm-content">
+            <div class="confirm-icon is-accent" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" stroke="none"/></svg>
+            </div>
+            <h3 class="confirm-title" id="tituloTerminarRecurrente">¿Terminar este recurrente?</h3>
+            <p class="confirm-text">Dejará de generar movimientos. Los que ya se crearon se conservan.</p>
+            <div class="confirm-actions">
+                <button type="button" id="cancelarTerminarRecurrente" class="confirm-btn confirm-cancel">Cancelar</button>
+                <button type="button" id="confirmarTerminarRecurrente" class="confirm-btn confirm-ok">Terminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación de eliminación de recurrente -->
+    <div id="modalConfirmarEliminarRecurrente" class="modal" role="dialog" aria-modal="true" aria-labelledby="tituloEliminarRecurrente">
+        <div class="modal-content confirm-content">
+            <div class="confirm-icon is-danger" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="confirm-title" id="tituloEliminarRecurrente">¿Borrar este recurrente?</h3>
+            <p class="confirm-text">Se eliminará definitivamente. Los movimientos ya creados no se borran.</p>
+            <div class="confirm-actions">
+                <button type="button" id="cancelarEliminarRecurrente" class="confirm-btn confirm-cancel">Cancelar</button>
+                <button type="button" id="confirmarEliminarRecurrente" class="confirm-btn confirm-danger">Eliminar</button>
             </div>
         </div>
     </div>

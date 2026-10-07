@@ -231,3 +231,21 @@
     padding: 0.85rem 1.1rem !important;
   }
 }
+
+/* El tema trae reglas móviles heredadas con !important (.month-nav en columna, .current-month a
+   1.5rem, padding en los <a>): apilaban flecha / mes / flecha. Aquí se reafirma la fila. */
+.estadisticas-wrap .month-nav {
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1.1rem !important;
+}
+.estadisticas-wrap .month-nav .current-month {
+  font-size: 1.15rem !important;
+  min-width: 140px;
+}
+.estadisticas-wrap .month-nav a.month-nav-arrow {
+  padding: 0 !important;
+  width: 34px;
+  height: 34px;
+}

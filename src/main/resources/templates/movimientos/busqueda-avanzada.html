@@ -8,6 +8,7 @@
     <!-- Incluir estilos del header y footer -->
     <style th:replace="~{fragments/header :: header-styles}"></style>
     <style th:replace="~{fragments/footer :: footer-styles}"></style>
+    <link rel="stylesheet" href="/css/grouped.css">
     <link rel="stylesheet" href="/css/busqueda-avanzada.css">
     <script src="/js/spring.js"></script>
     <script src="/js/footer-modals.js"></script>
@@ -27,84 +28,105 @@
             <h1>Búsqueda avanzada</h1>
         </div>
 
-        <form th:action="@{/movimientos/busqueda-avanzada}" method="get" class="filtros-card">
-            <div class="filtros-row">
-                <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto (opcional)..." autocomplete="off" />
-                <select name="tipo" th:value="${tipo}">
-                    <option value="todos" th:selected="${tipo}=='todos'">Todos</option>
-                    <option value="ingresos" th:selected="${tipo}=='ingresos'">Ingresos</option>
-                    <option value="gastos" th:selected="${tipo}=='gastos'">Gastos</option>
-                    <option value="balance" th:selected="${tipo}=='balance'">Balance ≠ 0</option>
-                </select>
-            </div>
-            <div class="filtros-grid">
-                <select name="cuenta" th:if="${!#lists.isEmpty(cuentas)}">
-                    <option value="" th:selected="${cuentaSeleccionada == null}">Todas las cuentas</option>
-                    <option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${cuentaSeleccionada != null and cuentaSeleccionada == c.id}"></option>
-                </select>
-                <select name="periodo" th:value="${periodo}">
-                    <option value="3" th:selected="${periodo}==3">Últimos 3 meses</option>
-                    <option value="6" th:selected="${periodo}==6">Últimos 6 meses</option>
-                    <option value="12" th:selected="${periodo}==12">Últimos 12 meses</option>
-                    <option value="0" th:selected="${periodo}==0">Año actual</option>
-                </select>
-                <select name="categoria">
-                    <option value="" th:selected="${categoriaSeleccionada == null}">Todas las categorías</option>
-                    <optgroup label="Gastos" th:if="${!#lists.isEmpty(categoriasGasto)}">
-                        <option th:each="c : ${categoriasGasto}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${categoriaSeleccionada != null and categoriaSeleccionada == c.id}"></option>
-                    </optgroup>
-                    <optgroup label="Ingresos" th:if="${!#lists.isEmpty(categoriasIngreso)}">
-                        <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${categoriaSeleccionada != null and categoriaSeleccionada == c.id}"></option>
-                    </optgroup>
-                </select>
-                <select name="subcategoria">
-                    <option value="" th:selected="${subcategoriaSeleccionada == null}">Todas las subcategorías</option>
-                    <th:block th:each="c : ${categoriasGasto}">
-                        <optgroup th:if="${!#lists.isEmpty(c.subcategorias)}" th:label="${c.nombre}">
-                            <option th:each="s : ${c.subcategorias}" th:value="${s.id}" th:text="${s.nombre}" th:selected="${subcategoriaSeleccionada != null and subcategoriaSeleccionada == s.id}"></option>
+        <!-- Los filtros se aplican al cambiarlos (igual que en la app); Enter también envía. -->
+        <form th:action="@{/movimientos/busqueda-avanzada}" method="get" class="group" id="filtrosForm">
+            <label class="group-row search-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5" stroke-linecap="round"/></svg>
+                <input type="text" name="busqueda" th:value="${busqueda}" placeholder="Buscar por asunto (opcional)" autocomplete="off" enterkeyhint="search" />
+            </label>
+            <label class="group-row">
+                <span class="row-label">Tipo</span>
+                <span class="sel">
+                    <select name="tipo" th:value="${tipo}">
+                        <option value="todos" th:selected="${tipo}=='todos'">Todos</option>
+                        <option value="ingresos" th:selected="${tipo}=='ingresos'">Ingresos</option>
+                        <option value="gastos" th:selected="${tipo}=='gastos'">Gastos</option>
+                        <option value="balance" th:selected="${tipo}=='balance'">Balance ≠ 0</option>
+                    </select>
+                    <span class="sel-chevron" aria-hidden="true"></span>
+                </span>
+            </label>
+            <label class="group-row" th:if="${!#lists.isEmpty(cuentas)}">
+                <span class="row-label">Cuenta</span>
+                <span class="sel">
+                    <select name="cuenta">
+                        <option value="" th:selected="${cuentaSeleccionada == null}">Todas las cuentas</option>
+                        <option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${cuentaSeleccionada != null and cuentaSeleccionada == c.id}"></option>
+                    </select>
+                    <span class="sel-chevron" aria-hidden="true"></span>
+                </span>
+            </label>
+            <label class="group-row">
+                <span class="row-label">Periodo</span>
+                <span class="sel">
+                    <select name="periodo" th:value="${periodo}">
+                        <option value="3" th:selected="${periodo}==3">Últimos 3 meses</option>
+                        <option value="6" th:selected="${periodo}==6">Últimos 6 meses</option>
+                        <option value="12" th:selected="${periodo}==12">Últimos 12 meses</option>
+                        <option value="0" th:selected="${periodo}==0">Año actual</option>
+                    </select>
+                    <span class="sel-chevron" aria-hidden="true"></span>
+                </span>
+            </label>
+            <label class="group-row">
+                <span class="row-label">Categoría</span>
+                <span class="sel">
+                    <select name="categoria">
+                        <option value="" th:selected="${categoriaSeleccionada == null}">Todas las categorías</option>
+                        <optgroup label="Gastos" th:if="${!#lists.isEmpty(categoriasGasto)}">
+                            <option th:each="c : ${categoriasGasto}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${categoriaSeleccionada != null and categoriaSeleccionada == c.id}"></option>
                         </optgroup>
-                    </th:block>
-                    <th:block th:each="c : ${categoriasIngreso}">
-                        <optgroup th:if="${!#lists.isEmpty(c.subcategorias)}" th:label="${c.nombre}">
-                            <option th:each="s : ${c.subcategorias}" th:value="${s.id}" th:text="${s.nombre}" th:selected="${subcategoriaSeleccionada != null and subcategoriaSeleccionada == s.id}"></option>
+                        <optgroup label="Ingresos" th:if="${!#lists.isEmpty(categoriasIngreso)}">
+                            <option th:each="c : ${categoriasIngreso}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${categoriaSeleccionada != null and categoriaSeleccionada == c.id}"></option>
                         </optgroup>
-                    </th:block>
-                </select>
-            </div>
-            <div class="filtros-row-boton">
-                <button type="submit">Buscar</button>
-                <a th:href="@{/movimientos/busqueda-avanzada}" title="Limpiar filtros" class="filtros-limpiar-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
-                </a>
-            </div>
+                    </select>
+                    <span class="sel-chevron" aria-hidden="true"></span>
+                </span>
+            </label>
+            <label class="group-row">
+                <span class="row-label">Subcategoría</span>
+                <span class="sel">
+                    <select name="subcategoria">
+                        <option value="" th:selected="${subcategoriaSeleccionada == null}">Todas las subcategorías</option>
+                        <th:block th:each="c : ${categoriasGasto}">
+                            <optgroup th:if="${!#lists.isEmpty(c.subcategorias)}" th:label="${c.nombre}">
+                                <option th:each="s : ${c.subcategorias}" th:value="${s.id}" th:text="${s.nombre}" th:selected="${subcategoriaSeleccionada != null and subcategoriaSeleccionada == s.id}"></option>
+                            </optgroup>
+                        </th:block>
+                        <th:block th:each="c : ${categoriasIngreso}">
+                            <optgroup th:if="${!#lists.isEmpty(c.subcategorias)}" th:label="${c.nombre}">
+                                <option th:each="s : ${c.subcategorias}" th:value="${s.id}" th:text="${s.nombre}" th:selected="${subcategoriaSeleccionada != null and subcategoriaSeleccionada == s.id}"></option>
+                            </optgroup>
+                        </th:block>
+                    </select>
+                    <span class="sel-chevron" aria-hidden="true"></span>
+                </span>
+            </label>
+            <a th:href="@{/movimientos/busqueda-avanzada}" class="group-row reset-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+                <span>Restablecer filtros</span>
+            </a>
+            <button type="submit" class="visually-hidden" tabindex="-1">Buscar</button>
         </form>
 
-        <div class="totals">
-            <span class="totals-chip"><span class="totals-label">Ingresos</span><span class="ingresos js-money" th:text="${moneyFormatter.format(totalIngresos)}"></span></span>
-            <span class="totals-chip"><span class="totals-label">Gastos</span><span class="gastos js-money" th:text="${moneyFormatter.format(totalGastos)}"></span></span>
-            <span class="totals-chip"><span class="totals-label">Balance</span><span class="js-money" th:classappend="${totalBalance >= 0 ? 'balance-pos' : 'balance-neg'}" th:text="${moneyFormatter.format(totalBalance)}"></span></span>
+        <h2 class="group-title">Total</h2>
+        <div class="group">
+            <div class="group-row"><span class="row-label">Ingresos</span><span class="row-value ingresos js-money" th:text="${moneyFormatter.format(totalIngresos)}"></span></div>
+            <div class="group-row"><span class="row-label">Gastos</span><span class="row-value gastos js-money" th:text="${moneyFormatter.format(totalGastos)}"></span></div>
+            <div class="group-row"><span class="row-label strong">Balance</span><span class="row-value js-money" th:classappend="${totalBalance >= 0 ? 'balance-pos' : 'balance-neg'}" th:text="${moneyFormatter.format(totalBalance)}"></span></div>
         </div>
 
-        <div class="resumen-card">
-            <table class="resumen-table" th:if="${resumen.size()} > 0">
-                <thead>
-                    <tr>
-                        <th>Mes</th>
-                        <th>Ingresos</th>
-                        <th>Gastos</th>
-                        <th>Balance</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="mes : ${resumen}">
-                        <td class="resumen-mes" th:text="${#temporals.format(mes.mes, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></td>
-                        <td class="js-money resumen-ingresos" th:text="${moneyFormatter.format(mes.ingresos)}"></td>
-                        <td class="js-money resumen-gastos" th:text="${moneyFormatter.format(mes.gastos)}"></td>
-                        <td class="js-money" th:text="${moneyFormatter.format(mes.balance)}" th:class="${mes.balance >= 0 ? 'js-money resumen-balance-pos' : 'js-money resumen-balance-neg'}"></td>
-                    </tr>
-                </tbody>
-            </table>
-            <div class="resumen-empty" th:if="${resumen.size()} == 0">No hay movimientos que coincidan con la búsqueda.</div>
+        <h2 class="group-title">Por mes</h2>
+        <div class="group">
+            <div class="group-row mes-row" th:each="mes : ${resumen}">
+                <div class="mes-nombre" th:text="${#temporals.format(mes.mes, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></div>
+                <div class="mes-cifras">
+                    <span class="mes-cifra ingresos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 7L7 17M7 9v8h8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="js-money" th:text="${moneyFormatter.format(mes.ingresos)}"></span></span>
+                    <span class="mes-cifra gastos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="js-money" th:text="${moneyFormatter.format(mes.gastos)}"></span></span>
+                    <span class="mes-balance js-money" th:classappend="${mes.balance >= 0 ? 'balance-pos' : 'balance-neg'}" th:text="${moneyFormatter.format(mes.balance)}"></span>
+                </div>
+            </div>
+            <div class="group-row empty-row" th:if="${resumen.size()} == 0">No hay movimientos que coincidan con la búsqueda.</div>
         </div>
     </div>
 </div>
@@ -112,5 +134,15 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 <!-- Script del header -->
 <script th:replace="~{fragments/header :: header-script}"></script>
+<script>
+    // Aplicar filtros al cambiarlos, como en la app.
+    (function () {
+        var form = document.getElementById('filtrosForm');
+        if (!form) return;
+        form.querySelectorAll('select, input[type="text"]').forEach(function (el) {
+            el.addEventListener('change', function () { form.requestSubmit ? form.requestSubmit() : form.submit(); });
+        });
+    })();
+</script>
 </body>
 </html>

@@ -183,12 +183,13 @@
 
 <!-- Modal: confirmar eliminación de categoría propia -->
 <div id="modalConfirmarEliminarCategoria" class="modal">
-    <div class="modal-content" style="max-width:340px;">
-        <p id="textoConfirmarEliminarCategoria" style="margin:1.6rem 1.5rem 0.4rem; color:var(--text-primary);">¿Eliminar esta categoría?</p>
-        <p style="margin:0 1.5rem 1.2rem; font-size:0.85rem; color:var(--text-secondary);">Solo se puede si no tiene movimientos asociados.</p>
-        <div class="modal-actions" style="padding:0 1.5rem 1.5rem;">
-            <button type="button" class="btn-cancel" id="cancelarEliminarCategoria">Cancelar</button>
-            <button type="button" class="btn-save" style="background:var(--danger); color:#fff;" id="confirmarEliminarCategoria">Eliminar</button>
+    <div class="modal-content confirm-content">
+        <div class="confirm-icon is-danger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3 class="confirm-title" id="textoConfirmarEliminarCategoria">¿Eliminar esta categoría?</h3>
+        <p class="confirm-text">Solo se puede si no tiene movimientos asociados.</p>
+        <div class="confirm-actions">
+            <button type="button" id="cancelarEliminarCategoria" class="confirm-btn confirm-cancel">Cancelar</button>
+            <button type="button" id="confirmarEliminarCategoria" class="confirm-btn confirm-danger">Eliminar</button>
         </div>
     </div>
 </div>

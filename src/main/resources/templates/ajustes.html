@@ -20,10 +20,7 @@
 <div class="main-content">
     <div class="ajustes-wrap">
         <div class="ajustes-topbar">
-            <a href="/perfil" class="ajustes-back-btn" title="Volver a Perfil">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </a>
-            <h1 class="ajustes-titulo">Ajustes</h1>
+            <h1 class="ajustes-titulo sin-volver">Ajustes</h1>
         </div>
 
         <div th:if="${error}" class="ajustes-message error" th:text="${error}"></div>
@@ -112,11 +109,13 @@
         </form>
         <!-- Modal de confirmación -->
         <div id="modalConfirmarEliminar" class="ajustes-modal-overlay">
-            <div class="ajustes-modal">
-                <p>¿Seguro que quieres eliminar tu cuenta? Esta acción <b>no se puede deshacer</b> y se borrarán todos tus datos.</p>
-                <div class="ajustes-modal-actions">
-                    <button type="button" id="cancelarEliminar" class="btn-cancel">Cancelar</button>
-                    <button type="button" id="confirmarEliminar" class="btn-danger">Eliminar</button>
+            <div class="confirm-dialog">
+                <div class="confirm-icon is-danger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <h3 class="confirm-title">¿Eliminar tu cuenta?</h3>
+                <p class="confirm-text">Esta acción <b>no se puede deshacer</b> y se borrarán todos tus datos.</p>
+                <div class="confirm-actions">
+                    <button type="button" id="cancelarEliminar" class="confirm-btn confirm-cancel">Cancelar</button>
+                    <button type="button" id="confirmarEliminar" class="confirm-btn confirm-danger">Eliminar</button>
                 </div>
             </div>
         </div>

@@ -97,6 +97,181 @@
             }
         }
 
+        /* Modales cerrados: ocultos desde el primer pintado. Su CSS completo lo inyecta
+           footer-modals.js al terminar de cargar, y hasta entonces se veían un instante
+           (en recurrentes, perfil y ajustes) antes de desaparecer. */
+        .modal:not(.show) {
+            position: fixed;
+            inset: 0;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* ============================================================
+           Diálogos de confirmación compartidos (icono, título, texto, 2 botones).
+           Se usan dentro de .modal > .modal-content.confirm-content, o sueltos
+           como .confirm-dialog (p. ej. dentro de un overlay propio).
+           ============================================================ */
+        .confirm-content, .confirm-dialog {
+            width: calc(100% - 2.5rem);
+            max-width: 340px;
+            padding: 1.6rem 1.4rem 1.3rem;
+            text-align: center;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+        .confirm-dialog {
+            margin: auto;
+            border: 1px solid var(--border-color);
+            animation: confirm-pop 260ms var(--ease-standard) backwards;
+        }
+        @keyframes confirm-pop {
+            from { opacity: 0; transform: scale(0.95) translateY(8px); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .confirm-dialog { animation: fade-in-only 160ms ease backwards; }
+        }
+        .confirm-icon {
+            width: 52px;
+            height: 52px;
+            margin: 0 auto 0.9rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .confirm-icon svg { width: 26px; height: 26px; }
+        .confirm-icon.is-accent { background: var(--accent-soft); color: var(--accent); }
+        .confirm-icon.is-danger { background: var(--danger-soft); color: var(--danger); }
+        .confirm-title {
+            margin: 0 0 0.45rem;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: var(--tracking-title);
+        }
+        .confirm-text {
+            margin: 0 0 1.3rem;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+        .confirm-text b { color: var(--text-primary); }
+        .confirm-actions { display: flex; gap: 0.7rem; }
+        .confirm-btn {
+            flex: 1 1 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.8rem 1rem !important;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.95rem !important;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .confirm-cancel { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .confirm-cancel:hover { background: var(--border-color); }
+        .confirm-ok { background: var(--accent); color: #06120a; box-shadow: 0 8px 24px var(--accent-soft); }
+        .confirm-ok:hover { background: var(--accent); filter: brightness(1.06); }
+        .confirm-danger { background: var(--danger); color: #fff; }
+        .confirm-danger:hover { background: var(--danger); filter: brightness(0.92); }
+
+        /* ============================================================
+           Capa de movimiento compartida (ver /js/motion.js)
+           Curva: --ease-standard (ease-out fuerte). Solo transform/opacity.
+           ============================================================ */
+
+        /* Navegación entre páginas (View Transitions entre documentos: Chrome 126+, Safari 18.2+).
+           Header y footer tienen nombre propio para quedarse quietos mientras cambia el contenido. */
+        @media (prefers-reduced-motion: no-preference) {
+            @view-transition { navigation: auto; }
+        }
+        .header { view-transition-name: app-header; }
+        .footer-bar { view-transition-name: app-footer; }
+        ::view-transition-group(root),
+        ::view-transition-group(app-header),
+        ::view-transition-group(app-footer) {
+            animation-duration: 200ms;
+            animation-timing-function: var(--ease-standard);
+        }
+        ::view-transition-old(root),
+        ::view-transition-new(root),
+        ::view-transition-old(app-header),
+        ::view-transition-new(app-header),
+        ::view-transition-old(app-footer),
+        ::view-transition-new(app-footer) {
+            animation-duration: 180ms;
+            animation-timing-function: var(--ease-standard);
+        }
+
+        /* Entrada escalonada del contenido de cada página */
+        @keyframes rise-in {
+            from { opacity: 0; transform: translateY(10px); }
+        }
+        @keyframes fade-in-only {
+            from { opacity: 0; }
+        }
+        .reveal {
+            animation: rise-in 280ms var(--ease-standard) backwards;
+            animation-delay: calc(var(--i, 0) * 40ms);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .reveal { animation: fade-in-only 160ms ease backwards; animation-delay: 0ms; }
+        }
+
+        /* Mensajes de error/éxito: aparecen en vez de saltar */
+        @keyframes msg-in {
+            from { opacity: 0; transform: translateY(-6px); }
+        }
+        .error, .success,
+        [class$="-message"], [class*="-message "] {
+            animation: msg-in 220ms var(--ease-standard) backwards;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .error, .success, [class$="-message"], [class*="-message "] { animation: fade-in-only 160ms ease backwards; }
+        }
+
+        /* Header: separación sutil al hacer scroll */
+        .header { transition: box-shadow var(--dur-base) var(--ease-standard); }
+        .header.is-scrolled {
+            box-shadow: 0 1px 0 var(--border-color), 0 10px 28px rgba(0, 0, 0, 0.10);
+        }
+
+        /* Filas/tarjetas pulsables: respuesta inmediata al tocar, vuelta suave al soltar */
+        .group-row, .recurrente-row, .balance-card {
+            transition: transform var(--dur-base) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+        }
+        a.group-row:active,
+        .recurrente-row:has(.rec-tap:active) {
+            transform: scale(0.985);
+            transition-duration: var(--dur-instant);
+        }
+
+        /* Botón enviando: spinner en lugar del texto (lo marca motion.js al hacer submit) */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .is-busy {
+            position: relative;
+            pointer-events: none;
+            color: transparent !important;
+        }
+        .is-busy > * { opacity: 0; }
+        .is-busy::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 1.15em;
+            height: 1.15em;
+            border-radius: 50%;
+            border: 2px solid color-mix(in srgb, var(--busy-color, currentColor) 28%, transparent);
+            border-top-color: var(--busy-color, currentColor);
+            animation: spin 700ms linear infinite;
+        }
+
         /* Aplicar variables CSS */
         * {
             box-sizing: border-box;
@@ -109,7 +284,9 @@
             background: transparent;
         }
 
-        
+        /* Fondo ambiental compartido por toda la app (mismo look que las páginas de acceso):
+           halos suaves con el acento y el tono info, fijos tras el contenido. Solo en la parte
+           inferior: arriba chocaban con el header sólido y dejaban un corte visible. */
         html::after {
             content: "";
             position: fixed;
@@ -535,6 +712,7 @@
         <script src="/js/csrf.js"></script>
         <script src="/js/theme.js"></script>
         <script src="/js/privacy.js"></script>
+        <script src="/js/motion.js" defer></script>
     </th:block>
 </body>
 </html> 
