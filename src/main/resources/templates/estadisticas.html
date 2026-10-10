@@ -44,6 +44,37 @@
         </form>
 
         <div th:if="${totalGastado > 0}">
+            <!-- Tarjeta resumen del mes -->
+            <a class="gasto-card" th:href="@{/movimientos(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year})}">
+                <div class="gasto-card-head">
+                    <span class="gasto-card-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3" stroke-linecap="round"/></svg>
+                    </span>
+                    <span class="gasto-card-title">Gasto del mes</span>
+                    <svg class="gasto-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="gasto-card-month" th:text="${#temporals.format(mesSeleccionado, 'MMMM', T(java.util.Locale).forLanguageTag('es'))} + ' de ' + ${mesSeleccionado.year}"></div>
+                <div class="gasto-card-total js-money" th:text="${moneyFormatter.format(resumenMes.total)}"></div>
+                <div class="gasto-card-stats">
+                    <div class="gasto-stat">
+                        <span class="gasto-stat-label">Media diaria</span>
+                        <span class="gasto-stat-value js-money" th:text="${moneyFormatter.format(resumenMes.mediaDiaria)}"></span>
+                    </div>
+                    <div class="gasto-stat">
+                        <span class="gasto-stat-label">Mayor gasto</span>
+                        <span class="gasto-stat-value js-money" th:text="${moneyFormatter.format(resumenMes.mayorGasto)}"></span>
+                    </div>
+                    <div class="gasto-stat">
+                        <span class="gasto-stat-label">Movimientos</span>
+                        <span class="gasto-stat-value strong" th:text="${resumenMes.movimientos}"></span>
+                    </div>
+                </div>
+                <div class="gasto-bars" aria-hidden="true">
+                    <span th:each="b : ${resumenMes.barras}" class="gasto-bar" th:classappend="${b.raya} ? 'is-dash'"
+                          th:style="'--i:' + ${b.dia} + (${b.raya} ? '' : ';height:' + ${#numbers.formatDecimal(b.altura, 1, 1, 'POINT')} + '%')"></span>
+                </div>
+            </a>
+
             <div class="pie-wrap">
                 <div class="pie-chart" th:style="'background: conic-gradient(' + ${gradiente} + ');'">
                     <div class="pie-chart-hole">

@@ -696,9 +696,14 @@
         html[data-privacy="on"] .js-money::after {
             content: '••••';
             position: absolute;
-            left: 0;
+            /* Centrados en el hueco que deja la cifra oculta (antes iban pegados a la izquierda
+               y en importes largos, como en los avisos, quedaban descentrados). El padding-left
+               del letter-spacing compensa el espacio que deja el último punto. */
+            left: 50%;
             top: 50%;
-            transform: translateY(-50%);
+            transform: translate(-50%, -50%);
+            padding-left: 1px;
+            white-space: nowrap;
             color: var(--text-tertiary);
             letter-spacing: 1px;
         }

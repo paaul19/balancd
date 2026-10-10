@@ -1184,3 +1184,70 @@ input[type="number"] {
 }
 
 
+
+
+/* ---------- Consejos y avisos del home ---------- */
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0 0 1rem;
+}
+.insight {
+  --insight-color: var(--info);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.6rem 0.7rem 0.8rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: opacity 200ms var(--ease-standard), transform 200ms var(--ease-standard);
+}
+.insight.is-positivo { --insight-color: var(--accent); }
+.insight.is-aviso { --insight-color: #d99a1c; }
+.insight.is-importante { --insight-color: var(--danger); }
+.insight.is-leaving { opacity: 0; transform: translateX(14px) scale(0.98); }
+
+.insight-icon {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--insight-color);
+  background: color-mix(in srgb, var(--insight-color) 14%, transparent);
+}
+.insight-icon svg { width: 19px; height: 19px; }
+.insight-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.insight-text .js-money { font-weight: 700; font-variant-numeric: tabular-nums; }
+.insight-close {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+}
+.insight-close:hover { background: var(--border-color); color: var(--text-primary); }
+.insight-close svg { width: 15px; height: 15px; }
+@media (prefers-reduced-motion: reduce) {
+  .insight { transition: none; }
+}

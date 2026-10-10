@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -100,6 +101,8 @@ public class EstadisticasController {
             segmentos.add(segmento);
         }
 
+        model.addAttribute("resumenMes", resumenDelMes(gastosDelMes, seleccionado, totalGastado));
+
         model.addAttribute("cuentas", cuentas);
         model.addAttribute("cuentaSeleccionada", cuentaFiltro);
         model.addAttribute("mesSeleccionado", seleccionado);
@@ -109,5 +112,47 @@ public class EstadisticasController {
         model.addAttribute("totalGastado", totalGastado);
         model.addAttribute("gradiente", gradiente.toString());
         return "estadisticas";
+    }
+
+    /**
+     * Datos de la tarjeta "Gasto del mes": total, media diaria, mayor gasto, nº de movimientos y
+     * el gasto de cada día (para las barras). Los días que aún no han llegado (mes en curso) y los
+     * días sin gasto se pintan como una raya, no como una barra.
+     */
+    private Map<String, Object> resumenDelMes(List<EncryptedMovimientoService.MovimientoDTO> gastos, YearMonth ym, double total) {
+        int diasMes = ym.lengthOfMonth();
+        LocalDate hoy = LocalDate.now(java.time.ZoneId.of("Europe/Madrid"));
+        YearMonth actual = YearMonth.from(hoy);
+        int diasTranscurridos = ym.isBefore(actual) ? diasMes : (ym.equals(actual) ? hoy.getDayOfMonth() : 0);
+
+        double[] porDia = new double[diasMes];
+        double mayor = 0;
+        for (var m : gastos) {
+            int dia = Math.max(1, Math.min(m.getFecha().getDayOfMonth(), diasMes));
+            porDia[dia - 1] += m.getCantidad();
+            mayor = Math.max(mayor, m.getCantidad());
+        }
+        double maxDia = 0;
+        for (double v : porDia) maxDia = Math.max(maxDia, v);
+
+        List<Map<String, Object>> barras = new ArrayList<>();
+        for (int d = 1; d <= diasMes; d++) {
+            double v = porDia[d - 1];
+            boolean futuro = d > diasTranscurridos;
+            Map<String, Object> b = new LinkedHashMap<>();
+            b.put("dia", d);
+            b.put("raya", futuro || v <= 0);
+            // altura mínima para que un gasto pequeño siga viéndose como barra
+            b.put("altura", maxDia > 0 && !futuro && v > 0 ? Math.max(6.0, v / maxDia * 100.0) : 0.0);
+            barras.add(b);
+        }
+
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("total", total);
+        r.put("mediaDiaria", diasTranscurridos > 0 ? total / diasTranscurridos : 0.0);
+        r.put("mayorGasto", mayor);
+        r.put("movimientos", gastos.size());
+        r.put("barras", barras);
+        return r;
     }
 }

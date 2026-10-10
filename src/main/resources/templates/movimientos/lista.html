@@ -121,6 +121,65 @@
                 </div>
             </div>
 
+            <!-- Consejos y avisos (InsightService). Se pueden descartar: se recuerda en este navegador. -->
+            <div class="insights" id="insights" th:if="${insights != null and !#lists.isEmpty(insights)}" aria-label="Avisos y consejos">
+                <div class="insight" th:each="i : ${insights}" th:classappend="'is-' + ${i.severidad}"
+                     th:attr="data-clave=${i.clave},data-hasta=${i.validoHasta}">
+                    <span class="insight-icon" aria-hidden="true" th:switch="${i.tipo}">
+                        <svg th:case="'proyeccion'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8M15 7h6v6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg th:case="'cobro'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4" stroke-linecap="round"/></svg>
+                        <svg th:case="'presupuesto'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg th:case="'atipico'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l10 18H2L12 3zM12 10v5M12 18v.01" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <svg th:case="*" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 7L7 17M7 9v8h8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </span>
+                    <p class="insight-text"><th:block th:each="p : ${i.partes}"><span th:if="${p.money}" class="js-money" th:text="${p.texto}"></span><th:block th:unless="${p.money}" th:text="${p.texto}"></th:block></th:block></p>
+                    <button type="button" class="insight-close" aria-label="Descartar aviso">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+                    </button>
+                </div>
+            </div>
+            <script th:if="${insights != null and !#lists.isEmpty(insights)}">
+                // Oculta ya (antes del primer pintado) los avisos descartados y gestiona el botón de cierre.
+                (function () {
+                    var box = document.getElementById('insights');
+                    if (!box) return;
+                    var KEY = 'insightsDescartados';
+                    function leer() {
+                        try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; }
+                    }
+                    function guardar(m) {
+                        try { localStorage.setItem(KEY, JSON.stringify(m)); } catch (e) { /* sin almacenamiento: solo dura esta visita */ }
+                    }
+                    var hoy = new Date();
+                    var hoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+                    var descartados = leer();
+                    // Limpieza: se olvidan los descartes cuya validez ya pasó.
+                    Object.keys(descartados).forEach(function (k) { if (descartados[k] < hoyStr) delete descartados[k]; });
+                    guardar(descartados);
+
+                    box.querySelectorAll('.insight').forEach(function (el) {
+                        if (descartados[el.getAttribute('data-clave')]) el.remove();
+                    });
+                    if (!box.querySelector('.insight')) { box.remove(); return; }
+
+                    box.addEventListener('click', function (e) {
+                        var btn = e.target.closest('.insight-close');
+                        if (!btn) return;
+                        var el = btn.closest('.insight');
+                        var m = leer();
+                        m[el.getAttribute('data-clave')] = el.getAttribute('data-hasta');
+                        guardar(m);
+                        el.classList.add('is-leaving');
+                        var quitar = function () {
+                            el.remove();
+                            if (!box.querySelector('.insight')) box.remove();
+                        };
+                        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) quitar();
+                        else setTimeout(quitar, 220);
+                    });
+                })();
+            </script>
+
             <!-- Búsqueda -->
             <div class="search-bar">
                 <form th:action="@{/movimientos}" method="get">

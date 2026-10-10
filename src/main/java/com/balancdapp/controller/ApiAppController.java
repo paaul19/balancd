@@ -31,6 +31,7 @@ public class ApiAppController {
     @Autowired private MovimientoService movimientoService;
     @Autowired private EncryptedMovimientoRecurrenteService recurrenteService;
     @Autowired private EncryptedTransferenciaService transferenciaService;
+    @Autowired private com.balancdapp.service.InsightService insightService;
 
     private User auth(HttpServletRequest request) {
         String h = request.getHeader("Authorization");
@@ -62,6 +63,18 @@ public class ApiAppController {
     private static Long lng(Object o) { return (o == null || o.toString().isBlank()) ? null : Long.parseLong(o.toString()); }
     private static double dbl(Object o) { return o == null || o.toString().isBlank() ? 0 : Double.parseDouble(o.toString().replace(",", ".")); }
     private static String str(Object o) { return o == null ? "" : o.toString().trim(); }
+
+    // ---------- Consejos / avisos ----------
+    @GetMapping("/insights")
+    public ResponseEntity<?> insights(HttpServletRequest req) {
+        return run(req, user -> insightService.generar(user).stream().map(i -> Map.of(
+                "clave", i.getClave(),
+                "tipo", i.getTipo(),
+                "severidad", i.getSeveridad(),
+                "texto", i.getTexto(),
+                "validoHasta", i.getValidoHasta()
+        )).toList());
+    }
 
     // ---------- Movimientos ----------
     @PostMapping("/movimientos/{id}/editar")

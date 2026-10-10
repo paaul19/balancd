@@ -249,3 +249,101 @@
   width: 34px;
   height: 34px;
 }
+
+
+/* ---------- Tarjeta "Gasto del mes" ---------- */
+.gasto-card {
+  --gasto-color: #e8798f;
+  display: block;
+  margin: 0 0 1.2rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: transform var(--dur-base) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+.gasto-card:active { transform: scale(0.985); transition-duration: var(--dur-instant); }
+.gasto-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.gasto-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gasto-color);
+  background: color-mix(in srgb, var(--gasto-color) 16%, transparent);
+}
+.gasto-card-icon svg { width: 19px; height: 19px; }
+.gasto-card-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-title);
+  color: var(--gasto-color);
+}
+.gasto-card-chevron { width: 16px; height: 16px; color: color-mix(in srgb, var(--gasto-color) 70%, transparent); }
+.gasto-card-month {
+  margin: 0.9rem 0 0.2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.gasto-card-month::first-letter { text-transform: uppercase; }
+.gasto-card-total {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+.gasto-card-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin: 1rem 0 0.9rem;
+}
+.gasto-stat { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.gasto-stat-label { font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); }
+.gasto-stat-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.gasto-stat-value.strong { font-weight: 800; font-size: 1.05rem; }
+
+.gasto-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 86px;
+  padding: 0.5rem 0.55rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gasto-color) 10%, transparent);
+}
+.gasto-bar {
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 3px;
+  background: var(--gasto-color);
+  transform-origin: bottom;
+}
+/* días sin gasto o que aún no han llegado: una raya */
+.gasto-bar.is-dash {
+  height: 3px;
+  background: color-mix(in srgb, var(--gasto-color) 35%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gasto-bar:not(.is-dash) {
+    animation: gasto-bar-in 420ms var(--ease-standard) backwards;
+    animation-delay: calc(var(--i, 1) * 12ms + 120ms);
+  }
+  @keyframes gasto-bar-in { from { transform: scaleY(0); } }
+}

@@ -26,6 +26,9 @@ import java.util.ArrayList;
 @Controller
 public class MovimientoController {
     @Autowired
+    private com.balancdapp.service.InsightService insightService;
+
+    @Autowired
     private MovimientoService movimientoService;
 
     @Autowired
@@ -90,6 +93,9 @@ public class MovimientoController {
         double balanceTotalReal = encryptedCuentaService.getBalanceTotal(user);
         List<EncryptedCuentaService.CuentaDTO> cuentas = encryptedCuentaService.getCuentasActivasByUser(user);
 
+        // Los consejos del home se calculan sobre todos los movimientos, sin los filtros de la vista.
+        final List<EncryptedMovimientoService.MovimientoDTO> todosSinFiltrar = todos;
+
         // Filtrar por búsqueda de asunto si se proporciona
         if (busqueda != null && !busqueda.trim().isEmpty()) {
             String busquedaLower = busqueda.trim().toLowerCase();
@@ -152,6 +158,11 @@ public class MovimientoController {
             transferenciasMes = transferenciasMes.stream()
                     .filter(t -> cuentaFiltro.equals(t.getCuentaOrigenId()) || cuentaFiltro.equals(t.getCuentaDestinoId()))
                     .collect(java.util.stream.Collectors.toList());
+        }
+
+        // Consejos/avisos: solo tienen sentido sobre el mes en curso y sin filtros de la vista.
+        if (seleccionado.equals(mesActual) && cuentaFiltro == null && (busqueda == null || busqueda.isBlank())) {
+            model.addAttribute("insights", insightService.generar(user, todosSinFiltrar, LocalDate.now(java.time.ZoneId.of("Europe/Madrid"))));
         }
 
         model.addAttribute("movimientos", movimientos);
