@@ -92,7 +92,7 @@ public class CategoriaSeedService implements CommandLineRunner {
 
             int subOrden = 0;
             for (String subnombre : subnombres) {
-                if (subcategoriaRepository.findByCategoriaAndNombreIgnoreCase(categoria, subnombre).isEmpty()) {
+                if (subcategoriaRepository.findByCategoriaAndUserIsNullAndNombreIgnoreCase(categoria, subnombre).isEmpty()) {
                     Subcategoria sub = new Subcategoria();
                     sub.setCategoria(categoria);
                     sub.setNombre(subnombre);

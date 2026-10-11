@@ -101,6 +101,38 @@ public class CategoriaController {
         return "redirect:/ajustes/categorias";
     }
 
+    @PostMapping("/ajustes/categorias/{id}/subcategorias")
+    public String crearSubcategoria(@PathVariable Long id, @RequestParam String nombre,
+                                    HttpSession session, RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        try {
+            categoriaService.crearSubcategoriaPersonalizada(user, id, nombre);
+            redirectAttributes.addFlashAttribute("success", "Subcategoría \"" + nombre.trim() + "\" añadida.");
+            redirectAttributes.addFlashAttribute("categoriaExpandida", id);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/ajustes/categorias";
+    }
+
+    @PostMapping("/ajustes/subcategorias/{id}/eliminar")
+    public String eliminarSubcategoria(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        try {
+            categoriaService.eliminarSubcategoriaPersonalizada(user, id);
+            redirectAttributes.addFlashAttribute("success", "Subcategoría eliminada.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/ajustes/categorias";
+    }
+
     @PostMapping("/ajustes/categorias/{id}/eliminar")
     public String eliminarCategoria(@PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");

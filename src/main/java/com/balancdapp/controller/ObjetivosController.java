@@ -93,7 +93,7 @@ public class ObjetivosController {
         }
         if (subcategoriaId != null) {
             Subcategoria sub = subcategoriaRepository.findById(subcategoriaId).orElse(null);
-            if (sub == null || categoria == null || !sub.getCategoria().getId().equals(categoria.getId())) {
+            if (sub == null || categoria == null || !sub.getCategoria().getId().equals(categoria.getId()) || !sub.esVisiblePara(user)) {
                 throw new IllegalArgumentException("La subcategoría no pertenece a la categoría elegida.");
             }
             subOut[0] = sub;

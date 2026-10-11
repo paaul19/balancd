@@ -812,6 +812,17 @@ SET @sql = (SELECT IF(
 ));
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+-- Subcategorías propias dentro de cualquier categoría (también las globales): user_id NULL =
+-- subcategoría global (o de una categoría propia anterior a esta columna); informado = solo la
+-- ve ese usuario. Al borrar el usuario se borran con él.
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'subcategorias' AND COLUMN_NAME = 'user_id') = 0,
+    'ALTER TABLE subcategorias ADD COLUMN user_id BIGINT NULL, ADD CONSTRAINT fk_subcategorias_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;',
+    'SELECT "Columna user_id ya existe en subcategorias" as status;'
+));
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
 -- Passkeys (WebAuthn): una fila por cada dispositivo/llavero que el usuario ha vinculado.
 -- credential_id y public_key_cose se guardan en base64url. Al borrar el usuario se borran sus passkeys.
 CREATE TABLE IF NOT EXISTS passkey_credentials (

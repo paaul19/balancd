@@ -233,7 +233,7 @@ public class MovimientoRestController {
      * y resuelve además la subcategoría a partir de "subcategoriaId" o "subcategoria" (nombre).
      * Lanza IllegalArgumentException con un mensaje claro si algo no encaja.
      */
-    private void validarYResolverSubcategoria(Categoria categoria, boolean ingreso, Map<String, Object> payload, Subcategoria[] subOut) {
+    private void validarYResolverSubcategoria(Categoria categoria, boolean ingreso, Map<String, Object> payload, Subcategoria[] subOut, User user) {
         TipoCategoria tipoEsperado = ingreso ? TipoCategoria.INCOME : TipoCategoria.EXPENSE;
         if (categoria.getTipo() != tipoEsperado) {
             String tipoCategoriaTexto = categoria.getTipo() == TipoCategoria.INCOME ? "ingresos" : "gastos";
@@ -247,15 +247,15 @@ public class MovimientoRestController {
         if (subcategoriaIdRaw != null) {
             Long subcategoriaId = Long.parseLong(subcategoriaIdRaw.toString());
             Subcategoria sub = subcategoriaRepository.findById(subcategoriaId).orElse(null);
-            if (sub == null || !sub.getCategoria().getId().equals(categoria.getId())) {
+            if (sub == null || !sub.getCategoria().getId().equals(categoria.getId()) || !sub.esVisiblePara(user)) {
                 throw new IllegalArgumentException("La subcategoría indicada no pertenece a \"" + categoria.getNombre() + "\"");
             }
             subOut[0] = sub;
         } else if (subcategoriaNombreRaw != null && !subcategoriaNombreRaw.toString().isBlank()) {
             String nombre = subcategoriaNombreRaw.toString().trim();
-            Subcategoria sub = subcategoriaRepository.findByCategoriaAndNombreIgnoreCase(categoria, nombre).orElse(null);
+            Subcategoria sub = subcategoriaRepository.findByCategoriaAndNombreIgnoreCaseVisiblePara(categoria, nombre, user).orElse(null);
             if (sub == null) {
-                String validas = subcategoriaRepository.findByCategoriaOrderByOrdenAsc(categoria).stream()
+                String validas = subcategoriaRepository.findVisiblesPorCategoria(categoria, user).stream()
                         .map(Subcategoria::getNombre)
                         .reduce((a, b) -> a + ", " + b).orElse("");
                 throw new IllegalArgumentException("\"" + categoria.getNombre() + "\" no tiene la subcategoría \"" + nombre
@@ -343,7 +343,7 @@ public class MovimientoRestController {
                 subOut[0] = gastoPrevio.get().getSubcategoria();
             } else if (categoria != null) {
                 try {
-                    validarYResolverSubcategoria(categoria, ingreso, payload, subOut);
+                    validarYResolverSubcategoria(categoria, ingreso, payload, subOut, user);
                 } catch (IllegalArgumentException e) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
                 }

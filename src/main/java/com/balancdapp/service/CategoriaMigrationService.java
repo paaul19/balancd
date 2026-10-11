@@ -104,6 +104,6 @@ public class CategoriaMigrationService implements CommandLineRunner {
         if (categoria == null) {
             return null; // el seed aún no ha creado la categoría (no debería pasar, pero por seguridad)
         }
-        return subcategoriaRepository.findByCategoriaAndNombreIgnoreCase(categoria, "Otros").orElse(null);
+        return subcategoriaRepository.findByCategoriaAndUserIsNullAndNombreIgnoreCase(categoria, "Otros").orElse(null);
     }
 }

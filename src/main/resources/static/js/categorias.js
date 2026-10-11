@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // --- Confirmar eliminación de categoría propia (modal, no el confirm() feo del navegador) ---
+    // --- Confirmar eliminación de categoría o subcategoría propia (modal, no el confirm() feo del navegador) ---
     const modalEliminar = document.getElementById('modalConfirmarEliminarCategoria');
     const textoEliminar = document.getElementById('textoConfirmarEliminarCategoria');
     const btnConfirmarEliminar = document.getElementById('confirmarEliminarCategoria');
@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.js-eliminar-categoria').forEach(function (btn) {
         btn.addEventListener('click', function () {
             accionEliminarCategoria = btn.getAttribute('data-action');
-            textoEliminar.textContent = '¿Eliminar la categoría "' + btn.getAttribute('data-nombre') + '"?';
+            const tipo = btn.getAttribute('data-tipo') || 'categoría';
+            textoEliminar.textContent = '¿Eliminar la ' + tipo + ' "' + btn.getAttribute('data-nombre') + '"?';
             modalEliminar.classList.add('show');
         });
     });

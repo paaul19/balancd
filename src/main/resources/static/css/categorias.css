@@ -159,6 +159,36 @@
   white-space: nowrap;
 }
 
+.categoria-row-delete-btn--sm {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+}
+.categoria-row-delete-btn--sm svg { width: 14px; height: 14px; }
+
+.subcategoria-add-form {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1.1rem 0.7rem 3.5rem;
+  border-top: 1px solid var(--border-color);
+}
+.subcategoria-add-form input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.84rem;
+}
+.subcategoria-add-btn {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.3rem 0;
+}
+
 .categoria-crear-btn {
   display: flex;
   align-items: center;

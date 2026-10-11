@@ -28,7 +28,7 @@
         <div th:if="${error}" class="ajustes-message error" th:text="${error}"></div>
         <div th:if="${success}" class="ajustes-message success" th:text="${success}"></div>
 
-        <p class="ajustes-hint">Desactiva las categorías o subcategorías que no uses para que dejen de aparecer al añadir un movimiento, toca la flecha para ver sus subcategorías, o crea las tuyas propias.</p>
+        <p class="ajustes-hint">Desactiva las categorías o subcategorías que no uses para que dejen de aparecer al añadir un movimiento, toca la flecha para ver sus subcategorías y añadir las tuyas, o crea categorías propias.</p>
 
         <div class="categorias-section-label">Gastos</div>
         <div class="categorias-list" th:replace="~{this :: listaCategorias(${categoriasGasto})}"></div>
@@ -47,12 +47,12 @@
      edición (solo para las propias) van juntos, ya que el modal necesita los mismos datos "c". -->
 <div class="categorias-list" th:fragment="listaCategorias(categorias)">
     <th:block th:each="c : ${categorias}">
-        <div class="categoria-row" th:classappend="${!c.activa} ? 'categoria-row--inactiva' : ''">
+        <div class="categoria-row" th:classappend="${(!c.activa ? 'categoria-row--inactiva ' : '') + (categoriaExpandida == c.id ? 'categoria-row--expanded' : '')}">
             <div class="categoria-row-main">
                 <span class="categoria-row-icon" th:insert="~{fragments/category-icons :: icon(${c.icono})}"></span>
                 <span class="categoria-row-nombre" th:text="${c.nombre}"></span>
                 <span class="categoria-row-badge" th:if="${c.personalizada}">PROPIA</span>
-                <button type="button" class="categoria-row-expand-btn" th:if="${!#lists.isEmpty(c.subcategorias)}" title="Ver subcategorías">
+                <button type="button" class="categoria-row-expand-btn" title="Ver subcategorías">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
                 <button type="button" class="categoria-row-edit-btn" th:if="${c.personalizada}" th:attr="data-modal-target='modalEditar' + ${c.id}" title="Editar categoría">
@@ -68,15 +68,25 @@
                     </button>
                 </form>
             </div>
-            <div class="subcategorias-wrap" th:if="${!#lists.isEmpty(c.subcategorias)}">
+            <div class="subcategorias-wrap">
                 <div class="subcategoria-row" th:each="s : ${c.subcategorias}">
                     <span class="subcategoria-row-nombre" th:text="${s.nombre}"></span>
+                    <span class="categoria-row-badge" th:if="${s.personalizada}">PROPIA</span>
+                    <button type="button" class="categoria-row-delete-btn categoria-row-delete-btn--sm js-eliminar-categoria" th:if="${s.personalizada}"
+                            th:attr="data-action=@{'/ajustes/subcategorias/' + ${s.id} + '/eliminar'}" th:data-nombre="${s.nombre}" data-tipo="subcategoría" title="Eliminar subcategoría">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
                     <form th:action="@{'/ajustes/subcategorias/' + ${s.id} + '/toggle'}" method="post">
                         <button type="submit" class="toggle-switch toggle-switch--sm" th:classappend="${s.activa} ? 'toggle-switch--on' : ''" th:aria-label="'Activar o desactivar ' + ${s.nombre}">
                             <span class="toggle-switch-thumb"></span>
                         </button>
                     </form>
                 </div>
+                <!-- Añadir una subcategoría propia (solo para este usuario), también en las categorías globales -->
+                <form class="subcategoria-add-form" th:action="@{'/ajustes/categorias/' + ${c.id} + '/subcategorias'}" method="post">
+                    <input type="text" name="nombre" maxlength="100" required placeholder="Nueva subcategoría" th:aria-label="'Nueva subcategoría en ' + ${c.nombre}">
+                    <button type="submit" class="subcategoria-add-btn">Añadir</button>
+                </form>
             </div>
         </div>
 
@@ -186,7 +196,7 @@
     <div class="modal-content confirm-content">
         <div class="confirm-icon is-danger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
         <h3 class="confirm-title" id="textoConfirmarEliminarCategoria">¿Eliminar esta categoría?</h3>
-        <p class="confirm-text">Solo se puede si no tiene movimientos asociados.</p>
+        <p class="confirm-text">Solo se puede si no tiene movimientos ni presupuestos asociados.</p>
         <div class="confirm-actions">
             <button type="button" id="cancelarEliminarCategoria" class="confirm-btn confirm-cancel">Cancelar</button>
             <button type="button" id="confirmarEliminarCategoria" class="confirm-btn confirm-danger">Eliminar</button>

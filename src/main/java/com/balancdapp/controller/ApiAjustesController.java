@@ -81,7 +81,7 @@ public class ApiAjustesController {
         }
         if (subcategoriaId != null) {
             Subcategoria sub = subcategoriaRepository.findById(subcategoriaId).orElse(null);
-            if (sub == null || categoria == null || !sub.getCategoria().getId().equals(categoria.getId()))
+            if (sub == null || categoria == null || !sub.getCategoria().getId().equals(categoria.getId()) || !sub.esVisiblePara(user))
                 throw new IllegalArgumentException("La subcategoría no pertenece a la categoría elegida.");
             subOut[0] = sub;
         }
@@ -197,6 +197,19 @@ public class ApiAjustesController {
     @PostMapping("/ajustes/categorias/{id}/eliminar")
     public ResponseEntity<?> eliminarCategoria(@PathVariable Long id, HttpServletRequest req) {
         return run(req, user -> { categoriaService.eliminarCategoriaPersonalizada(user, id); return null; });
+    }
+
+    @PostMapping("/ajustes/categorias/{id}/subcategorias")
+    public ResponseEntity<?> crearSubcategoria(@PathVariable Long id, @RequestBody Map<String, Object> p, HttpServletRequest req) {
+        return run(req, user -> {
+            Subcategoria s = categoriaService.crearSubcategoriaPersonalizada(user, id, str(p.get("nombre")));
+            return Map.of("id", s.getId(), "nombre", s.getNombre());
+        });
+    }
+
+    @PostMapping("/ajustes/subcategorias/{id}/eliminar")
+    public ResponseEntity<?> eliminarSubcategoria(@PathVariable Long id, HttpServletRequest req) {
+        return run(req, user -> { categoriaService.eliminarSubcategoriaPersonalizada(user, id); return null; });
     }
 
     // ---------- Recuperar contraseña (público, igual que POST /forgot-password de la web) ----------

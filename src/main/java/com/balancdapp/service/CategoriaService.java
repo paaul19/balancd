@@ -24,8 +24,9 @@ import java.util.stream.Collectors;
 /**
  * Categorías/subcategorías: la mayoría son datos de referencia globales (compartidas por todos,
  * sembradas por CategoriaSeedService), pero cada usuario puede además crear las suyas propias
- * (Categoria.user informado) y ocultar cualquiera - global o propia - sin afectar a nadie más
- * (tablas categorias_desactivadas/subcategorias_desactivadas).
+ * (Categoria.user informado), añadir subcategorías propias a cualquier categoría que vea, global
+ * incluida (Subcategoria.user informado), y ocultar cualquiera - global o propia - sin afectar a
+ * nadie más (tablas categorias_desactivadas/subcategorias_desactivadas).
  */
 @Service
 public class CategoriaService {
@@ -94,7 +95,7 @@ public class CategoriaService {
                     boolean activa = !categoriasOcultas.contains(c.getId());
                     boolean personalizada = c.getUser() != null;
                     CategoriaDTO dto = toDTO(c, activa, personalizada);
-                    dto.subcategorias = subcategoriaRepository.findByCategoriaOrderByOrdenAsc(c).stream()
+                    dto.subcategorias = subcategoriaRepository.findVisiblesPorCategoria(c, user).stream()
                             .map(s -> {
                                 SubcategoriaDTO sdto = toSubDTO(s);
                                 sdto.activa = !subcategoriasOcultas.contains(s.getId());
@@ -109,7 +110,7 @@ public class CategoriaService {
     private CategoriaDTO toDTOVisible(Categoria categoria, User user) {
         Set<Long> subcategoriasOcultas = subcategoriaDesactivadaRepository.findSubcategoriaIdsDesactivadasPorUsuario(user);
         CategoriaDTO dto = toDTO(categoria, true, categoria.getUser() != null);
-        dto.subcategorias = subcategoriaRepository.findByCategoriaOrderByOrdenAsc(categoria).stream()
+        dto.subcategorias = subcategoriaRepository.findVisiblesPorCategoria(categoria, user).stream()
                 .filter(s -> !subcategoriasOcultas.contains(s.getId()))
                 .map(this::toSubDTO)
                 .collect(Collectors.toList());
@@ -124,7 +125,9 @@ public class CategoriaService {
         dto.tipo = categoria.getTipo().name();
         dto.activa = activa;
         dto.personalizada = personalizada;
+        // Sin usuario solo se exponen las globales; los árboles por usuario las sustituyen después.
         dto.subcategorias = subcategoriaRepository.findByCategoriaOrderByOrdenAsc(categoria).stream()
+                .filter(s -> s.getUser() == null)
                 .map(this::toSubDTO)
                 .collect(Collectors.toList());
         return dto;
@@ -135,6 +138,7 @@ public class CategoriaService {
         dto.id = subcategoria.getId();
         dto.nombre = subcategoria.getNombre();
         dto.activa = true;
+        dto.personalizada = subcategoria.getUser() != null;
         return dto;
     }
 
@@ -164,7 +168,8 @@ public class CategoriaService {
         Subcategoria subcategoria = subcategoriaRepository.findById(subcategoriaId)
                 .orElseThrow(() -> new IllegalArgumentException("Esa subcategoría no existe."));
         Categoria categoria = subcategoria.getCategoria();
-        if (categoria.getUser() != null && !categoria.getUser().getId().equals(user.getId())) {
+        if ((categoria.getUser() != null && !categoria.getUser().getId().equals(user.getId()))
+                || !subcategoria.esVisiblePara(user)) {
             throw new IllegalArgumentException("Esa subcategoría no te pertenece.");
         }
         subcategoriaDesactivadaRepository.findByUserAndSubcategoria(user, subcategoria)
@@ -210,16 +215,19 @@ public class CategoriaService {
         categoria.setUser(user);
         Categoria guardada = categoriaRepository.save(categoria);
 
-        agregarSubcategorias(guardada, nombresSubcategorias);
+        agregarSubcategorias(user, guardada, nombresSubcategorias);
         return guardada;
     }
 
     /** Añade subcategorías nuevas a una categoría ya existente, saltando vacías y duplicadas (con las ya existentes o repetidas en la propia lista). */
-    private void agregarSubcategorias(Categoria categoria, List<String> nombresSubcategorias) {
+    private void agregarSubcategorias(User user, Categoria categoria, List<String> nombresSubcategorias) {
         if (nombresSubcategorias == null) return;
-        List<Subcategoria> existentes = subcategoriaRepository.findByCategoriaOrderByOrdenAsc(categoria);
-        int orden = existentes.size();
-        List<String> vistos = existentes.stream().map(Subcategoria::getNombre).collect(Collectors.toList());
+        // El orden se calcula sobre todas (también las de otros usuarios) para que las propias
+        // queden siempre detrás de las globales; los duplicados, solo sobre lo que este usuario ve.
+        int orden = subcategoriaRepository.findByCategoriaOrderByOrdenAsc(categoria).stream()
+                .mapToInt(Subcategoria::getOrden).max().orElse(-1) + 1;
+        List<String> vistos = subcategoriaRepository.findVisiblesPorCategoria(categoria, user).stream()
+                .map(Subcategoria::getNombre).collect(Collectors.toList());
         for (String nombreSub : nombresSubcategorias) {
             if (nombreSub == null || nombreSub.trim().isEmpty()) continue;
             String limpio = nombreSub.trim();
@@ -231,6 +239,7 @@ public class CategoriaService {
             sub.setCategoria(categoria);
             sub.setNombre(limpio);
             sub.setOrden(orden++);
+            sub.setUser(user);
             subcategoriaRepository.save(sub);
             vistos.add(limpio);
         }
@@ -262,7 +271,46 @@ public class CategoriaService {
         categoria.setIcono(icono);
         categoriaRepository.save(categoria);
 
-        agregarSubcategorias(categoria, nuevasSubcategorias);
+        agregarSubcategorias(user, categoria, nuevasSubcategorias);
+    }
+
+    // ---------- Subcategorías propias dentro de cualquier categoría (también las globales) ----------
+
+    @Transactional
+    public Subcategoria crearSubcategoriaPersonalizada(User user, Long categoriaId, String nombre) {
+        Categoria categoria = categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new IllegalArgumentException("Esa categoría no existe."));
+        if (categoria.getUser() != null && !categoria.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Esa categoría no te pertenece.");
+        }
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre de la subcategoría no puede estar vacío.");
+        }
+        final String nombreLimpio = nombre.trim();
+        if (nombreLimpio.length() > 100) {
+            throw new IllegalArgumentException("El nombre de la subcategoría es demasiado largo.");
+        }
+        if (subcategoriaRepository.findByCategoriaAndNombreIgnoreCaseVisiblePara(categoria, nombreLimpio, user).isPresent()) {
+            throw new IllegalArgumentException("\"" + categoria.getNombre() + "\" ya tiene una subcategoría llamada \"" + nombreLimpio + "\".");
+        }
+        agregarSubcategorias(user, categoria, List.of(nombreLimpio));
+        return subcategoriaRepository.findByCategoriaAndNombreIgnoreCaseVisiblePara(categoria, nombreLimpio, user).orElseThrow();
+    }
+
+    @Transactional
+    public void eliminarSubcategoriaPersonalizada(User user, Long subcategoriaId) {
+        Subcategoria sub = subcategoriaRepository.findById(subcategoriaId)
+                .orElseThrow(() -> new IllegalArgumentException("Esa subcategoría no existe."));
+        if (sub.getUser() == null || !sub.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("Solo puedes eliminar subcategorías que hayas creado tú.");
+        }
+        boolean enUso = movimientoRepository.existsBySubcategoria(sub)
+                || movimientoRecurrenteRepository.existsBySubcategoria(sub)
+                || presupuestoRepository.existsBySubcategoria(sub);
+        if (enUso) {
+            throw new IllegalArgumentException("La subcategoría \"" + sub.getNombre() + "\" tiene movimientos o presupuestos asociados: desactívala en vez de eliminarla.");
+        }
+        subcategoriaRepository.delete(sub); // ON DELETE CASCADE se lleva su fila de desactivación
     }
 
     @Transactional
@@ -311,9 +359,11 @@ public class CategoriaService {
         public Long id;
         public String nombre;
         public boolean activa;
+        public boolean personalizada;
 
         public Long getId() { return id; }
         public String getNombre() { return nombre; }
         public boolean isActiva() { return activa; }
+        public boolean isPersonalizada() { return personalizada; }
     }
 }

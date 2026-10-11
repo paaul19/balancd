@@ -75,7 +75,7 @@ public class EncryptedMovimientoService {
         Subcategoria sub = null;
         if (subcategoriaId != null) {
             Subcategoria candidata = subcategoriaRepository.findById(subcategoriaId).orElse(null);
-            if (candidata != null && candidata.getCategoria().getId().equals(categoria.getId())) {
+            if (candidata != null && candidata.getCategoria().getId().equals(categoria.getId()) && candidata.esVisiblePara(user)) {
                 sub = candidata;
             }
         }
