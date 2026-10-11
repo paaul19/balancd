@@ -347,3 +347,127 @@
   }
   @keyframes gasto-bar-in { from { transform: scaleY(0); } }
 }
+
+/* Navegación por niveles: categorías -> subcategorías -> listado de gastos */
+.drill-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 1.2rem;
+  font-size: 0.88rem;
+}
+.drill-breadcrumb a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.drill-breadcrumb a:hover { text-decoration: underline; }
+.drill-breadcrumb-sep { color: var(--text-tertiary); }
+.drill-breadcrumb-actual {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.drill-hint {
+  margin: -0.6rem 0 0.8rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+}
+
+/* Toda la fila de la leyenda es clicable: el enlace del nombre se estira sobre el <li> */
+.categoria-legend--link li {
+  position: relative;
+  transition: background-color var(--dur-fast) var(--ease-standard);
+}
+.categoria-legend--link li:hover { background: var(--bg-elevated); }
+.categoria-legend--link .categoria-legend-nombre {
+  text-decoration: none;
+}
+.categoria-legend--link .categoria-legend-nombre::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.categoria-legend-chevron {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--text-tertiary);
+}
+
+.drill-resumen {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+  padding: 0 0.2rem;
+}
+.drill-resumen-texto {
+  flex: 1 1 auto;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+.drill-resumen-total {
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.gasto-listado {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.gasto-listado li {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.8rem 1.1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.gasto-listado li:last-child { border-bottom: none; }
+.gasto-listado-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.gasto-listado-asunto {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gasto-listado-meta {
+  font-size: 0.76rem;
+  color: var(--text-tertiary);
+}
+.gasto-listado-monto {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+@media (max-width: 480px) {
+  /* Mismo contrapeso que .categoria-legend li frente a la regla global de <li> en theme-switcher.html */
+  .gasto-listado li {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.7rem !important;
+    padding: 0.8rem 1.1rem !important;
+  }
+}

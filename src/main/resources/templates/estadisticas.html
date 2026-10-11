@@ -24,11 +24,11 @@
         </div>
 
         <div class="month-nav">
-            <a th:href="@{/estadisticas(mes=${mesAnterior.monthValue},anio=${mesAnterior.year},cuenta=${cuentaSeleccionada})}" class="month-nav-arrow" title="Mes anterior">
+            <a th:href="@{/estadisticas(mes=${mesAnterior.monthValue},anio=${mesAnterior.year},cuenta=${cuentaSeleccionada},categoria=${categoriaSeleccionada?.clave},subcategoria=${subcategoriaSeleccionada?.clave})}" class="month-nav-arrow" title="Mes anterior">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
             <span class="current-month" th:text="${#temporals.format(mesSeleccionado, 'MMMM yyyy', T(java.util.Locale).forLanguageTag('es'))}"></span>
-            <a th:href="@{/estadisticas(mes=${mesSiguiente.monthValue},anio=${mesSiguiente.year},cuenta=${cuentaSeleccionada})}" class="month-nav-arrow" title="Mes siguiente">
+            <a th:href="@{/estadisticas(mes=${mesSiguiente.monthValue},anio=${mesSiguiente.year},cuenta=${cuentaSeleccionada},categoria=${categoriaSeleccionada?.clave},subcategoria=${subcategoriaSeleccionada?.clave})}" class="month-nav-arrow" title="Mes siguiente">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </a>
         </div>
@@ -37,6 +37,8 @@
         <form th:if="${!#lists.isEmpty(cuentas)}" th:action="@{/estadisticas}" method="get" class="cuenta-filter-bar">
             <input type="hidden" name="mes" th:value="${mesSeleccionado.monthValue}" />
             <input type="hidden" name="anio" th:value="${mesSeleccionado.year}" />
+            <input type="hidden" name="categoria" th:if="${categoriaSeleccionada != null}" th:value="${categoriaSeleccionada.clave}" />
+            <input type="hidden" name="subcategoria" th:if="${subcategoriaSeleccionada != null}" th:value="${subcategoriaSeleccionada.clave}" />
             <select name="cuenta" onchange="this.form.submit()" aria-label="Cuenta del gráfico">
                 <option value="" th:selected="${cuentaSeleccionada == null}">Todas las cuentas</option>
                 <option th:each="c : ${cuentas}" th:value="${c.id}" th:text="${c.nombre}" th:selected="${cuentaSeleccionada != null and cuentaSeleccionada == c.id}"></option>
@@ -44,8 +46,8 @@
         </form>
 
         <div th:if="${totalGastado > 0}">
-            <!-- Tarjeta resumen del mes -->
-            <a class="gasto-card" th:href="@{/movimientos(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year})}">
+            <!-- Tarjeta resumen del mes (solo en el nivel de todas las categorías) -->
+            <a class="gasto-card" th:if="${categoriaSeleccionada == null}" th:href="@{/movimientos(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year})}">
                 <div class="gasto-card-head">
                     <span class="gasto-card-icon" aria-hidden="true">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3" stroke-linecap="round"/></svg>
@@ -75,24 +77,72 @@
                 </div>
             </a>
 
-            <div class="pie-wrap">
-                <div class="pie-chart" th:style="'background: conic-gradient(' + ${gradiente} + ');'">
-                    <div class="pie-chart-hole">
-                        <span class="pie-chart-total-label">Gastado</span>
-                        <span class="pie-chart-total-value js-money" th:text="${moneyFormatter.format(totalGastado)}"></span>
+            <!-- Migas: Todas › Categoría › Subcategoría -->
+            <nav class="drill-breadcrumb" th:if="${categoriaSeleccionada != null}" aria-label="Nivel del gráfico">
+                <a th:href="@{/estadisticas(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year},cuenta=${cuentaSeleccionada})}">Todas</a>
+                <span class="drill-breadcrumb-sep" aria-hidden="true">›</span>
+                <a th:if="${subcategoriaSeleccionada != null and categoriaSeleccionada.clave != 'sin'}"
+                   th:href="@{/estadisticas(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year},cuenta=${cuentaSeleccionada},categoria=${categoriaSeleccionada.clave})}"
+                   th:text="${categoriaSeleccionada.nombre}"></a>
+                <span th:unless="${subcategoriaSeleccionada != null and categoriaSeleccionada.clave != 'sin'}" class="drill-breadcrumb-actual" th:text="${categoriaSeleccionada.nombre}"></span>
+                <th:block th:if="${subcategoriaSeleccionada != null and categoriaSeleccionada.clave != 'sin'}">
+                    <span class="drill-breadcrumb-sep" aria-hidden="true">›</span>
+                    <span class="drill-breadcrumb-actual" th:text="${subcategoriaSeleccionada.nombre}"></span>
+                </th:block>
+            </nav>
+
+            <!-- Niveles 1 y 2: gráfico de categorías o de subcategorías de la elegida -->
+            <th:block th:if="${subcategoriaSeleccionada == null}">
+                <div class="pie-wrap">
+                    <div class="pie-chart" th:style="'background: conic-gradient(' + ${gradiente} + ');'">
+                        <div class="pie-chart-hole">
+                            <span class="pie-chart-total-label" th:text="${categoriaSeleccionada == null} ? 'Gastado' : ${categoriaSeleccionada.nombre}">Gastado</span>
+                            <span class="pie-chart-total-value js-money" th:text="${moneyFormatter.format(totalGrafico)}"></span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <ul class="categoria-legend">
-                <li th:each="s : ${segmentos}">
-                    <span class="categoria-legend-dot" th:style="'background:' + ${s.color} + ';'"></span>
-                    <span class="categoria-legend-icon" th:insert="~{fragments/category-icons :: icon(${s.icono})}"></span>
-                    <span class="categoria-legend-nombre" th:text="${s.nombre}"></span>
-                    <span class="categoria-legend-pct" th:text="${#numbers.formatDecimal(s.porcentaje, 1, 1)} + '%'"></span>
-                    <span class="categoria-legend-monto js-money" th:text="${moneyFormatter.format(s.monto)}"></span>
-                </li>
-            </ul>
+                <p class="drill-hint" th:text="${categoriaSeleccionada == null} ? 'Toca una categoría para ver sus subcategorías.' : 'Toca una subcategoría para ver sus gastos.'"></p>
+
+                <!-- Cada fila baja un nivel; "Sin categoría" no tiene subcategorías y salta directamente al listado -->
+                <ul class="categoria-legend categoria-legend--link">
+                    <li th:each="s : ${segmentos}">
+                        <span class="categoria-legend-dot" th:style="'background:' + ${s.color} + ';'"></span>
+                        <span class="categoria-legend-icon" th:if="${s.icono != null}" th:insert="~{fragments/category-icons :: icon(${s.icono})}"></span>
+                        <a class="categoria-legend-nombre"
+                           th:href="${categoriaSeleccionada == null}
+                                ? (${s.clave == 'sin'}
+                                    ? @{/estadisticas(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year},cuenta=${cuentaSeleccionada},categoria=${s.clave},subcategoria='sin')}
+                                    : @{/estadisticas(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year},cuenta=${cuentaSeleccionada},categoria=${s.clave})})
+                                : @{/estadisticas(mes=${mesSeleccionado.monthValue},anio=${mesSeleccionado.year},cuenta=${cuentaSeleccionada},categoria=${categoriaSeleccionada.clave},subcategoria=${s.clave})}"
+                           th:text="${s.nombre}"></a>
+                        <span class="categoria-legend-pct" th:text="${#numbers.formatDecimal(s.porcentaje, 1, 1)} + '%'"></span>
+                        <span class="categoria-legend-monto js-money" th:text="${moneyFormatter.format(s.monto)}"></span>
+                        <svg class="categoria-legend-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </li>
+                </ul>
+            </th:block>
+
+            <!-- Nivel 3: listado de gastos de la subcategoría elegida -->
+            <th:block th:if="${subcategoriaSeleccionada != null}">
+                <div class="drill-resumen">
+                    <span class="categoria-legend-dot" th:style="'background:' + ${subcategoriaSeleccionada.color} + ';'"></span>
+                    <span class="drill-resumen-texto"
+                          th:text="${subcategoriaSeleccionada.movimientos} + (${subcategoriaSeleccionada.movimientos == 1} ? ' gasto · ' : ' gastos · ') + ${#numbers.formatDecimal(subcategoriaSeleccionada.monto / totalGastado * 100, 1, 1)} + '% del mes'"></span>
+                    <span class="drill-resumen-total js-money" th:text="${moneyFormatter.format(subcategoriaSeleccionada.monto)}"></span>
+                </div>
+
+                <ul class="gasto-listado">
+                    <li th:each="m : ${listado}">
+                        <div class="gasto-listado-info">
+                            <span class="gasto-listado-asunto" th:text="${m.asunto != null and !#strings.isEmpty(m.asunto)} ? ${m.asunto} : 'Sin concepto'"></span>
+                            <span class="gasto-listado-meta"
+                                  th:text="${#temporals.format(m.fecha, 'd MMM', T(java.util.Locale).forLanguageTag('es'))} + (${m.cuentaNombre != null} ? ' · ' + ${m.cuentaNombre} : '')"></span>
+                        </div>
+                        <span class="gasto-listado-monto js-money" th:text="${moneyFormatter.format(m.cantidad)}"></span>
+                    </li>
+                </ul>
+            </th:block>
         </div>
 
         <div class="estadisticas-empty" th:if="${totalGastado == 0}">
