@@ -38,22 +38,51 @@ public class PasskeyService {
     private final PasskeyCredentialRepository passkeyRepository;
     private final UserRepository userRepository;
     private final RelyingParty relyingParty;
+    private final Set<String> androidCertFingerprints;
 
     public PasskeyService(PasskeyCredentialRepository passkeyRepository,
                           UserRepository userRepository,
                           @Value("${app.webauthn.rp-id:localhost}") String rpId,
-                          @Value("${app.webauthn.origins:https://balancd.es,http://localhost:8080,http://localhost:8081}") String origins) {
+                          @Value("${app.webauthn.origins:https://balancd.es,http://localhost:8080,http://localhost:8081}") String origins,
+                          @Value("${app.webauthn.android-certs:}") String androidCerts) {
         this.passkeyRepository = passkeyRepository;
         this.userRepository = userRepository;
         Set<String> allowedOrigins = Arrays.stream(origins.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(java.util.HashSet::new));
+        // App de Android: el origen de una app nativa no es una URL sino "android:apk-key-hash:" + SHA-256
+        // del certificado de firma en base64url (sin relleno). Solo se aceptan las huellas configuradas.
+        this.androidCertFingerprints = Arrays.stream(androidCerts.split(","))
+                .map(String::trim)
+                .filter(f -> !f.isEmpty())
+                .map(f -> f.toUpperCase().replace(" ", ""))
+                .map(f -> f.contains(":") ? f : f.replaceAll("(..)(?!$)", "$1:"))
+                .collect(Collectors.toCollection(java.util.LinkedHashSet::new));
+        for (String fp : androidCertFingerprints) {
+            allowedOrigins.add("android:apk-key-hash:" + java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(hexToBytes(fp)));
+        }
         this.relyingParty = RelyingParty.builder()
                 .identity(RelyingPartyIdentity.builder().id(rpId).name("balanc*d").build())
                 .credentialRepository(new JpaCredentialRepository())
                 .origins(allowedOrigins)
                 .build();
+    }
+
+    /** Huellas SHA-256 (con ":" como las muestra keytool) de los certificados de la app Android admitidos. */
+    public Set<String> getAndroidCertFingerprints() {
+        return androidCertFingerprints;
+    }
+
+    /** "7B:3B:69..." o "7b3b69..." -> bytes; falla al arrancar si la variable está mal escrita. */
+    private static byte[] hexToBytes(String fingerprint) {
+        String hex = fingerprint.replace(":", "");
+        if (hex.length() != 64 || !hex.matches("[0-9A-F]+")) {
+            throw new IllegalArgumentException("WEBAUTHN_ANDROID_CERTS: huella SHA-256 no válida: " + fingerprint);
+        }
+        byte[] out = new byte[32];
+        for (int i = 0; i < 32; i++) out[i] = (byte) Integer.parseInt(hex.substring(2 * i, 2 * i + 2), 16);
+        return out;
     }
 
     // ---------------------------------------------------------------- Registro

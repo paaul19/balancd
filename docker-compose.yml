@@ -39,6 +39,8 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       # Passkeys: dominio al que quedan ligadas. En local poner WEBAUTHN_RP_ID=localhost en el .env.
       WEBAUTHN_RP_ID: ${WEBAUTHN_RP_ID:-balancd.es}
+      # App de Android: huellas SHA-256 del certificado de firma (separadas por comas). Sin ellas las passkeys no funcionan desde la APK.
+      WEBAUTHN_ANDROID_CERTS: ${WEBAUTHN_ANDROID_CERTS:-}
 
   admin:
     build: ./admin-panel
