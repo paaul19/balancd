@@ -31,6 +31,7 @@ public class ApiAjustesController {
     @Autowired private CategoriaRepository categoriaRepository;
     @Autowired private SubcategoriaRepository subcategoriaRepository;
     @Autowired private CategoriaService categoriaService;
+    @Autowired private AppLockService appLockService;
 
     private User auth(HttpServletRequest request) {
         String h = request.getHeader("Authorization");
@@ -210,6 +211,46 @@ public class ApiAjustesController {
     @PostMapping("/ajustes/subcategorias/{id}/eliminar")
     public ResponseEntity<?> eliminarSubcategoria(@PathVariable Long id, HttpServletRequest req) {
         return run(req, user -> { categoriaService.eliminarSubcategoriaPersonalizada(user, id); return null; });
+    }
+
+    // ---------- Token de API de larga duración ----------
+    /**
+     * Para gestionar tokens de API vale la sesión web o un JWT normal del login, pero NO un token
+     * de API: así un token filtrado no puede usarse para emitir otros nuevos. Con sesión web, la
+     * petición pasa además por la comprobación CSRF (ver SecurityConfig) y el bloqueo con passkey.
+     */
+    private User authSesionOJwtNormal(HttpServletRequest request) {
+        String h = request.getHeader("Authorization");
+        if (h != null) {
+            if (!h.startsWith("Bearer ")) return null;
+            Claims c = jwtService.validateToken(h.substring(7));
+            if (c == null || JwtService.isApiToken(c)) return null;
+            return auth(request);
+        }
+        jakarta.servlet.http.HttpSession session = request.getSession(false);
+        User sessionUser = session != null ? (User) session.getAttribute("user") : null;
+        if (sessionUser == null) return null;
+        User u = userService.getUserById(sessionUser.getId()).orElse(null);
+        if (u == null || u.isBaneado()) return null;
+        if (appLockService.isEnabledFor(u) && !appLockService.isUnlocked(request, session)) return null;
+        return u;
+    }
+
+    @PostMapping("/ajustes/token")
+    public ResponseEntity<?> generarTokenApi(HttpServletRequest req) {
+        User user = authSesionOJwtNormal(req);
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Token no proporcionado o inválido"));
+        int version = userRepository.findApiTokenVersionById(user.getId()).orElse(0);
+        JwtService.ApiToken t = jwtService.generateApiToken(user, version);
+        return ResponseEntity.ok(Map.of("token", t.token(), "caduca", t.caduca().toString()));
+    }
+
+    @DeleteMapping("/ajustes/token")
+    public ResponseEntity<?> revocarTokensApi(HttpServletRequest req) {
+        User user = authSesionOJwtNormal(req);
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Token no proporcionado o inválido"));
+        userRepository.incrementApiTokenVersion(user.getId());
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     // ---------- Recuperar contraseña (público, igual que POST /forgot-password de la web) ----------

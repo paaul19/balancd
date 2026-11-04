@@ -47,6 +47,15 @@ public class User {
     @Column(name = "baneado", nullable = false)
     private boolean baneado = false;
 
+    /**
+     * Versión de los tokens de API del usuario (claim "v"). Solo se modifica con
+     * UserRepository.incrementApiTokenVersion: updatable=false evita que guardar un User
+     * desactualizado (p. ej. el de la sesión web) la devuelva a un valor anterior y
+     * reactive tokens ya revocados.
+     */
+    @Column(name = "api_token_version", nullable = false, insertable = false, updatable = false)
+    private int apiTokenVersion = 0;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Movimiento> movimientos;
 
@@ -80,6 +89,8 @@ public class User {
 
     public boolean isBaneado() { return baneado; }
     public void setBaneado(boolean baneado) { this.baneado = baneado; }
+
+    public int getApiTokenVersion() { return apiTokenVersion; }
 
     public List<Movimiento> getMovimientos() { return movimientos; }
     public void setMovimientos(List<Movimiento> movimientos) { this.movimientos = movimientos; }

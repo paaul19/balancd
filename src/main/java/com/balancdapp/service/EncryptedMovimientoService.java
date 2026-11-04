@@ -425,6 +425,27 @@ public class EncryptedMovimientoService {
     }
 
     /**
+     * Movimientos de un mes lógico (mesAsignado/anioAsignado), filtrados en la consulta.
+     */
+    public List<MovimientoDTO> getMovimientosByUserAndMes(User user, int mes, int anio) {
+        return movimientoRepository.findByUserAndMesAsignadoAndAnioAsignado(user, mes, anio).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Movimientos cuya fecha está entre desde y hasta (ambos incluidos; null = sin límite).
+     * La fecha se guarda cifrada con AES-GCM e IV aleatorio, así que la BD no puede comparar
+     * fechas: el filtro se aplica tras descifrar.
+     */
+    public List<MovimientoDTO> getMovimientosByUserAndFechas(User user, LocalDate desde, LocalDate hasta) {
+        return movimientoRepository.findByUser(user).stream()
+                .map(this::convertToDTO)
+                .filter(m -> (desde == null || !m.getFecha().isBefore(desde)) && (hasta == null || !m.getFecha().isAfter(hasta)))
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Obtiene el balance total de un usuario
      */
     public double getBalanceTotal(User user) {

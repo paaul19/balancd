@@ -96,6 +96,36 @@
             </a>
         </div>
 
+        <!-- Token de API -->
+        <div class="ajustes-section-label">Token de API</div>
+        <div class="ajustes-options api-token-card">
+            <p class="api-token-desc">Token de larga duración (1 año) para usar la API desde atajos o scripts, en la cabecera <code>Authorization: Bearer &lt;token&gt;</code>.</p>
+            <div class="api-token-actions">
+                <button type="button" id="btnGenerarToken" class="confirm-btn confirm-ok">Generar token</button>
+                <button type="button" id="btnRevocarTokens" class="confirm-btn confirm-cancel">Revocar tokens</button>
+            </div>
+            <div id="apiTokenResultado" class="api-token-resultado" hidden>
+                <div class="api-token-valor-row">
+                    <code id="apiTokenValor" class="api-token-valor"></code>
+                    <button type="button" id="btnCopiarToken" class="confirm-btn confirm-cancel api-token-copiar">Copiar</button>
+                </div>
+                <p class="api-token-meta">Caduca el <span id="apiTokenCaduca"></span></p>
+                <p class="api-token-aviso">Guárdalo ahora, no se volverá a mostrar</p>
+            </div>
+            <p id="apiTokenMensaje" class="api-token-mensaje" role="status" hidden></p>
+        </div>
+        <div id="modalRevocarTokens" class="ajustes-modal-overlay">
+            <div class="confirm-dialog">
+                <div class="confirm-icon is-danger" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8" stroke-linecap="round"/></svg></div>
+                <h3 class="confirm-title">¿Revocar tus tokens de API?</h3>
+                <p class="confirm-text">Todos los tokens de API generados hasta ahora <b>dejarán de funcionar</b>. Tu sesión y la app no se ven afectadas.</p>
+                <div class="confirm-actions">
+                    <button type="button" id="cancelarRevocar" class="confirm-btn confirm-cancel">Cancelar</button>
+                    <button type="button" id="confirmarRevocar" class="confirm-btn confirm-danger">Revocar</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Sesión -->
         <form th:action="@{/logout}" method="post" class="ajustes-logout-form">
             <button type="submit" class="ajustes-logout-btn">

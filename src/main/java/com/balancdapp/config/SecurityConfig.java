@@ -69,7 +69,14 @@ public class SecurityConfig {
                         // handler simple para que el valor que el JS lee de la cookie coincida
                         // exactamente con el que el filtro espera recibir de vuelta.
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-                        .ignoringRequestMatchers("/api/**")
+                        // Excepción: /api/ajustes/token también admite la sesión web (página de
+                        // Ajustes); sin cabecera Authorization se autentica por cookie y por tanto
+                        // SÍ debe llevar token CSRF.
+                        .ignoringRequestMatchers(request -> {
+                            String path = request.getRequestURI().substring(request.getContextPath().length());
+                            if (!path.startsWith("/api/")) return false;
+                            return !path.equals("/api/ajustes/token") || request.getHeader("Authorization") != null;
+                        })
                 )
                 // Spring Security resuelve el CsrfToken de forma perezosa: si nada lo lee
                 // explícitamente durante la petición, la cookie XSRF-TOKEN nunca llega a

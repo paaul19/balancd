@@ -368,10 +368,68 @@ public class MovimientoRestController {
         }
     }
 
+    private static ResponseEntity<?> badRequest(String msg) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", msg));
+    }
+
+    private static boolean presente(String s) { return s != null && !s.isBlank(); }
+
+    /**
+     * Sin parámetros: todos los movimientos y los totales globales (como siempre).
+     * ?mes=&anio= filtra por mes lógico (mesAsignado/anioAsignado);
+     * ?desde=yyyy-MM-dd&hasta=yyyy-MM-dd filtra por fecha (ambos incluidos, se puede omitir uno).
+     * Con filtro, balanceTotal/totalIngresos/totalGastos se calculan sobre los movimientos devueltos.
+     */
     @GetMapping("/movimientos")
-    public ResponseEntity<?> getMovimientos(HttpServletRequest request) {
+    public ResponseEntity<?> getMovimientos(@RequestParam(required = false) String mes,
+                                            @RequestParam(required = false) String anio,
+                                            @RequestParam(required = false) String desde,
+                                            @RequestParam(required = false) String hasta,
+                                            HttpServletRequest request) {
         User user = authenticate(request);
         if (user == null) return unauthorized();
+
+        boolean filtroMes = presente(mes) || presente(anio);
+        boolean filtroFechas = presente(desde) || presente(hasta);
+        if (filtroMes && filtroFechas) {
+            return badRequest("No se puede combinar mes/anio con desde/hasta");
+        }
+        if (filtroMes || filtroFechas) {
+            List<EncryptedMovimientoService.MovimientoDTO> movimientos;
+            if (filtroMes) {
+                if (!presente(mes) || !presente(anio)) return badRequest("mes y anio deben indicarse juntos");
+                int m, a;
+                try {
+                    m = Integer.parseInt(mes.trim());
+                    a = Integer.parseInt(anio.trim());
+                } catch (NumberFormatException e) {
+                    return badRequest("mes y anio deben ser números enteros");
+                }
+                if (m < 1 || m > 12) return badRequest("mes debe estar entre 1 y 12");
+                if (a < 1900 || a > 9999) return badRequest("anio no válido");
+                movimientos = encryptedMovimientoService.getMovimientosByUserAndMes(user, m, a);
+            } else {
+                LocalDate d, h;
+                try {
+                    d = presente(desde) ? LocalDate.parse(desde.trim(), DateTimeFormatter.ISO_LOCAL_DATE) : null;
+                    h = presente(hasta) ? LocalDate.parse(hasta.trim(), DateTimeFormatter.ISO_LOCAL_DATE) : null;
+                } catch (java.time.format.DateTimeParseException e) {
+                    return badRequest("desde y hasta deben tener formato yyyy-MM-dd");
+                }
+                if (d != null && h != null && d.isAfter(h)) return badRequest("desde no puede ser posterior a hasta");
+                movimientos = encryptedMovimientoService.getMovimientosByUserAndFechas(user, d, h);
+            }
+            double totalIngresos = movimientos.stream().filter(EncryptedMovimientoService.MovimientoDTO::isIngreso)
+                    .mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+            double totalGastos = movimientos.stream().filter(x -> !x.isIngreso())
+                    .mapToDouble(EncryptedMovimientoService.MovimientoDTO::getCantidad).sum();
+            return ResponseEntity.ok(Map.of(
+                "movimientos", movimientos,
+                "balanceTotal", totalIngresos - totalGastos,
+                "totalIngresos", totalIngresos,
+                "totalGastos", totalGastos
+            ));
+        }
 
         try {
             var movimientos = encryptedMovimientoService.getMovimientosByUser(user);
