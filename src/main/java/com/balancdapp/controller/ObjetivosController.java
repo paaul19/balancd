@@ -131,6 +131,7 @@ public class ObjetivosController {
                                    @RequestParam(required = false) Long subcategoriaId,
                                    @RequestParam(required = false) String concepto,
                                    @RequestParam String limite,
+                                   @RequestParam(required = false, defaultValue = "false") boolean contarDesdeCreacion,
                                    HttpSession session,
                                    RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
@@ -140,7 +141,7 @@ public class ObjetivosController {
             Subcategoria[] subOut = new Subcategoria[1];
             Categoria categoria = resolverCategoriaYSubcategoria(categoriaId, subcategoriaId, subOut, user)[0];
             double limiteParsed = Double.parseDouble(limite.replace(",", "."));
-            encryptedPresupuestoService.crearPresupuesto(user, categoria, subOut[0], concepto, limiteParsed);
+            encryptedPresupuestoService.crearPresupuesto(user, categoria, subOut[0], concepto, limiteParsed, contarDesdeCreacion);
             redirectAttributes.addFlashAttribute("success", "Presupuesto creado correctamente.");
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "El límite debe ser un número.");
@@ -156,6 +157,7 @@ public class ObjetivosController {
                                     @RequestParam(required = false) Long subcategoriaId,
                                     @RequestParam(required = false) String concepto,
                                     @RequestParam String limite,
+                                    @RequestParam(required = false, defaultValue = "false") boolean contarDesdeCreacion,
                                     HttpSession session,
                                     RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
@@ -170,7 +172,7 @@ public class ObjetivosController {
             Subcategoria[] subOut = new Subcategoria[1];
             Categoria categoria = resolverCategoriaYSubcategoria(categoriaId, subcategoriaId, subOut, user)[0];
             double limiteParsed = Double.parseDouble(limite.replace(",", "."));
-            encryptedPresupuestoService.actualizarPresupuesto(presupuesto, categoria, subOut[0], concepto, limiteParsed);
+            encryptedPresupuestoService.actualizarPresupuesto(presupuesto, categoria, subOut[0], concepto, limiteParsed, contarDesdeCreacion);
             redirectAttributes.addFlashAttribute("success", "Presupuesto actualizado correctamente.");
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "El límite debe ser un número.");
@@ -198,6 +200,7 @@ public class ObjetivosController {
                                 @RequestParam String nombre,
                                 @RequestParam String objetivo,
                                 @RequestParam(required = false) String fechaLimite,
+                                @RequestParam(required = false, defaultValue = "false") boolean mensual,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
@@ -215,7 +218,7 @@ public class ObjetivosController {
         try {
             double objetivoParsed = Double.parseDouble(objetivo.replace(",", "."));
             LocalDate fecha = (fechaLimite != null && !fechaLimite.isBlank()) ? LocalDate.parse(fechaLimite) : null;
-            encryptedObjetivoService.crearObjetivo(user, cuenta, nombre.trim(), objetivoParsed, fecha);
+            encryptedObjetivoService.crearObjetivo(user, cuenta, nombre.trim(), objetivoParsed, fecha, mensual);
             redirectAttributes.addFlashAttribute("success", "Objetivo creado correctamente.");
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "El importe objetivo debe ser un número.");
@@ -229,6 +232,7 @@ public class ObjetivosController {
                                  @RequestParam String nombre,
                                  @RequestParam String objetivo,
                                  @RequestParam(required = false) String fechaLimite,
+                                 @RequestParam(required = false, defaultValue = "false") boolean mensual,
                                  HttpSession session,
                                  RedirectAttributes redirectAttributes) {
         User user = (User) session.getAttribute("user");
@@ -243,7 +247,7 @@ public class ObjetivosController {
         try {
             double objetivoParsed = Double.parseDouble(objetivo.replace(",", "."));
             LocalDate fecha = (fechaLimite != null && !fechaLimite.isBlank()) ? LocalDate.parse(fechaLimite) : null;
-            encryptedObjetivoService.actualizarObjetivo(o, cuenta, nombre.trim(), objetivoParsed, fecha);
+            encryptedObjetivoService.actualizarObjetivo(o, cuenta, nombre.trim(), objetivoParsed, fecha, mensual);
             redirectAttributes.addFlashAttribute("success", "Objetivo actualizado correctamente.");
         } catch (NumberFormatException e) {
             redirectAttributes.addFlashAttribute("error", "El importe objetivo debe ser un número.");

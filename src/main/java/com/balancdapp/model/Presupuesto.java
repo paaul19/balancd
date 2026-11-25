@@ -39,6 +39,16 @@ public class Presupuesto {
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 
+    /**
+     * false (por defecto): se cuenta todo lo gastado en el mes en curso, aunque sea anterior a la
+     * creación del presupuesto. true: solo cuenta lo gastado desde el día de creación.
+     */
+    @Column(name = "contar_desde_creacion", nullable = false)
+    private boolean contarDesdeCreacion = false;
+
+    public boolean isContarDesdeCreacion() { return contarDesdeCreacion; }
+    public void setContarDesdeCreacion(boolean contarDesdeCreacion) { this.contarDesdeCreacion = contarDesdeCreacion; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

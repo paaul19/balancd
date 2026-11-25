@@ -50,6 +50,7 @@
                                     th:data-subcategoria-id="${p.subcategoriaId}"
                                     th:data-concepto="${p.concepto}"
                                     th:data-limite="${p.limite}"
+                                    th:data-desde-creacion="${p.contarDesdeCreacion}"
                                     title="Editar">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
                             </button>
@@ -83,14 +84,14 @@
                     Nuevo objetivo
                 </button>
             </div>
-            <p class="objetivos-section-sub">El progreso se calcula con el saldo real de la cuenta que elijas.</p>
+            <p class="objetivos-section-sub">El progreso se calcula con el saldo real de la cuenta que elijas; en los objetivos mensuales, con lo que ahorras en la cuenta cada mes.</p>
 
             <ul class="metas-list" th:if="${!#lists.isEmpty(objetivos)}">
                 <li th:each="o : ${objetivos}" class="meta-card" th:classappend="${o.completado} ? 'completado'">
                     <div class="meta-top">
                         <div class="meta-info">
                             <span class="meta-nombre" th:text="${o.nombre}"></span>
-                            <span class="meta-cuenta" th:text="${o.cuentaNombre} + (${o.fechaLimite != null} ? ' · antes del ' + ${#temporals.format(o.fechaLimite, 'dd/MM/yyyy')} : '')"></span>
+                            <span class="meta-cuenta" th:text="${o.cuentaNombre} + (${o.mensual} ? ' · mensual' : (${o.fechaLimite != null} ? ' · antes del ' + ${#temporals.format(o.fechaLimite, 'dd/MM/yyyy')} : ''))"></span>
                         </div>
                         <div class="meta-actions">
                             <button type="button" class="btn-editar-meta"
@@ -99,6 +100,7 @@
                                     th:data-cuenta-id="${o.cuentaId}"
                                     th:data-objetivo="${o.objetivo}"
                                     th:data-fecha-limite="${o.fechaLimite}"
+                                    th:data-mensual="${o.mensual}"
                                     title="Editar">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9" stroke-linecap="round"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" stroke-linecap="round" stroke-linejoin="round"/></svg>
                             </button>
@@ -116,6 +118,7 @@
                         <span class="js-money" th:text="${moneyFormatter.format(o.saldoActual)}"></span>
                         <span class="presupuesto-de"> de </span>
                         <span class="js-money" th:text="${moneyFormatter.format(o.objetivo)}"></span>
+                        <span th:if="${o.mensual}" class="presupuesto-de"> este mes</span>
                         <span th:if="${o.completado}" class="meta-badge-completado">¡Conseguido!</span>
                     </span>
                 </li>
@@ -151,6 +154,13 @@
                     <label for="presupuestoLimite">Límite mensual (<span th:text="${moneyFormatter.simbolo}">€</span>)</label>
                     <input type="number" id="presupuestoLimite" name="limite" step="0.01" min="0.01" placeholder="0.00" required>
                 </div>
+                <div class="form-group">
+                    <label>¿Desde cuándo contar?</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="contarDesdeCreacion" value="false" checked> Contar lo que llevo este mes</label>
+                        <label class="radio-option"><input type="radio" name="contarDesdeCreacion" value="true"> Empezar a contar desde ahora</label>
+                    </div>
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-cancel" id="btnCancelarPresupuesto">Cancelar</button>
                     <button type="submit" class="btn-save">Guardar</button>
@@ -178,10 +188,17 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="objetivoImporte">Cantidad objetivo (<span th:text="${moneyFormatter.simbolo}">€</span>)</label>
+                    <label for="objetivoImporte"><span id="objetivoImporteLabel">Cantidad objetivo</span> (<span th:text="${moneyFormatter.simbolo}">€</span>)</label>
                     <input type="number" id="objetivoImporte" name="objetivo" step="0.01" min="0.01" placeholder="0.00" required>
                 </div>
                 <div class="form-group">
+                    <label>Tipo de objetivo</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="mensual" value="false" checked> Con fecha (inicio y fin)</label>
+                        <label class="radio-option"><input type="radio" name="mensual" value="true"> Mensual (ahorrar esta cantidad cada mes)</label>
+                    </div>
+                </div>
+                <div class="form-group" id="objetivoFechaGroup">
                     <label for="objetivoFechaLimite">Fecha límite (opcional)</label>
                     <input type="date" id="objetivoFechaLimite" name="fechaLimite">
                 </div>

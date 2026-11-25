@@ -33,6 +33,13 @@ public class Objetivo {
     @Column(nullable = false)
     private boolean activo = true;
 
+    /** true: objetivo mensual (ahorrar el importe cada mes, se reinicia al empezar el mes). */
+    @Column(nullable = false)
+    private boolean mensual = false;
+
+    public boolean isMensual() { return mensual; }
+    public void setMensual(boolean mensual) { this.mensual = mensual; }
+
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
 

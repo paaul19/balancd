@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class EncryptedPresupuestoService {
         return limpio.isEmpty() ? null : limpio;
     }
 
-    public Presupuesto crearPresupuesto(User user, Categoria categoria, Subcategoria subcategoria, String concepto, double limite) {
+    public Presupuesto crearPresupuesto(User user, Categoria categoria, Subcategoria subcategoria, String concepto, double limite, boolean contarDesdeCreacion) {
         validarAlcance(user, categoria, subcategoria, concepto, null);
         Presupuesto presupuesto = new Presupuesto();
         presupuesto.setUser(user);
@@ -72,17 +73,19 @@ public class EncryptedPresupuestoService {
         presupuesto.setSubcategoria(subcategoria);
         presupuesto.setConcepto(concepto != null && !concepto.isBlank() ? concepto.trim() : null);
         presupuesto.setLimiteCifrado(encryptionService.encryptNumber(limite));
+        presupuesto.setContarDesdeCreacion(contarDesdeCreacion);
         presupuesto.setActivo(true);
         presupuesto.setFechaCreacion(java.time.LocalDateTime.now());
         return presupuestoRepository.save(presupuesto);
     }
 
-    public void actualizarPresupuesto(Presupuesto presupuesto, Categoria categoria, Subcategoria subcategoria, String concepto, double limite) {
+    public void actualizarPresupuesto(Presupuesto presupuesto, Categoria categoria, Subcategoria subcategoria, String concepto, double limite, boolean contarDesdeCreacion) {
         validarAlcance(presupuesto.getUser(), categoria, subcategoria, concepto, presupuesto.getId());
         presupuesto.setCategoria(categoria);
         presupuesto.setSubcategoria(subcategoria);
         presupuesto.setConcepto(concepto != null && !concepto.isBlank() ? concepto.trim() : null);
         presupuesto.setLimiteCifrado(encryptionService.encryptNumber(limite));
+        presupuesto.setContarDesdeCreacion(contarDesdeCreacion);
         presupuestoRepository.save(presupuesto);
     }
 
@@ -105,9 +108,12 @@ public class EncryptedPresupuestoService {
         Categoria categoria = presupuesto.getCategoria();
         Subcategoria subcategoria = presupuesto.getSubcategoria();
         String concepto = normalizarConcepto(presupuesto.getConcepto());
+        LocalDate desde = (presupuesto.isContarDesdeCreacion() && presupuesto.getFechaCreacion() != null)
+                ? presupuesto.getFechaCreacion().toLocalDate() : null;
 
         return movimientos.stream()
                 .filter(m -> !m.isIngreso())
+                .filter(m -> desde == null || !fechaMovimiento(m).isBefore(desde))
                 .filter(m -> categoria == null || (m.getCategoria() != null && m.getCategoria().getId().equals(categoria.getId())))
                 .filter(m -> subcategoria == null || (m.getSubcategoria() != null && m.getSubcategoria().getId().equals(subcategoria.getId())))
                 .filter(m -> {
@@ -120,6 +126,15 @@ public class EncryptedPresupuestoService {
                     return cantidad == null ? 0.0 : cantidad;
                 })
                 .sum();
+    }
+
+    private LocalDate fechaMovimiento(Movimiento m) {
+        try {
+            String f = encryptionService.decrypt(m.getFechaCifrada());
+            return f == null ? LocalDate.MAX : LocalDate.parse(f);
+        } catch (Exception e) {
+            return LocalDate.MAX;
+        }
     }
 
     public List<PresupuestoDTO> getPresupuestosConProgreso(User user, int mes, int anio) {
@@ -143,6 +158,7 @@ public class EncryptedPresupuestoService {
             dto.setSubcategoriaNombre(subcategoria.getNombre());
         }
         dto.setConcepto(presupuesto.getConcepto());
+        dto.setContarDesdeCreacion(presupuesto.isContarDesdeCreacion());
         dto.setEtiqueta(construirEtiqueta(categoria, subcategoria, presupuesto.getConcepto()));
 
         double limite = getLimite(presupuesto);
@@ -184,6 +200,10 @@ public class EncryptedPresupuestoService {
         private double restante;
         private double porcentaje;
         private boolean excedido;
+        private boolean contarDesdeCreacion;
+
+        public boolean isContarDesdeCreacion() { return contarDesdeCreacion; }
+        public void setContarDesdeCreacion(boolean v) { this.contarDesdeCreacion = v; }
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }

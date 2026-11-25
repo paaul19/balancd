@@ -106,7 +106,7 @@ public class ApiAjustesController {
         return run(req, user -> {
             Subcategoria[] sub = new Subcategoria[1];
             Categoria c = categoria(lng(p.get("categoriaId")), lng(p.get("subcategoriaId")), sub, user);
-            presupuestoService.crearPresupuesto(user, c, sub[0], str(p.get("concepto")), dbl(p.get("limite")));
+            presupuestoService.crearPresupuesto(user, c, sub[0], str(p.get("concepto")), dbl(p.get("limite")), Boolean.TRUE.equals(p.get("contarDesdeCreacion")));
             return null;
         });
     }
@@ -116,7 +116,7 @@ public class ApiAjustesController {
         return run(req, user -> {
             Subcategoria[] sub = new Subcategoria[1];
             Categoria c = categoria(lng(p.get("categoriaId")), lng(p.get("subcategoriaId")), sub, user);
-            presupuestoService.actualizarPresupuesto(presupuestoDe(id, user), c, sub[0], str(p.get("concepto")), dbl(p.get("limite")));
+            presupuestoService.actualizarPresupuesto(presupuestoDe(id, user), c, sub[0], str(p.get("concepto")), dbl(p.get("limite")), Boolean.TRUE.equals(p.get("contarDesdeCreacion")));
             return null;
         });
     }
@@ -131,7 +131,7 @@ public class ApiAjustesController {
         return run(req, user -> {
             if (str(p.get("nombre")).isEmpty()) throw new IllegalArgumentException("El objetivo necesita un nombre.");
             String f = str(p.get("fechaLimite"));
-            objetivoService.crearObjetivo(user, cuentaDe(lng(p.get("cuentaId")), user), str(p.get("nombre")), dbl(p.get("objetivo")), f.isEmpty() ? null : LocalDate.parse(f));
+            objetivoService.crearObjetivo(user, cuentaDe(lng(p.get("cuentaId")), user), str(p.get("nombre")), dbl(p.get("objetivo")), f.isEmpty() ? null : LocalDate.parse(f), Boolean.TRUE.equals(p.get("mensual")));
             return null;
         });
     }
@@ -140,7 +140,7 @@ public class ApiAjustesController {
     public ResponseEntity<?> editarMeta(@PathVariable Long id, @RequestBody Map<String, Object> p, HttpServletRequest req) {
         return run(req, user -> {
             String f = str(p.get("fechaLimite"));
-            objetivoService.actualizarObjetivo(objetivoDe(id, user), cuentaDe(lng(p.get("cuentaId")), user), str(p.get("nombre")), dbl(p.get("objetivo")), f.isEmpty() ? null : LocalDate.parse(f));
+            objetivoService.actualizarObjetivo(objetivoDe(id, user), cuentaDe(lng(p.get("cuentaId")), user), str(p.get("nombre")), dbl(p.get("objetivo")), f.isEmpty() ? null : LocalDate.parse(f), Boolean.TRUE.equals(p.get("mensual")));
             return null;
         });
     }

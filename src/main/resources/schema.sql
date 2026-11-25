@@ -849,3 +849,25 @@ CREATE TABLE IF NOT EXISTS passkey_credentials (
     last_used_at DATETIME NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Presupuestos: elegir si cuenta lo ya gastado este mes (0, por defecto) o solo desde la creación (1)
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'presupuestos' AND COLUMN_NAME = 'contar_desde_creacion') = 0,
+    'ALTER TABLE presupuestos ADD COLUMN contar_desde_creacion BOOLEAN NOT NULL DEFAULT FALSE;',
+    'SELECT "Columna contar_desde_creacion ya existe en presupuestos" as status;'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+
+-- Objetivos de ahorro mensuales (sin fecha límite, se reinician cada mes)
+SET @sql = (SELECT IF(
+    (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'objetivos' AND COLUMN_NAME = 'mensual') = 0,
+    'ALTER TABLE objetivos ADD COLUMN mensual BOOLEAN NOT NULL DEFAULT FALSE;',
+    'SELECT "Columna mensual ya existe en objetivos" as status;'
+));
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

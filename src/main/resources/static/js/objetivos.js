@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function () {
         presupuestoTitle.textContent = 'Editar presupuesto';
         presupuestoConceptoInput.value = btn.getAttribute('data-concepto') || '';
         presupuestoLimiteInput.value = btn.getAttribute('data-limite') || '';
+        const desde = btn.getAttribute('data-desde-creacion') === 'true';
+        presupuestoForm.querySelector('input[name="contarDesdeCreacion"][value="' + desde + '"]').checked = true;
         window.CategoriaCascade.refreshCategoriaOptionsForTipo('presupuesto', 'gasto');
         window.CategoriaCascade.wireCategoriaCascade('presupuesto', btn.getAttribute('data-categoria-id'), btn.getAttribute('data-subcategoria-id'));
         presupuestoModal.classList.add('show');
@@ -50,8 +52,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const objetivoFechaInput = document.getElementById('objetivoFechaLimite');
     const CREAR_OBJETIVO_URL = objetivoForm ? objetivoForm.getAttribute('action') : '';
 
+    const objetivoFechaGroup = document.getElementById('objetivoFechaGroup');
+    const objetivoImporteLabel = document.getElementById('objetivoImporteLabel');
+    function actualizarTipoObjetivo() {
+        const mensual = objetivoForm.querySelector('input[name="mensual"]:checked').value === 'true';
+        objetivoFechaGroup.style.display = mensual ? 'none' : '';
+        objetivoImporteLabel.textContent = mensual ? 'Cantidad a ahorrar al mes' : 'Cantidad objetivo';
+        if (mensual) objetivoFechaInput.value = '';
+    }
+    objetivoForm.querySelectorAll('input[name="mensual"]').forEach(function (r) {
+        r.addEventListener('change', actualizarTipoObjetivo);
+    });
+
     function abrirModalCrearObjetivo() {
         objetivoForm.reset();
+        actualizarTipoObjetivo();
         objetivoForm.setAttribute('action', CREAR_OBJETIVO_URL);
         objetivoTitle.textContent = 'Nuevo objetivo';
         objetivoModal.classList.add('show');
@@ -66,6 +81,9 @@ document.addEventListener('DOMContentLoaded', function () {
         objetivoCuentaSelect.value = btn.getAttribute('data-cuenta-id') || '';
         objetivoImporteInput.value = btn.getAttribute('data-objetivo') || '';
         objetivoFechaInput.value = btn.getAttribute('data-fecha-limite') || '';
+        const mensual = btn.getAttribute('data-mensual') === 'true';
+        objetivoForm.querySelector('input[name="mensual"][value="' + mensual + '"]').checked = true;
+        actualizarTipoObjetivo();
         objetivoModal.classList.add('show');
     }
 
